@@ -530,8 +530,7 @@ app.delete('/api/alerts/:id', requireAuth, (req, res) => {
 // ─────────────────────────────────────────
 //  SERVE FRONTEND (SPA catch-all)
 // ─────────────────────────────────────────
-app.get('*', (req, res) => {
-  const indexPath = path.join(__dirname, 'public', 'index.html');
+app.get('*', (req, res) => {const indexPath = fs.existsSync(path.join(__dirname, 'public', 'index.html')) ? path.join(__dirname, 'public', 'index.html') : path.join(__dirname, 'index.html');
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
