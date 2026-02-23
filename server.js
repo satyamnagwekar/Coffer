@@ -530,8 +530,12 @@ app.delete('/api/alerts/:id', requireAuth, (req, res) => {
 // ─────────────────────────────────────────
 //  SERVE FRONTEND (SPA catch-all)
 // ─────────────────────────────────────────
-app.get('*', (req, res) => {const indexPath = fs.existsSync(path.join(__dirname, 'public', 'index.html')) ? path.join(__dirname, 'public', 'index.html') : path.join(__dirname, 'index.html');
+app.get('*', (req, res) => {
+  const indexInPublic = path.join(__dirname, 'public', 'index.html');
+  const indexAtRoot   = path.join(__dirname, 'index.html');
+  const indexPath     = fs.existsSync(indexInPublic) ? indexInPublic : indexAtRoot;
   if (fs.existsSync(indexPath)) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.sendFile(indexPath);
   } else {
     res.status(200).send(`
