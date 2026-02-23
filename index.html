@@ -1,0 +1,2165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0c0a06">
+<title>Coffer — Precious Metals Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Brighter, richer gold palette */
+  --gold:#F0B429;--gold-light:#FFD166;--gold-bright:#FFE066;--gold-dim:#9A6F00;--gold-glow:rgba(240,180,41,.18);
+  /* Silver with more presence */
+  --silver:#C8D8E8;--silver-bright:#E0EDF8;--silver-dim:#7A8EA0;--silver-glow:rgba(200,216,232,.12);
+  /* Status colors — more vivid */
+  --green:#2ECC8A;--green-dim:#0d3d26;--green-glow:rgba(46,204,138,.15);
+  --red:#E05C5C;--red-dim:#4a1515;
+  --blue:#4A9FE0;--blue-dim:#102840;
+  /* Deep warm-black backgrounds */
+  --bg:#0c0a06;--bg2:#131109;--bg3:#1c1a10;--bg4:#252318;
+  --border:#2e2a18;--border2:#3a3620;--border-gold:rgba(240,180,41,.2);
+  /* Text — warmer whites */
+  --text:#F5EDD4;--text-dim:#6a6040;--text-mid:#a09060;
+  --radius:16px;--radius-sm:11px;--radius-xs:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* Rich warm-gold noise texture overlay */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.6;mix-blend-mode:overlay}
+
+/* Ambient gold glow at top */
+body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(240,180,41,.06) 0%,transparent 70%);pointer-events:none;z-index:0}
+
+/* ═══════════════════════════════════════
+   AUTH SCREENS
+═══════════════════════════════════════ */
+.auth-screen{position:fixed;inset:0;background:var(--bg);z-index:800;overflow-y:auto;display:flex;flex-direction:column}
+.auth-screen.hidden{display:none}
+
+.auth-hero{padding:44px 26px 24px;position:relative;overflow:hidden;flex-shrink:0}
+
+/* Decorative SVG ingot / seal watermark */
+.auth-hero::before{content:'';position:absolute;top:-60px;right:-70px;width:260px;height:260px;background:radial-gradient(circle,rgba(240,180,41,.12) 0%,transparent 65%);border-radius:50%;pointer-events:none}
+.auth-hero::after{content:'';position:absolute;bottom:-30px;left:-30px;width:140px;height:140px;background:radial-gradient(circle,rgba(200,216,232,.05) 0%,transparent 70%);border-radius:50%;pointer-events:none}
+
+.auth-wordmark{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;letter-spacing:.25em;color:var(--gold-light);margin-bottom:2px;text-shadow:0 0 40px rgba(240,180,41,.3)}
+.auth-tagline{font-size:10px;color:var(--text-dim);letter-spacing:.22em;text-transform:uppercase;margin-bottom:20px}
+
+/* Decorative gold rule */
+.auth-rule{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.auth-rule-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent)}
+.auth-rule-icon{font-size:14px;color:var(--gold-dim)}
+
+.auth-headline{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;line-height:1.3;color:var(--text);margin-bottom:12px}
+.auth-headline em{color:var(--gold-bright);font-style:italic}
+.auth-desc{font-size:12px;color:var(--text-mid);line-height:1.85}
+
+/* WHY PHYSICAL section */
+.physical-case{margin-top:20px;border:1px solid var(--border-gold);border-radius:var(--radius);background:linear-gradient(135deg,rgba(240,180,41,.05),rgba(30,26,16,.8));overflow:hidden}
+.physical-case-header{padding:14px 18px 10px;border-bottom:1px solid var(--border-gold);display:flex;align-items:center;gap:8px}
+.physical-case-title{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:500}
+.physical-pillar{padding:13px 18px;border-bottom:1px solid rgba(46,42,24,.6);display:flex;gap:13px;align-items:flex-start}
+.physical-pillar:last-child{border-bottom:none}
+.pillar-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.pillar-body{}
+.pillar-title{font-size:12px;color:var(--gold-light);font-weight:500;margin-bottom:3px;letter-spacing:.03em}
+.pillar-desc{font-size:10px;color:var(--text-mid);line-height:1.7}
+.pillar-desc strong{color:var(--text);font-weight:500}
+
+/* Auth tab switcher */
+.auth-tabs{display:flex;margin:0 20px;background:var(--bg3);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border)}
+.auth-tab{flex:1;padding:12px 4px;border-radius:9px;border:none;background:transparent;color:var(--text-dim);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.auth-tab.active{background:var(--bg);color:var(--gold-light);border:1px solid var(--border-gold);box-shadow:0 1px 8px rgba(0,0,0,.5)}
+
+/* Auth form panels */
+.auth-panels{flex:1;padding:0 20px 40px}
+.auth-panel{display:none;padding-top:20px;flex-direction:column;gap:15px}
+.auth-panel.active{display:flex}
+
+/* Form fields — auth context */
+.af{display:flex;flex-direction:column;gap:7px}
+.af label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-mid);font-weight:500}
+.af input,.af select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Mono',monospace;font-size:15px;padding:14px 16px;outline:none;width:100%;transition:all .2s;-webkit-appearance:none}
+.af input:focus,.af select:focus{border-color:rgba(240,180,41,.5);background:var(--bg4);box-shadow:0 0 0 3px rgba(240,180,41,.08)}
+.af input::placeholder{color:var(--text-dim)}
+.af select option{background:var(--bg3)}
+.af-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.af-hint{font-size:9px;color:var(--text-dim);line-height:1.5;margin-top:-4px}
+
+/* Password wrapper */
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:48px}
+.pw-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;padding:4px;line-height:1}
+.pw-toggle:hover{color:var(--gold)}
+
+/* Strength meter */
+.strength-bar{height:3px;border-radius:2px;background:var(--border);overflow:hidden;margin-top:4px}
+.strength-fill{height:100%;border-radius:2px;transition:width .3s,background .3s;width:0}
+.strength-label{font-size:9px;color:var(--text-dim);margin-top:3px}
+
+/* Auth disclaimer */
+.auth-disclaimer{background:rgba(74,159,224,.07);border:1px solid rgba(74,159,224,.2);border-radius:var(--radius-xs);padding:12px 14px;font-size:10px;color:var(--text-dim);line-height:1.65}
+.auth-disclaimer strong{color:var(--blue);font-weight:500}
+
+/* Buttons */
+.btn-auth{width:100%;padding:17px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border:none;border-radius:var(--radius);color:#0c0a06;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.15em;text-transform:uppercase;font-weight:500;cursor:pointer;transition:all .2s;margin-top:4px;box-shadow:0 4px 20px rgba(240,180,41,.3)}
+.btn-auth:active{transform:scale(.98)}
+.btn-auth:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-auth-ghost{width:100%;padding:13px;background:transparent;border:1px solid var(--border);border-radius:var(--radius);color:var(--text-dim);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.btn-auth-ghost:hover{border-color:var(--gold-dim);color:var(--gold)}
+
+/* Error / success messages */
+.msg{padding:10px 14px;border-radius:var(--radius-xs);font-size:11px;line-height:1.5;display:none}
+.msg.error{background:rgba(224,92,92,.1);border:1px solid rgba(224,92,92,.25);color:#f09090;display:block}
+.msg.success{background:rgba(46,204,138,.1);border:1px solid rgba(46,204,138,.25);color:#80e4b8;display:block}
+
+/* Free badge */
+.free-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(46,204,138,.08);border:1px solid var(--green-dim);border-radius:20px;padding:6px 14px;font-size:9px;color:var(--green);letter-spacing:.1em;text-transform:uppercase}
+.free-badge .dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+
+/* ═══════════════════════════════════════
+   PROFILE SCREEN (view/edit)
+═══════════════════════════════════════ */
+.profile-header{background:linear-gradient(135deg,var(--bg3),var(--bg2));border-bottom:1px solid var(--border);padding:32px 20px 24px;position:relative;overflow:hidden}
+.profile-header::after{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(240,180,41,.09) 0%,transparent 70%);border-radius:50%;pointer-events:none}
+.profile-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--gold-dim),var(--bg4));border:2px solid var(--gold-dim);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold-light);margin-bottom:14px;flex-shrink:0}
+.profile-name-big{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--text);margin-bottom:3px}
+.profile-email-big{font-size:11px;color:var(--text-dim)}
+.profile-joined{font-size:9px;color:var(--text-dim);margin-top:6px;letter-spacing:.06em}
+
+/* ═══════════════════════════════════════
+   MAIN APP
+═══════════════════════════════════════ */
+.app-screen{display:none}
+.app-screen.active{display:block}
+
+.header{position:sticky;top:0;z-index:100;background:rgba(12,10,6,.95);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.header-left{display:flex;align-items:center;gap:10px}
+.logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:.16em;color:var(--gold-light);flex-shrink:0;text-shadow:0 0 20px rgba(240,180,41,.25)}
+.logo span{color:var(--text-dim);font-style:italic}
+.user-pill{display:flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 11px 5px 6px;cursor:pointer;transition:all .2s;max-width:140px}
+.user-pill:hover{border-color:var(--gold-dim)}
+.user-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--gold-dim),var(--bg4));border:1px solid var(--gold-dim);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gold-bright);flex-shrink:0;font-family:'Cormorant Garamond',serif}
+.user-name{font-size:11px;color:var(--text-mid);letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.spot-strip{display:flex;gap:12px;font-size:9px;color:var(--text-dim);text-transform:uppercase}
+.spot-item{display:flex;flex-direction:column;align-items:flex-end}
+.spot-item .metal{font-size:8px;color:var(--text-dim);margin-bottom:1px}
+.spot-item .price{font-size:12px;font-weight:500}
+.spot-item.gold .price{color:var(--gold-light)}
+.spot-item.silver .price{color:var(--silver)}
+
+/* Nav tabs */
+.nav-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg2)}
+.nav-tab{flex:1;padding:12px 4px;border:none;background:transparent;color:var(--text-dim);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;cursor:pointer;transition:all .2s;text-transform:uppercase;position:relative}
+.nav-tab.active{color:var(--gold-bright)}
+.nav-tab.active::after{content:'';position:absolute;bottom:0;left:15%;right:15%;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold-light));border-radius:2px 2px 0 0;box-shadow:0 0 8px rgba(240,180,41,.5)}
+
+/* Currency bar */
+.currency-bar{display:flex;gap:6px;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;align-items:center}
+.currency-label{font-size:9px;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;margin-right:2px}
+.currency-btn{padding:6px 13px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.currency-btn.active{background:linear-gradient(135deg,var(--gold),var(--gold-light));border-color:var(--gold);color:#0c0a06;font-weight:500;box-shadow:0 2px 12px rgba(240,180,41,.3)}
+
+.last-updated{font-size:9px;color:var(--text-dim);padding:5px 18px 7px;cursor:pointer;display:flex;align-items:center;gap:5px}
+.last-updated:hover{color:var(--gold)}
+.loading-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--gold-dim);animation:pulse 1.2s infinite}
+
+/* Content panels */
+.content-panel{display:none}
+.content-panel.active{display:block}
+
+/* Summary */
+.summary-card{margin:14px 14px;background:linear-gradient(135deg,var(--bg3) 0%,var(--bg2) 100%);border:1px solid var(--border-gold);border-radius:var(--radius);padding:22px;position:relative;overflow:hidden;box-shadow:inset 0 1px 0 rgba(240,180,41,.1)}
+.summary-card::before{content:'';position:absolute;top:-60px;right:-60px;width:180px;height:180px;background:radial-gradient(circle,rgba(240,180,41,.1) 0%,transparent 70%);border-radius:50%}
+.summary-card::after{content:'';position:absolute;bottom:-40px;left:-40px;width:120px;height:120px;background:radial-gradient(circle,rgba(200,216,232,.04) 0%,transparent 70%);border-radius:50%}
+.summary-eyebrow{font-size:9px;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px}
+.summary-value{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;color:var(--gold-bright);line-height:1;margin-bottom:3px;text-shadow:0 0 30px rgba(240,180,41,.2)}
+.summary-usd{font-size:12px;color:var(--text-dim);margin-bottom:16px}
+.summary-split{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding-top:16px;border-top:1px solid var(--border)}
+.split-label{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px}
+.split-val{font-size:14px;font-weight:500}
+.split-val.gold{color:var(--gold-light)}
+.split-val.silver{color:var(--silver)}
+.split-val.pnl.pos{color:var(--green)}
+.split-val.pnl.neg{color:var(--red)}
+.split-sub{font-size:9px;color:var(--text-dim);margin-top:2px}
+
+/* Holdings tabs */
+.htabs{display:flex;margin:0 14px 10px;background:var(--bg3);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border)}
+.htab{flex:1;padding:9px 4px;border-radius:9px;border:none;background:transparent;color:var(--text-dim);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.htab.active{background:var(--bg);color:var(--gold-light);border:1px solid var(--border-gold);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+
+.filter-bar{display:flex;gap:6px;padding:0 14px 10px;overflow-x:auto}
+.filter-btn{padding:5px 13px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.filter-btn.active{background:var(--bg3);border-color:rgba(240,180,41,.3);color:var(--gold-light)}
+
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:0 16px 10px}
+.section-title{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim)}
+.item-count{font-size:9px;color:var(--text-dim);background:var(--bg3);border:1px solid var(--border);padding:2px 9px;border-radius:10px}
+
+/* Item cards */
+.inventory-list{padding:0 14px;display:flex;flex-direction:column;gap:10px}
+.item-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.item-card:active{transform:scale(.99)}
+.item-card:hover{border-color:var(--border2);background:var(--bg3)}
+.item-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.item-card.gold::before{background:linear-gradient(180deg,var(--gold-bright),var(--gold))}
+.item-card.silver::before{background:linear-gradient(180deg,var(--silver-bright),var(--silver))}
+.item-card.sold{opacity:.55}
+.item-card.sold::after{content:'SOLD';position:absolute;top:10px;right:12px;font-size:8px;letter-spacing:.15em;color:var(--green);border:1px solid var(--green-dim);background:rgba(46,204,138,.08);padding:2px 7px;border-radius:10px}
+.item-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px}
+.item-name{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:400;color:var(--text);line-height:1.1;padding-right:8px}
+.item-value{font-size:15px;font-weight:500;text-align:right;flex-shrink:0}
+.item-card.gold .item-value{color:var(--gold-bright)}
+.item-card.silver .item-value{color:var(--silver-bright)}
+.item-card.sold .item-value{color:var(--green)}
+.item-meta{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:3px}
+.badge{font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:20px;border:1px solid}
+.badge-type{border-color:var(--border);color:var(--text-dim);background:var(--bg3)}
+.badge-grade{border-color:var(--gold-dim);color:var(--gold-light);background:rgba(240,180,41,.07)}
+.badge-grade.silver{border-color:var(--silver-dim);color:var(--silver);background:rgba(200,216,232,.06)}
+.badge-weight{border-color:var(--border);color:var(--text-mid);background:transparent}
+.badge-provenance{border-color:#2a3a2a;color:#5acc90;background:rgba(46,204,138,.06)}
+.badge-date{border-color:var(--border);color:var(--text-dim);background:transparent}
+.item-pnl{font-size:11px;margin-top:5px}
+.item-pnl.pos{color:var(--green)}
+.item-pnl.neg{color:var(--red)}
+.item-hint{font-size:9px;color:var(--text-dim);margin-top:3px}
+
+.empty-state{text-align:center;padding:48px 24px}
+.empty-state .icon{font-size:44px;margin-bottom:14px}
+.empty-state .title{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--text-mid);margin-bottom:8px}
+.empty-state .sub{font-size:12px;color:var(--text-dim);line-height:1.7;max-width:260px;margin:0 auto}
+.empty-cta{margin-top:18px;display:inline-block;padding:11px 22px;background:rgba(240,180,41,.1);border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold-light);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.pb{padding-bottom:100px}
+
+/* FAB */
+.fab-wrap{position:fixed;bottom:26px;right:18px;z-index:200;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.fab{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-light));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:28px;color:#0c0a06;box-shadow:0 4px 28px rgba(240,180,41,.55);transition:all .2s}
+.fab:active{transform:scale(.93)}
+.fab-label{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 13px;font-size:10px;color:var(--text-mid);letter-spacing:.08em;white-space:nowrap;pointer-events:none}
+
+/* Profile panel */
+.profile-panel{padding:0 0 80px}
+.profile-section{padding:20px;border-bottom:1px solid var(--border)}
+.profile-section-title{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px}
+.profile-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(46,42,24,.4)}
+.profile-row:last-child{border-bottom:none}
+.profile-key{font-size:10px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase}
+.profile-val{font-size:13px;color:var(--text);text-align:right}
+.profile-val.muted{color:var(--text-dim)}
+
+.profile-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:16px}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 10px;text-align:center}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--gold-light);margin-bottom:3px}
+.stat-lbl{font-size:9px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase}
+
+.btn-profile-action{width:100%;padding:14px;border:none;border-radius:var(--radius-sm);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-bottom:8px}
+.btn-edit-profile{background:var(--bg3);color:var(--text-mid);border:1px solid var(--border)}
+.btn-edit-profile:hover{border-color:var(--gold-dim);color:var(--gold)}
+.btn-logout{background:transparent;color:var(--red);border:1px solid rgba(224,92,92,.25)}
+.btn-logout:hover{background:rgba(224,92,92,.08)}
+.btn-danger-full{background:transparent;color:var(--red);border:1px solid rgba(224,92,92,.25);width:100%;padding:14px;border-radius:var(--radius-sm);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+
+/* ── MODALS ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(12px);z-index:500;display:none;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal{width:100%;background:var(--bg2);border-radius:24px 24px 0 0;border-top:1px solid var(--border-gold);padding:0 0 env(safe-area-inset-bottom);animation:slideUp .3s cubic-bezier(.32,.72,0,1);max-height:93vh;overflow-y:auto}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:44px;height:4px;background:var(--border2);border-radius:2px;margin:14px auto 0}
+.modal-header{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 20px 14px;border-bottom:1px solid var(--border)}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--text)}
+.modal-subtitle{font-size:10px;color:var(--text-dim);margin-top:2px}
+.modal-close{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--bg3);color:var(--text-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:16px}
+
+/* Coffer form fields */
+.field{display:flex;flex-direction:column;gap:7px}
+.field-label-row{display:flex;align-items:center;justify-content:space-between}
+.field label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-mid);font-weight:500}
+.field-hint{font-size:9px;color:var(--text-dim)}
+.field input,.field select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Mono',monospace;font-size:15px;padding:13px 14px;outline:none;width:100%;transition:all .2s;-webkit-appearance:none}
+.field input:focus,.field select:focus{border-color:rgba(240,180,41,.5);background:var(--bg4);box-shadow:0 0 0 3px rgba(240,180,41,.07)}
+.field input::placeholder{color:var(--text-dim)}
+.field select option{background:var(--bg3)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-note{font-size:10px;color:var(--text-dim);line-height:1.55;padding:11px 13px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border)}
+.form-divider{display:flex;align-items:center;gap:10px;margin:2px 0}
+.form-divider-line{flex:1;height:1px;background:var(--border)}
+.form-divider-text{font-size:9px;color:var(--text-dim);letter-spacing:.15em;text-transform:uppercase;white-space:nowrap}
+
+/* Metal / grade / type selectors */
+.metal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metal-btn{padding:16px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg3);cursor:pointer;text-align:center;transition:all .2s}
+.metal-btn .m-icon{font-size:24px;margin-bottom:6px;display:block}
+.metal-btn .m-name{font-size:14px;font-weight:500;color:var(--text);display:block;margin-bottom:2px}
+.metal-btn .m-code{font-size:9px;color:var(--text-dim);display:block}
+.metal-btn.selected.gold{border-color:var(--gold);background:rgba(240,180,41,.1);box-shadow:0 0 16px rgba(240,180,41,.12)}
+.metal-btn.selected.gold .m-name{color:var(--gold-bright)}
+.metal-btn.selected.silver{border-color:var(--silver);background:rgba(200,216,232,.08)}
+.metal-btn.selected.silver .m-name{color:var(--silver-bright)}
+
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.type-btn{padding:12px 6px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg3);color:var(--text-dim);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;text-align:center;transition:all .2s}
+.type-btn .icon{font-size:22px;display:block;margin-bottom:4px}
+.type-btn.selected{border-color:rgba(240,180,41,.4);background:rgba(240,180,41,.08);color:var(--gold-light)}
+
+.grade-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.grade-btn{padding:12px 6px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg3);color:var(--text-dim);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;text-align:center;transition:all .2s}
+.grade-btn .purity{font-size:15px;font-weight:500;color:var(--text);display:block;margin-bottom:2px}
+.grade-btn .label{font-size:9px;color:var(--text-dim)}
+.grade-btn.selected.gold-grade{border-color:var(--gold);background:rgba(240,180,41,.12);box-shadow:0 0 12px rgba(240,180,41,.1)}
+.grade-btn.selected.gold-grade .purity,.grade-btn.selected.gold-grade .label{color:var(--gold-bright)}
+.grade-btn.selected.silver-grade{border-color:var(--silver);background:rgba(200,216,232,.1)}
+.grade-btn.selected.silver-grade .purity,.grade-btn.selected.silver-grade .label{color:var(--silver-bright)}
+
+/* Receipt */
+.receipt-upload{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:22px 16px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--bg3)}
+.receipt-upload:hover{border-color:var(--gold-dim)}
+.receipt-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.receipt-upload .u-icon{font-size:28px;margin-bottom:7px}
+.receipt-upload .u-label{font-size:11px;color:var(--text-mid);margin-bottom:3px}
+.receipt-upload .u-sub{font-size:9px;color:var(--text-dim)}
+.receipt-preview{position:relative;border-radius:var(--radius-sm);overflow:hidden}
+.receipt-preview img{width:100%;max-height:200px;object-fit:cover;display:block}
+.receipt-preview .remove-img{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.8);border:1px solid var(--border);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--text)}
+
+/* Value / PnL previews */
+.value-preview{background:var(--bg3);border:1px solid var(--border-gold);border-radius:var(--radius-sm);padding:15px;display:flex;justify-content:space-between;align-items:center}
+.vp-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-bottom:3px}
+.vp-sub{font-size:9px;color:var(--text-dim)}
+.vp-amt{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--gold-bright)}
+.pnl-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.pnl-box-title{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);padding:9px 14px;border-bottom:1px solid var(--border);background:var(--bg4)}
+.pnl-row{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:1px solid rgba(46,42,24,.5)}
+.pnl-row:last-child{border-bottom:none}
+.pnl-row.total{background:rgba(255,255,255,.02)}
+.pnl-key{font-size:10px;color:var(--text-dim)}
+.pnl-val{font-size:12px;color:var(--text-mid)}
+.pnl-val.pos{color:var(--green)}
+.pnl-val.neg{color:var(--red)}
+.pnl-val.hi{font-size:16px;font-family:'Cormorant Garamond',serif}
+
+/* Shared buttons */
+.btn-primary{width:100%;padding:16px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border:none;border-radius:var(--radius);color:#0c0a06;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.15em;text-transform:uppercase;font-weight:500;cursor:pointer;transition:all .2s;box-shadow:0 3px 18px rgba(240,180,41,.3)}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary.green{background:linear-gradient(135deg,var(--green),#40e4a0);box-shadow:0 3px 18px rgba(46,204,138,.3);color:#050e09}
+.btn-danger{width:calc(100% - 40px);margin:6px 20px 20px;padding:14px;background:transparent;border:1px solid rgba(224,92,92,.3);border-radius:var(--radius);color:var(--red);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.btn-danger:active{background:rgba(224,92,92,.08)}
+
+/* Detail modal */
+.detail-section{padding:15px 20px;border-bottom:1px solid var(--border)}
+.detail-section-title{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:11px}
+.detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(46,42,24,.4);gap:14px}
+.detail-row:last-child{border-bottom:none}
+.detail-key{font-size:10px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.detail-val{font-size:13px;color:var(--text);text-align:right;word-break:break-word}
+.detail-val.pos{color:var(--green)}
+.detail-val.neg{color:var(--red)}
+.detail-receipt{padding:15px 20px;border-bottom:1px solid var(--border)}
+.detail-receipt img{width:100%;border-radius:var(--radius-sm);display:block;cursor:pointer}
+.no-receipt{font-size:11px;color:var(--text-dim);font-style:italic}
+.detail-actions{display:flex;gap:10px;padding:14px 20px 4px}
+.detail-action-btn{flex:1;padding:13px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg3);color:var(--text-dim);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s;text-align:center}
+.detail-action-btn.sell{border-color:var(--green-dim);color:var(--green);background:rgba(46,204,138,.06)}
+.detail-action-btn.sold-tag{border-color:var(--green-dim);color:var(--green);background:rgba(46,204,138,.06);cursor:default;font-size:9px}
+
+/* Lightbox */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.97);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;flex-direction:column;gap:12px}
+.lightbox.open{display:flex}
+.lightbox img{max-width:100%;max-height:80vh;object-fit:contain;border-radius:8px}
+.lightbox-close{padding:8px 20px;border:1px solid var(--border);border-radius:20px;color:var(--text-dim);font-size:11px;cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:.1em;background:var(--bg3)}
+
+/* App footer */
+.app-footer{padding:14px 18px;text-align:center;border-top:1px solid var(--border);margin-top:8px}
+.app-footer p{font-size:9px;color:var(--text-dim);line-height:1.8}
+
+/* ═══════════════════════════════════════
+   CHART PANEL
+═══════════════════════════════════════ */
+.chart-panel{padding-bottom:100px}
+.chart-header{padding:16px 16px 0}
+.chart-title-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.chart-eyebrow{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px}
+.chart-headline{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--gold-bright);line-height:1}
+.chart-sub{font-size:10px;color:var(--text-dim);margin-top:2px}
+.chart-export-btn{display:flex;align-items:center;gap:5px;padding:8px 14px;border-radius:20px;border:1px solid var(--gold-dim);background:rgba(240,180,41,.07);color:var(--gold-light);font-size:10px;cursor:pointer;letter-spacing:.06em;white-space:nowrap;transition:all .2s;flex-shrink:0}
+.chart-export-btn:hover{background:rgba(240,180,41,.15)}
+.chart-range-tabs{display:flex;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px;margin-bottom:16px}
+.range-tab{flex:1;padding:9px 4px;border-radius:8px;border:none;background:transparent;color:var(--text-dim);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.06em}
+.range-tab.active{background:var(--bg);color:var(--gold-light);border:1px solid var(--border-gold);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+
+.chart-view{display:none;padding:0 16px 16px}
+.chart-view.active-view{display:block}
+
+/* Donut chart */
+.donut-wrap{position:relative;width:220px;height:220px;margin:0 auto 20px}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.donut-val{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--gold-bright)}
+.donut-lbl{font-size:9px;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase}
+.legend-list{display:flex;flex-direction:column;gap:8px}
+.legend-item{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.legend-left{display:flex;align-items:center;gap:10px}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.legend-name{font-size:12px;color:var(--text)}
+.legend-sub{font-size:9px;color:var(--text-dim);margin-top:1px}
+.legend-right{text-align:right}
+.legend-val{font-size:14px;color:var(--text)}
+.legend-pct{font-size:9px;color:var(--text-dim)}
+
+/* Performance grid */
+.perf-grid{display:flex;flex-direction:column;gap:8px;padding:0 16px 16px}
+.perf-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:15px 16px}
+.perf-card-name{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text);margin-bottom:10px}
+.perf-rows{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.perf-row{background:var(--bg4);border-radius:var(--radius-xs);padding:9px 11px}
+.perf-key{font-size:9px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+.perf-val{font-size:14px;color:var(--text)}
+.perf-val.pos{color:var(--green)}
+.perf-val.neg{color:var(--red)}
+.perf-val.gold-c{color:var(--gold-bright)}
+.perf-val.silver-c{color:var(--silver-bright)}
+
+/* History chart */
+.history-chart-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px;overflow:hidden}
+.history-legend{display:flex;align-items:center;gap:14px;padding:0 4px;margin-bottom:8px}
+.hl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.gold-dot{background:var(--gold-bright)}
+.silver-dot{background:var(--silver)}
+.hl-lbl{font-size:9px;color:var(--text-dim)}
+.history-note{font-size:9px;color:var(--text-dim);text-align:center;padding:4px 0 8px}
+
+/* Export section */
+.export-section{margin:8px 16px 0;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+.export-title{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-mid);margin-bottom:6px}
+.export-desc{font-size:11px;color:var(--text-dim);line-height:1.65;margin-bottom:14px}
+.export-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn-export{padding:13px 6px;border-radius:var(--radius-sm);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;cursor:pointer;transition:all .2s;border:1px solid;text-align:center}
+.btn-export:active{transform:scale(.97)}
+.gold-export{background:rgba(240,180,41,.08);border-color:var(--gold-dim);color:var(--gold-light)}
+.silver-export{background:rgba(200,216,232,.05);border-color:var(--silver-dim);color:var(--silver)}
+
+/* ═══════════════════════════════════════
+   ALERTS PANEL
+═══════════════════════════════════════ */
+.alerts-panel{padding-bottom:100px}
+.alerts-header{padding:20px 18px 12px;border-bottom:1px solid var(--border)}
+.alerts-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--text);margin-bottom:3px}
+.alerts-sub{font-size:11px;color:var(--text-dim)}
+.spot-quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px}
+.spot-quick-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center}
+.sq-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px}
+.sq-price{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300}
+.gold-q{border-color:var(--border-gold);background:rgba(240,180,41,.04)}
+.gold-q .sq-price{color:var(--gold-bright)}
+.silver-q .sq-price{color:var(--silver-bright)}
+.alert-form-card{margin:0 16px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;display:flex;flex-direction:column;gap:0}
+.alert-form-title{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px}
+.alert-input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Mono',monospace;font-size:14px;padding:13px 14px;outline:none;width:100%;transition:all .2s;-webkit-appearance:none}
+.alert-input:focus{border-color:rgba(240,180,41,.5);background:var(--bg4);box-shadow:0 0 0 3px rgba(240,180,41,.07)}
+.alert-input option{background:var(--bg3)}
+.btn-add-alert{width:100%;padding:15px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border:none;border-radius:var(--radius-sm);color:#0c0a06;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;cursor:pointer;transition:all .2s;margin-bottom:12px;box-shadow:0 3px 16px rgba(240,180,41,.3)}
+.btn-add-alert:active{transform:scale(.98)}
+.alert-permission-note{font-size:10px;color:var(--text-dim);line-height:1.6;text-align:center}
+.alert-permission-note strong{color:var(--text-mid)}
+.perm-link{color:var(--blue);cursor:pointer;text-decoration:underline}
+.active-alerts-header{display:flex;align-items:center;justify-content:space-between;padding:4px 18px 10px}
+.alerts-list{padding:0 16px;display:flex;flex-direction:column;gap:8px}
+.alert-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.alert-card.triggered{border-color:var(--green-dim);background:rgba(46,204,138,.04)}
+.alert-icon{font-size:24px;flex-shrink:0;margin-top:1px}
+.alert-info{flex:1}
+.alert-metal-name{font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px}
+.alert-target{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--text);line-height:1}
+.alert-target .dir-above{color:var(--green)}
+.alert-target .dir-below{color:var(--red)}
+.alert-note-text{font-size:9px;color:var(--text-dim);margin-top:3px}
+.alert-status{font-size:9px;padding:3px 9px;border-radius:10px;border:1px solid;margin-top:5px;display:inline-block}
+.alert-status.watching{border-color:var(--border);color:var(--text-dim)}
+.alert-status.fired{border-color:var(--green-dim);color:var(--green)}
+.alert-delete{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;padding:2px 4px;line-height:1;transition:color .2s;flex-shrink:0}
+.alert-delete:hover{color:var(--red)}
+.empty-alerts{text-align:center;padding:32px 20px}
+.empty-alerts .ea-icon{font-size:34px;margin-bottom:10px}
+.empty-alerts .ea-text{font-size:11px;color:var(--text-dim);line-height:1.7}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════
+     AUTH SCREEN
+══════════════════════════════════════════════════ -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-hero">
+    <div class="auth-wordmark">COFFER</div>
+    <div class="auth-tagline">Precious Metals Ledger</div>
+
+    <div class="auth-rule">
+      <div class="auth-rule-line"></div>
+      <div class="auth-rule-icon">✦</div>
+      <div class="auth-rule-line"></div>
+    </div>
+
+    <div class="auth-headline">Your gold &amp; silver,<br><em>valued in real time.</em></div>
+    <div class="auth-desc">
+      A private digital ledger for tracking the live market value of physical gold and silver — jewellery, hallmarked coins, investment bars, and raw metal. Prices update from global spot markets in real time.
+    </div>
+
+    <div class="physical-case">
+      <div class="physical-case-header">
+        <span style="font-size:16px">🏅</span>
+        <div class="physical-case-title">Why physical metal beats paper gold</div>
+      </div>
+
+      <div class="physical-pillar">
+        <div class="pillar-icon">🔐</div>
+        <div class="pillar-body">
+          <div class="pillar-title">You own it outright — no counterparty risk</div>
+          <div class="pillar-desc">Demat gold, ETFs, and digital gold are <strong>IOUs</strong>. If the fund, custodian, or platform fails, your claim may be worth nothing. Physical metal in your hand has <strong>zero counterparty risk</strong> — it cannot be frozen, suspended, or defaulted on.</div>
+        </div>
+      </div>
+
+      <div class="physical-pillar">
+        <div class="pillar-icon">💸</div>
+        <div class="pillar-body">
+          <div class="pillar-title">No management fees eroding your returns</div>
+          <div class="pillar-desc">Gold ETFs and sovereign gold bonds carry <strong>annual expense ratios</strong> (0.5–1%) that compound against you silently over decades. Physical metal holds its <strong>full weight, forever</strong>, with no ongoing charges.</div>
+        </div>
+      </div>
+
+      <div class="physical-pillar">
+        <div class="pillar-icon">🌐</div>
+        <div class="pillar-body">
+          <div class="pillar-title">Universal, borderless, always liquid</div>
+          <div class="pillar-desc">Physical gold is accepted <strong>everywhere in the world</strong> at fair market value. Demat holdings are tied to one country's exchange infrastructure, subject to <strong>capital controls, trading halts</strong>, and platform outages during the exact crises when you need liquidity most.</div>
+        </div>
+      </div>
+
+      <div class="physical-pillar">
+        <div class="pillar-icon">🏦</div>
+        <div class="pillar-body">
+          <div class="pillar-title">Private wealth — outside the banking system</div>
+          <div class="pillar-desc">Bank accounts can be <strong>seized, frozen, or bailed-in</strong>. Digital holdings leave a paper trail. Physical gold passes privately between generations, holds value through <strong>currency collapses and bank failures</strong>, and requires no permission to transact.</div>
+        </div>
+      </div>
+
+      <div class="physical-pillar">
+        <div class="pillar-icon">📈</div>
+        <div class="pillar-body">
+          <div class="pillar-title">Intrinsic value — not a promise</div>
+          <div class="pillar-desc">Gold has been money for <strong>5,000 years</strong>. Unlike stocks, bonds, or digital proxies, it has no earnings risk, no management to misallocate, and no bankruptcy scenario. It is the <strong>asset of last resort</strong> when all else fails.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div class="free-badge"><span class="dot"></span>Free forever · No ads · No data sharing · Runs on your device</div>
+    </div>
+  </div>
+
+  <div class="auth-tabs" id="authTabsRow">
+    <button class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</button>
+    <button class="auth-tab" onclick="switchAuthTab('register',this)">Create Account</button>
+  </div>
+
+  <div class="auth-panels">
+
+    <!-- ── LOGIN PANEL ── -->
+    <div class="auth-panel active" id="panelLogin">
+      <div id="loginMsg"></div>
+
+      <div class="af">
+        <label>Email Address</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
+      </div>
+
+      <div class="af">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+          <button class="pw-toggle" onclick="togglePw('loginPassword',this)" type="button">👁</button>
+        </div>
+      </div>
+
+      <button class="btn-auth" onclick="doLogin()">Open My Coffer →</button>
+
+      <div style="text-align:center;margin-top:-4px">
+        <span style="font-size:10px;color:var(--text-dim)">No account yet? </span>
+        <button onclick="switchAuthTab('register',document.querySelectorAll('.auth-tab')[1])" style="background:none;border:none;color:var(--gold);font-size:10px;font-family:'DM Mono',monospace;cursor:pointer;letter-spacing:.06em">Create one →</button>
+      </div>
+
+      <div class="auth-disclaimer">
+        <strong>⚠ Demo notice:</strong> This app runs entirely in your browser. Passwords are stored locally on this device only — not on any server. Do not use a password you use elsewhere. <a href="#" onclick="return false" style="color:var(--blue)">Learn more</a>
+      </div>
+    </div>
+
+    <!-- ── REGISTER PANEL ── -->
+    <div class="auth-panel" id="panelRegister">
+      <div id="registerMsg"></div>
+
+      <div class="af-row">
+        <div class="af">
+          <label>First Name</label>
+          <input type="text" id="regFirstName" placeholder="Priya" autocomplete="given-name">
+        </div>
+        <div class="af">
+          <label>Last Name</label>
+          <input type="text" id="regLastName" placeholder="Sharma" autocomplete="family-name">
+        </div>
+      </div>
+
+      <div class="af-row">
+        <div class="af">
+          <label>Age</label>
+          <input type="number" id="regAge" placeholder="35" min="18" max="100">
+        </div>
+        <div class="af">
+          <label>Country</label>
+          <select id="regCountry">
+            <option value="">Select…</option>
+            <option>India</option>
+            <option>United Arab Emirates</option>
+            <option>United Kingdom</option>
+            <option>United States</option>
+            <option>Australia</option>
+            <option>Canada</option>
+            <option>Singapore</option>
+            <option>Germany</option>
+            <option>France</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="af">
+        <label>Email Address</label>
+        <input type="email" id="regEmail" placeholder="your@email.com" autocomplete="email">
+        <div class="af-hint">Used as your login username only — not verified or shared</div>
+      </div>
+
+      <div class="af">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="regPassword" placeholder="Create a password" autocomplete="new-password" oninput="checkStrength(this.value)">
+          <button class="pw-toggle" onclick="togglePw('regPassword',this)" type="button">👁</button>
+        </div>
+        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+        <div class="strength-label" id="strengthLabel">Enter a password</div>
+      </div>
+
+      <div class="af">
+        <label>Confirm Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="regPasswordConfirm" placeholder="Repeat your password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doRegister()">
+          <button class="pw-toggle" onclick="togglePw('regPasswordConfirm',this)" type="button">👁</button>
+        </div>
+      </div>
+
+      <div class="auth-disclaimer">
+        <strong>⚠ Demo notice:</strong> This is a client-side demo. Your profile and password are stored in <strong>this browser's local storage only</strong>. Clearing browser data will erase your account. Never use a sensitive or reused password here.
+      </div>
+
+      <button class="btn-auth" onclick="doRegister()">Create My Coffer →</button>
+
+      <div style="text-align:center;margin-top:-4px">
+        <span style="font-size:10px;color:var(--text-dim)">Already have an account? </span>
+        <button onclick="switchAuthTab('login',document.querySelectorAll('.auth-tab')[0])" style="background:none;border:none;color:var(--gold);font-size:10px;font-family:'DM Mono',monospace;cursor:pointer;letter-spacing:.06em">Sign in →</button>
+      </div>
+    </div>
+
+  </div><!-- /auth-panels -->
+</div><!-- /auth-screen -->
+
+<!-- ══════════════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════════════ -->
+<div class="app-screen" id="appScreen">
+
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">COFFER <span>/ metals</span></div>
+      <div class="user-pill" onclick="setNavTab('profile',document.getElementById('navProfile'))">
+        <div class="user-avatar" id="headerAvatar">?</div>
+        <div class="user-name" id="headerName">—</div>
+      </div>
+    </div>
+    <div class="spot-strip">
+      <div class="spot-item gold">
+        <div class="metal">GOLD /oz</div>
+        <div class="price" id="goldSpot"><span class="loading-dot"></span></div>
+      </div>
+      <div class="spot-item silver">
+        <div class="metal">SILVER /oz</div>
+        <div class="price" id="silverSpot"><span class="loading-dot"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="navCoffer" onclick="setNavTab('vault',this)">🏛 Coffer</button>
+    <button class="nav-tab" id="navChart" onclick="setNavTab('chart',this)">📊 Chart</button>
+    <button class="nav-tab" id="navAlerts" onclick="setNavTab('alerts',this)">🔔 Alerts</button>
+    <button class="nav-tab" id="navProfile" onclick="setNavTab('profile',this)">👤 Profile</button>
+  </div>
+
+  <!-- ── COFFER PANEL ── -->
+  <div class="content-panel active" id="panelCoffer">
+
+    <div class="currency-bar">
+      <span class="currency-label">View in:</span>
+      <button class="currency-btn active" onclick="setCurrency('USD',this)">$ USD</button>
+      <button class="currency-btn" onclick="setCurrency('INR',this)">₹ INR</button>
+      <button class="currency-btn" onclick="setCurrency('AED',this)">AED</button>
+      <button class="currency-btn" onclick="setCurrency('EUR',this)">€ EUR</button>
+    </div>
+
+    <div class="last-updated" id="lastUpdated" onclick="fetchPrices()">
+      <span>↻</span> <span id="lastUpdatedText">Fetching live prices…</span>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-eyebrow">Active Portfolio Value</div>
+      <div class="summary-value" id="totalValue">—</div>
+      <div class="summary-usd" id="totalUSD"></div>
+      <div class="summary-split">
+        <div>
+          <div class="split-label">🥇 Gold</div>
+          <div class="split-val gold" id="goldTotal">—</div>
+          <div class="split-sub" id="goldWeight">0g</div>
+        </div>
+        <div>
+          <div class="split-label">🥈 Silver</div>
+          <div class="split-val silver" id="silverTotal">—</div>
+          <div class="split-sub" id="silverWeight">0g</div>
+        </div>
+        <div>
+          <div class="split-label">📈 G/L</div>
+          <div class="split-val pnl" id="totalPnl">—</div>
+          <div class="split-sub" id="totalPnlPct">vs cost paid</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="htabs">
+      <button class="htab active" onclick="setHTab('all',this)">All Active</button>
+      <button class="htab" onclick="setHTab('gold',this)">Gold</button>
+      <button class="htab" onclick="setHTab('silver',this)">Silver</button>
+      <button class="htab" onclick="setHTab('sold',this)">Sold</button>
+    </div>
+
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all',this)">All Types</button>
+      <button class="filter-btn" onclick="setFilter('jewellery',this)">💍 Jewellery</button>
+      <button class="filter-btn" onclick="setFilter('coin_bar',this)">🪙 Coins &amp; Bars</button>
+      <button class="filter-btn" onclick="setFilter('raw',this)">⚗️ Raw</button>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">Holdings · tap to view details</div>
+      <div class="item-count" id="itemCount">0 items</div>
+    </div>
+
+    <div class="inventory-list pb" id="inventoryList">
+      <div class="empty-state">
+        <div class="icon">✦</div>
+        <div class="title">Your coffer is empty</div>
+        <div class="sub">Tap the + button below to add your first gold or silver holding.</div>
+        <div class="empty-cta" onclick="openAddModal()">+ Add First Holding</div>
+      </div>
+    </div>
+
+    <div class="app-footer">
+      <p>COFFER is a free personal ledger for estimating precious metal value at live spot prices.<br>
+      Values are indicative only — not financial advice. Data stored locally on your device.</p>
+    </div>
+
+  </div><!-- /panelCoffer -->
+
+  <!-- ── CHART PANEL ── -->
+  <div class="content-panel" id="panelChart">
+    <div class="chart-panel pb">
+      <div class="chart-header">
+        <div class="chart-title-row">
+          <div>
+            <div class="chart-eyebrow">Portfolio Performance</div>
+            <div class="chart-headline" id="chartHeadline">—</div>
+            <div class="chart-sub" id="chartSub">at current spot prices</div>
+          </div>
+          <div class="chart-export-btn" onclick="exportData()">
+            <span>📤</span> Export
+          </div>
+        </div>
+        <div class="chart-range-tabs">
+          <button class="range-tab active" onclick="setChartRange('composition',this)">Composition</button>
+          <button class="range-tab" onclick="setChartRange('performance',this)">Performance</button>
+          <button class="range-tab" onclick="setChartRange('history',this)">History</button>
+        </div>
+      </div>
+
+      <!-- Composition view -->
+      <div id="viewComposition" class="chart-view active-view">
+        <div class="donut-wrap">
+          <canvas id="donutChart" width="220" height="220"></canvas>
+          <div class="donut-center">
+            <div class="donut-val" id="donutTotal">—</div>
+            <div class="donut-lbl">Total</div>
+          </div>
+        </div>
+        <div class="legend-list" id="compositionLegend"></div>
+      </div>
+
+      <!-- Performance view -->
+      <div id="viewPerformance" class="chart-view">
+        <div class="perf-grid" id="perfGrid"></div>
+      </div>
+
+      <!-- History / Timeline view -->
+      <div id="viewHistory" class="chart-view">
+        <div class="history-chart-wrap">
+          <canvas id="historyChart" width="340" height="180"></canvas>
+        </div>
+        <div class="history-legend">
+          <span class="hl-dot gold-dot"></span><span class="hl-lbl">Gold spot</span>
+          <span class="hl-dot silver-dot"></span><span class="hl-lbl">Silver spot (×100)</span>
+        </div>
+        <div class="history-note" id="historyNote">Price history simulated from current spot</div>
+      </div>
+
+      <!-- Export section -->
+      <div class="export-section">
+        <div class="export-title">Export Your Data</div>
+        <div class="export-desc">Download a complete record of your coffer holdings for your own records or tax purposes.</div>
+        <div class="export-btns">
+          <button class="btn-export gold-export" onclick="exportCSV()">⬇ CSV Spreadsheet</button>
+          <button class="btn-export silver-export" onclick="exportJSON()">⬇ JSON Backup</button>
+        </div>
+      </div>
+    </div>
+  </div><!-- /panelChart -->
+
+  <!-- ── ALERTS PANEL ── -->
+  <div class="content-panel" id="panelAlerts">
+    <div class="alerts-panel pb">
+      <div class="alerts-header">
+        <div class="alerts-title">Price Alerts</div>
+        <div class="alerts-sub">Get notified when gold or silver hits your target price</div>
+      </div>
+
+      <!-- Current spot quick view -->
+      <div class="spot-quick">
+        <div class="spot-quick-item gold-q">
+          <div class="sq-label">Gold / oz</div>
+          <div class="sq-price" id="alertGoldPrice">—</div>
+        </div>
+        <div class="spot-quick-item silver-q">
+          <div class="sq-label">Silver / oz</div>
+          <div class="sq-price" id="alertSilverPrice">—</div>
+        </div>
+      </div>
+
+      <!-- Add alert form -->
+      <div class="alert-form-card">
+        <div class="alert-form-title">New Alert</div>
+        <div class="field-row" style="margin-bottom:10px">
+          <div class="field">
+            <div class="field-label-row"><label>Metal</label></div>
+            <select id="alertMetal" class="alert-input">
+              <option value="gold">🥇 Gold</option>
+              <option value="silver">🥈 Silver</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="field-label-row"><label>Direction</label></div>
+            <select id="alertDir" class="alert-input">
+              <option value="above">Rises above ↑</option>
+              <option value="below">Falls below ↓</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:14px">
+          <div class="field-label-row"><label>Target Price (USD / oz)</label></div>
+          <input type="number" id="alertPrice" class="alert-input" placeholder="e.g. 3400" step="1" min="1">
+        </div>
+        <div class="field" style="margin-bottom:16px">
+          <div class="field-label-row"><label>Note</label><span class="field-hint">optional</span></div>
+          <input type="text" id="alertNote" class="alert-input" placeholder="e.g. Take profit level">
+        </div>
+        <button class="btn-add-alert" onclick="addAlert()">+ Set Alert</button>
+        <div class="alert-permission-note" id="alertPermNote">
+          ⚠ Browser notifications are <strong id="notifStatus">not enabled</strong>. <span class="perm-link" onclick="requestNotifPermission()">Enable now →</span>
+        </div>
+      </div>
+
+      <!-- Active alerts list -->
+      <div class="active-alerts-header">
+        <div class="section-title">Active Alerts</div>
+        <div class="item-count" id="alertCount">0 alerts</div>
+      </div>
+      <div id="alertsList" class="alerts-list"></div>
+    </div>
+  </div><!-- /panelAlerts -->
+
+  <!-- ── PROFILE PANEL ── -->
+  <div class="content-panel" id="panelProfile">
+    <div class="profile-panel">
+
+      <div class="profile-header" id="profileHeader">
+        <!-- populated by JS -->
+      </div>
+
+      <div class="profile-stats">
+        <div class="stat-card">
+          <div class="stat-num" id="statItems">0</div>
+          <div class="stat-lbl">Holdings</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statSold">0</div>
+          <div class="stat-lbl">Sold</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statValue">—</div>
+          <div class="stat-lbl">Portfolio</div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title">Account Details</div>
+        <div id="profileDetailsRows"></div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title">Security</div>
+        <div class="profile-row">
+          <div class="profile-key">Password</div>
+          <div class="profile-val muted">••••••••</div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-key">Storage</div>
+          <div class="profile-val muted" style="font-size:11px">Browser local storage</div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-key">Data Location</div>
+          <div class="profile-val muted" style="font-size:11px">This device only</div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title">Actions</div>
+        <button class="btn-profile-action btn-edit-profile" onclick="openEditProfile()">✏ Edit Profile</button>
+        <button class="btn-profile-action btn-logout" onclick="doLogout()">Sign Out</button>
+      </div>
+
+      <div class="profile-section" style="border-bottom:none">
+        <div class="profile-section-title" style="color:var(--red-dim)">Danger Zone</div>
+        <div class="field-note" style="margin-bottom:12px">Deleting your account will permanently erase all your coffer data and cannot be undone.</div>
+        <button class="btn-danger-full" onclick="deleteAccount()">Delete My Account &amp; All Data</button>
+      </div>
+
+    </div>
+  </div><!-- /panelProfile -->
+
+  <div class="fab-wrap" id="fabWrap">
+    <div class="fab-label">Add holding</div>
+    <button class="fab" onclick="openAddModal()">+</button>
+  </div>
+
+</div><!-- /app-screen -->
+
+<!-- ══════════════════════ ADD MODAL ══════════════════════ -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div><div class="modal-title">Add Holding</div><div class="modal-subtitle">Enter your gold or silver item details</div></div>
+      <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="field">
+        <div class="field-label-row"><label>Metal</label></div>
+        <div class="metal-grid">
+          <button class="metal-btn gold selected" id="metalGold" onclick="selectMetal('gold')">
+            <span class="m-icon">🥇</span><span class="m-name">Gold</span><span class="m-code">XAU</span>
+          </button>
+          <button class="metal-btn silver" id="metalSilver" onclick="selectMetal('silver')">
+            <span class="m-icon">🥈</span><span class="m-name">Silver</span><span class="m-code">XAG</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label-row"><label>Item Name</label></div>
+        <input type="text" id="itemName" placeholder="e.g. 22K gold bangle, Silver Maple Leaf…">
+      </div>
+
+      <div class="field">
+        <div class="field-label-row"><label>Item Type</label></div>
+        <div class="type-grid">
+          <button class="type-btn selected" id="typeJewellery" onclick="selectType('jewellery')"><span class="icon">💍</span>Jewellery</button>
+          <button class="type-btn" id="typeCoin_bar" onclick="selectType('coin_bar')"><span class="icon">🪙</span>Coins &amp; Bars</button>
+          <button class="type-btn" id="typeRaw" onclick="selectType('raw')"><span class="icon">⚗️</span>Raw</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label-row"><label>Purity / Grade</label><span class="field-hint">Select below</span></div>
+        <div class="grade-grid" id="gradeGrid"></div>
+        <div class="field-note" id="gradeNote">Select a purity grade. For jewellery, this is usually stamped inside the piece.</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label-row"><label>Weight</label></div>
+          <input type="number" id="itemWeight" placeholder="0.00" step="0.01" oninput="updatePreview()">
+        </div>
+        <div class="field">
+          <div class="field-label-row"><label>Unit</label></div>
+          <select id="weightUnit" onchange="updatePreview()">
+            <option value="g">Grams (g)</option>
+            <option value="oz">Troy oz</option>
+            <option value="tola">Tola</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-divider"><div class="form-divider-line"></div><div class="form-divider-text">Provenance &amp; Purchase</div><div class="form-divider-line"></div></div>
+
+      <div class="field">
+        <div class="field-label-row"><label>Date Purchased</label></div>
+        <input type="date" id="purchaseDate">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label-row"><label>Price Paid</label></div>
+          <input type="number" id="pricePaid" placeholder="0.00" step="0.01" oninput="updatePreview()">
+        </div>
+        <div class="field">
+          <div class="field-label-row"><label>Currency</label></div>
+          <select id="pricePaidCurrency" onchange="updatePreview()">
+            <option value="USD">USD $</option><option value="INR">INR ₹</option><option value="AED">AED</option><option value="EUR">EUR €</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label-row"><label>Receipt / Proof</label><span class="field-hint">optional photo</span></div>
+        <div id="receiptUploadArea" class="receipt-upload">
+          <input type="file" id="receiptFile" accept="image/*" onchange="handleReceiptUpload(this)">
+          <div class="u-icon">🧾</div>
+          <div class="u-label">Tap to attach a receipt photo</div>
+          <div class="u-sub">Stored on your device only · max 5MB</div>
+        </div>
+        <div id="receiptPreviewArea" style="display:none" class="receipt-preview">
+          <img id="receiptPreviewImg" src="" alt="Receipt">
+          <div class="remove-img" onclick="removeReceipt()">✕</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label-row"><label>Notes</label><span class="field-hint">optional</span></div>
+        <input type="text" id="itemNotes" placeholder="Jeweller, occasion, cert. number…">
+      </div>
+
+      <div class="value-preview">
+        <div><div class="vp-label">Estimated Metal Value</div><div class="vp-sub">Live spot price · metal content only</div></div>
+        <div class="vp-amt" id="valuePreview">—</div>
+      </div>
+
+      <div class="pnl-box" id="pnlPreviewBox" style="display:none">
+        <div class="pnl-box-title">Gain / Loss Preview</div>
+        <div class="pnl-row"><div class="pnl-key">You paid</div><div class="pnl-val" id="pnlPaid">—</div></div>
+        <div class="pnl-row"><div class="pnl-key">Spot value now</div><div class="pnl-val" id="pnlSpot">—</div></div>
+        <div class="pnl-row total"><div class="pnl-key">Unrealised G/L</div><div class="pnl-val hi" id="pnlGain">—</div></div>
+      </div>
+
+      <button class="btn-primary" onclick="addItem()">Save to Coffer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ SELL MODAL ══════════════════════ -->
+<div class="modal-overlay" id="sellModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div><div class="modal-title">Record Sale</div><div class="modal-subtitle">Log what you received for this item</div></div>
+      <button class="modal-close" onclick="closeModal('sellModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--text-mid)" id="sellItemName"></div>
+      <div class="field"><div class="field-label-row"><label>Date of Sale</label></div><input type="date" id="sellDate"></div>
+      <div class="field-row">
+        <div class="field"><div class="field-label-row"><label>Price Received</label></div><input type="number" id="sellPrice" placeholder="0.00" step="0.01" oninput="updateSellPreview()"></div>
+        <div class="field"><div class="field-label-row"><label>Currency</label></div>
+          <select id="sellCurrency" onchange="updateSellPreview()">
+            <option value="USD">USD $</option><option value="INR">INR ₹</option><option value="AED">AED</option><option value="EUR">EUR €</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><div class="field-label-row"><label>Buyer / Platform</label><span class="field-hint">optional</span></div><input type="text" id="sellNotes" placeholder="Jeweller, exchange, private sale…"></div>
+      <div class="pnl-box">
+        <div class="pnl-box-title">Sale Summary</div>
+        <div class="pnl-row"><div class="pnl-key">Cost basis</div><div class="pnl-val" id="spPaid">—</div></div>
+        <div class="pnl-row"><div class="pnl-key">Spot value now</div><div class="pnl-val" id="spSpot">—</div></div>
+        <div class="pnl-row"><div class="pnl-key">Sale price entered</div><div class="pnl-val" id="spReceived">—</div></div>
+        <div class="pnl-row total"><div class="pnl-key">Realised G/L vs cost</div><div class="pnl-val hi" id="spGain">—</div></div>
+      </div>
+      <button class="btn-primary green" onclick="confirmSell()">Confirm &amp; Record Sale</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ DETAIL MODAL ══════════════════════ -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div><div class="modal-title" id="detailTitle">Detail</div><div class="modal-subtitle">Tap receipt image to enlarge</div></div>
+      <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+    </div>
+    <div id="detailBody"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════ EDIT PROFILE MODAL ══════════════════════ -->
+<div class="modal-overlay" id="editProfileModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div><div class="modal-title">Edit Profile</div><div class="modal-subtitle">Update your account details</div></div>
+      <button class="modal-close" onclick="closeModal('editProfileModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="editProfileMsg"></div>
+      <div class="field-row">
+        <div class="af"><label>First Name</label><input type="text" id="epFirst"></div>
+        <div class="af"><label>Last Name</label><input type="text" id="epLast"></div>
+      </div>
+      <div class="field-row">
+        <div class="af"><label>Age</label><input type="number" id="epAge" min="18" max="100"></div>
+        <div class="af"><label>Country</label>
+          <select id="epCountry">
+            <option value="">Select…</option>
+            <option>India</option><option>United Arab Emirates</option><option>United Kingdom</option>
+            <option>United States</option><option>Australia</option><option>Canada</option>
+            <option>Singapore</option><option>Germany</option><option>France</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="af"><label>Email</label><input type="email" id="epEmail"></div>
+
+      <div class="form-divider"><div class="form-divider-line"></div><div class="form-divider-text">Change Password</div><div class="form-divider-line"></div></div>
+      <div class="af-hint" style="margin-top:-6px">Leave blank to keep your current password</div>
+
+      <div class="af">
+        <label>New Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="epPassword" placeholder="New password (leave blank to keep)">
+          <button class="pw-toggle" onclick="togglePw('epPassword',this)" type="button">👁</button>
+        </div>
+      </div>
+      <div class="af">
+        <label>Confirm New Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="epPasswordConfirm" placeholder="Repeat new password">
+          <button class="pw-toggle" onclick="togglePw('epPasswordConfirm',this)" type="button">👁</button>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ EDIT ITEM MODAL ══════════════════════ -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div><div class="modal-title">Edit Holding</div><div class="modal-subtitle">Update this item's details</div></div>
+      <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <div class="field-label-row"><label>Item Name</label></div>
+        <input type="text" id="editItemName" placeholder="e.g. 22K gold bangle">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label-row"><label>Weight</label></div>
+          <input type="number" id="editWeight" placeholder="0.00" step="0.01">
+        </div>
+        <div class="field">
+          <div class="field-label-row"><label>Unit</label></div>
+          <select id="editWeightUnit">
+            <option value="g">Grams (g)</option>
+            <option value="oz">Troy oz</option>
+            <option value="tola">Tola</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label-row"><label>Date Purchased</label></div>
+        <input type="date" id="editPurchaseDate">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label-row"><label>Price Paid</label></div>
+          <input type="number" id="editPricePaid" placeholder="0.00" step="0.01">
+        </div>
+        <div class="field">
+          <div class="field-label-row"><label>Currency</label></div>
+          <select id="editPricePaidCurrency">
+            <option value="USD">USD $</option><option value="INR">INR ₹</option><option value="AED">AED</option><option value="EUR">EUR €</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label-row"><label>Notes</label><span class="field-hint">optional</span></div>
+        <input type="text" id="editNotes" placeholder="Jeweller, occasion, cert. number…">
+      </div>
+      <button class="btn-primary" onclick="saveEditItem()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ LIGHTBOX ══════════════════════ -->
+<div class="lightbox" id="lightbox">
+  <img id="lightboxImg" src="" alt="Receipt">
+  <div class="lightbox-close" onclick="closeLightbox()">Close ✕</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// CONSTANTS & GLOBALS
+// ══════════════════════════════════════════
+let prices={gold:3320,silver:33.2};
+let rates={USD:1,INR:83.5,AED:3.67,EUR:0.92};
+let currency='USD';
+let items=[];
+let activeHTab='all',activeFilter='all';
+let selectedMetal='gold',selectedType='jewellery',selectedGrade=null;
+let viewingItem=null,receiptBase64=null;
+let currentUser=null; // {email, firstName, lastName, age, country, joinedAt, pwHash}
+
+const SYMBOLS={USD:'$',INR:'₹',AED:'د.إ',EUR:'€'};
+const GOLD_GRADES=[
+  {label:'24K',purity:.999,name:'24K / 999'},{label:'22K',purity:.916,name:'22K / 916'},
+  {label:'21K',purity:.875,name:'21K / 875'},{label:'18K',purity:.750,name:'18K / 750'},
+  {label:'14K',purity:.585,name:'14K / 585'},{label:'9K', purity:.375,name:'9K / 375'},
+];
+const SILVER_GRADES=[
+  {label:'999',purity:.999,name:'Fine Silver 999'},{label:'958',purity:.958,name:'Britannia 958'},
+  {label:'925',purity:.925,name:'Sterling 925'},{label:'900',purity:.900,name:'Coin Silver 900'},
+  {label:'800',purity:.800,name:'European 800'},{label:'Raw',purity:.750,name:'Raw ~75%'},
+];
+const GRADE_NOTES={
+  '24K':'Pure gold (99.9%). Bullion bars and investment coins.',
+  '22K':'91.6% gold — most common for Indian jewellery (stamp: 916).',
+  '21K':'87.5% gold — popular in Middle Eastern jewellery.',
+  '18K':'75% gold — common in European fine jewellery.',
+  '14K':'58.5% gold — widely used in US and European pieces.',
+  '9K':'37.5% gold — common in UK hallmarked jewellery.',
+  '999':'99.9% pure silver. Investment bars and coins.',
+  '958':'Britannia silver (95.8%) — UK standard.',
+  '925':'Sterling silver (92.5%) — the most common grade worldwide.',
+  '900':'Coin silver (90%) — old US and European coins.',
+  '800':'80% silver — common in older continental silverware.',
+  'Raw':'Estimated at 75% purity for unrefined or raw silver.',
+};
+
+// ══════════════════════════════════════════
+// SIMPLE HASH (demo — not cryptographic)
+// ══════════════════════════════════════════
+// ══════════════════════════════════════════
+// API CONFIG
+// ══════════════════════════════════════════
+const API_BASE = window.location.origin;
+
+let authToken = localStorage.getItem('coffer_token') || null;
+function setToken(t){authToken=t;if(t)localStorage.setItem('coffer_token',t);else localStorage.removeItem('coffer_token')}
+
+async function api(method, path, body){
+  const opts={method,headers:{'Content-Type':'application/json'}};
+  if(authToken) opts.headers['Authorization']='Bearer '+authToken;
+  if(body) opts.body=JSON.stringify(body);
+  const res=await fetch(API_BASE+'/api'+path,opts);
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data.error||'Request failed');
+  return data;
+}
+
+// ══════════════════════════════════════════
+// AUTH FLOWS
+// ══════════════════════════════════════════
+function switchAuthTab(tab, btn){
+  document.querySelectorAll('.auth-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.auth-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  clearMsgs();
+}
+
+function clearMsgs(){
+  ['loginMsg','registerMsg','editProfileMsg'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.className='msg';el.textContent=''}
+  });
+}
+
+function showMsg(id,text,type){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.textContent=text;
+  el.className='msg '+type;
+}
+
+function togglePw(inputId, btn){
+  const inp=document.getElementById(inputId);
+  if(!inp)return;
+  if(inp.type==='password'){inp.type='text';btn.textContent='🙈'}
+  else{inp.type='password';btn.textContent='👁'}
+}
+
+function checkStrength(pw){
+  const fill=document.getElementById('strengthFill');
+  const lbl=document.getElementById('strengthLabel');
+  let score=0;
+  if(pw.length>=8)score++;if(pw.length>=12)score++;
+  if(/[A-Z]/.test(pw))score++;if(/[0-9]/.test(pw))score++;if(/[^A-Za-z0-9]/.test(pw))score++;
+  const levels=[
+    {w:'0%',bg:'transparent',t:'Enter a password'},
+    {w:'25%',bg:'#c45a5a',t:'Weak'},{w:'50%',bg:'#c4a14c',t:'Fair'},
+    {w:'75%',bg:'#8fc45a',t:'Good'},{w:'100%',bg:'var(--green)',t:'Strong'},
+  ];
+  const l=levels[Math.min(score,4)];
+  fill.style.width=l.w;fill.style.background=l.bg;lbl.textContent=l.t;
+}
+
+async function doRegister(){
+  const first=document.getElementById('regFirstName').value.trim();
+  const last=document.getElementById('regLastName').value.trim();
+  const age=parseInt(document.getElementById('regAge').value)||0;
+  const country=document.getElementById('regCountry').value;
+  const email=document.getElementById('regEmail').value.trim().toLowerCase();
+  const pw=document.getElementById('regPassword').value;
+  const pw2=document.getElementById('regPasswordConfirm').value;
+
+  if(!first||!last){return showMsg('registerMsg','Please enter your first and last name.','error')}
+  if(age<18||age>110){return showMsg('registerMsg','Please enter a valid age (18–110).','error')}
+  if(!country){return showMsg('registerMsg','Please select your country.','error')}
+  if(!email||!email.includes('@')){return showMsg('registerMsg','Please enter a valid email address.','error')}
+  if(pw.length<6){return showMsg('registerMsg','Password must be at least 6 characters.','error')}
+  if(pw!==pw2){return showMsg('registerMsg','Passwords do not match.','error')}
+
+  const btn=document.querySelector('#panelRegister .btn-auth');
+  btn.disabled=true;btn.textContent='Creating…';
+  try{
+    const data=await api('POST','/auth/register',{email,password:pw,firstName:first,lastName:last,age,country});
+    setToken(data.token);
+    loginUser(data.user);
+  }catch(e){
+    showMsg('registerMsg',e.message,'error');
+    btn.disabled=false;btn.textContent='Create My Coffer →';
+  }
+}
+
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pw=document.getElementById('loginPassword').value;
+  if(!email){return showMsg('loginMsg','Please enter your email address.','error')}
+  if(!pw){return showMsg('loginMsg','Please enter your password.','error')}
+
+  const btn=document.querySelector('#panelLogin .btn-auth');
+  btn.disabled=true;btn.textContent='Opening…';
+  try{
+    const data=await api('POST','/auth/login',{email,password:pw});
+    setToken(data.token);
+    loginUser(data.user);
+  }catch(e){
+    showMsg('loginMsg',e.message,'error');
+    btn.disabled=false;btn.textContent='Open My Coffer →';
+  }
+}
+
+async function loginUser(user){
+  currentUser=user;
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('appScreen').classList.add('active');
+  refreshHeader();
+  refreshProfile();
+  // Load items and alerts from server
+  try{
+    items=await api('GET','/items');
+  }catch(e){items=[];}
+  try{
+    priceAlerts=await api('GET','/alerts');
+  }catch(e){priceAlerts=[];}
+  updatePriceDisplay();
+  updateAll();
+  setNavTab('vault',document.getElementById('navCoffer'));
+  fetchPrices();
+}
+
+async function doLogout(){
+  if(!confirm('Sign out of your coffer?'))return;
+  setToken(null);
+  currentUser=null;items=[];priceAlerts=[];
+  document.getElementById('appScreen').classList.remove('active');
+  document.getElementById('authScreen').classList.remove('hidden');
+  document.getElementById('loginEmail').value='';
+  document.getElementById('loginPassword').value='';
+  switchAuthTab('login',document.querySelectorAll('.auth-tab')[0]);
+}
+
+async function deleteAccount(){
+  if(!confirm('Delete your account and ALL coffer data permanently? This cannot be undone.'))return;
+  if(!confirm('Are you absolutely sure?'))return;
+  try{
+    await api('DELETE','/auth/account');
+    setToken(null);currentUser=null;items=[];priceAlerts=[];
+    document.getElementById('appScreen').classList.remove('active');
+    document.getElementById('authScreen').classList.remove('hidden');
+    switchAuthTab('register',document.querySelectorAll('.auth-tab')[1]);
+  }catch(e){alert('Error: '+e.message)}
+}
+
+// ══════════════════════════════════════════
+// PROFILE
+// ══════════════════════════════════════════
+function refreshHeader(){
+  if(!currentUser)return;
+  const init=(currentUser.firstName[0]||'?').toUpperCase();
+  document.getElementById('headerAvatar').textContent=init;
+  document.getElementById('headerName').textContent=currentUser.firstName;
+}
+
+function refreshProfile(){
+  if(!currentUser)return;
+  const joined=new Date(currentUser.joinedAt).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('profileHeader').innerHTML=`
+    <div style="display:flex;align-items:center;gap:16px;position:relative;z-index:1">
+      <div class="profile-avatar">${currentUser.firstName[0].toUpperCase()}</div>
+      <div>
+        <div class="profile-name-big">${currentUser.firstName} ${currentUser.lastName}</div>
+        <div class="profile-email-big">${currentUser.email}</div>
+        <div class="profile-joined">Member since ${joined}</div>
+      </div>
+    </div>`;
+  const rows=[
+    ['Full Name',`${currentUser.firstName} ${currentUser.lastName}`],
+    ['Email',currentUser.email],
+    ['Age',currentUser.age||'—'],
+    ['Country',currentUser.country||'—'],
+  ];
+  document.getElementById('profileDetailsRows').innerHTML=rows.map(([k,v])=>`
+    <div class="profile-row">
+      <div class="profile-key">${k}</div>
+      <div class="profile-val">${v}</div>
+    </div>`).join('');
+  const active=items.filter(i=>!i.sold).length;
+  const sold=items.filter(i=>i.sold).length;
+  let portVal='—';
+  if(active>0){
+    const tot=items.filter(i=>!i.sold).reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0);
+    const v=tot*rates[currency];
+    portVal=SYMBOLS[currency]+(v>=10000?(v/1000).toFixed(0)+'k':v.toFixed(0));
+  }
+  document.getElementById('statItems').textContent=active;
+  document.getElementById('statSold').textContent=sold;
+  document.getElementById('statValue').textContent=portVal;
+}
+
+function openEditProfile(){
+  if(!currentUser)return;
+  document.getElementById('epFirst').value=currentUser.firstName;
+  document.getElementById('epLast').value=currentUser.lastName;
+  document.getElementById('epAge').value=currentUser.age||'';
+  document.getElementById('epCountry').value=currentUser.country||'';
+  document.getElementById('epEmail').value=currentUser.email;
+  document.getElementById('epPassword').value='';
+  document.getElementById('epPasswordConfirm').value='';
+  document.getElementById('editProfileMsg').className='msg';
+  document.getElementById('editProfileModal').classList.add('open');
+}
+
+async function saveProfile(){
+  const first=document.getElementById('epFirst').value.trim();
+  const last=document.getElementById('epLast').value.trim();
+  const age=parseInt(document.getElementById('epAge').value)||0;
+  const country=document.getElementById('epCountry').value;
+  const email=document.getElementById('epEmail').value.trim().toLowerCase();
+  const newPw=document.getElementById('epPassword').value;
+  const newPw2=document.getElementById('epPasswordConfirm').value;
+
+  if(!first||!last)return showMsg('editProfileMsg','Please enter your name.','error');
+  if(!email||!email.includes('@'))return showMsg('editProfileMsg','Please enter a valid email.','error');
+  if(newPw&&newPw.length<6)return showMsg('editProfileMsg','New password must be at least 6 characters.','error');
+  if(newPw&&newPw!==newPw2)return showMsg('editProfileMsg','Passwords do not match.','error');
+
+  try{
+    const data=await api('PATCH','/auth/profile',{
+      firstName:first,lastName:last,age,country,email,
+      password:newPw||undefined
+    });
+    setToken(data.token);
+    currentUser=data.user;
+    refreshHeader();refreshProfile();
+    showMsg('editProfileMsg','Profile updated successfully.','success');
+    setTimeout(()=>closeModal('editProfileModal'),1200);
+  }catch(e){showMsg('editProfileMsg',e.message,'error')}
+}
+
+// ══════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════
+function setNavTab(tab,btn){
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.content-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  document.getElementById('fabWrap').style.display=tab==='vault'?'flex':'none';
+  if(tab==='profile')refreshProfile();
+  if(tab==='chart'){updateChartPanel();renderHistoryChart()}
+  if(tab==='alerts'){refreshAlertsPanel()}
+}
+
+// ══════════════════════════════════════════
+// PRICES
+// ══════════════════════════════════════════
+async function fetchPrices(){
+  document.getElementById('lastUpdatedText').textContent='Refreshing live prices…';
+  try{
+    const data=await api('GET','/prices');
+    prices.gold=data.gold;
+    prices.silver=data.silver;
+    if(data.rates){
+      rates.INR=data.rates.INR||rates.INR;
+      rates.AED=data.rates.AED||rates.AED;
+      rates.EUR=data.rates.EUR||rates.EUR;
+      rates.GBP=data.rates.GBP||rates.GBP;
+    }
+  }catch(e){
+    console.warn('Price fetch failed, using cached values');
+  }
+  updatePriceDisplay();updateAll();
+  const now=new Date();
+  document.getElementById('lastUpdatedText').textContent=`Prices as of ${now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} — tap to refresh`;
+}
+
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+function toGrams(w,u){if(u==='oz')return w*31.1035;if(u==='tola')return w*11.6638;return w}
+function toOz(g){return g/31.1035}
+function toUSD(a,c){return a/rates[c]}
+function metalValueUSD(metal,grams,purity){return toOz(grams*purity)*(metal==='gold'?prices.gold:prices.silver)}
+function fmtFull(usd,curr){curr=curr||currency;const v=usd*rates[curr];return SYMBOLS[curr]+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+function fmtCurr(a,c){return SYMBOLS[c]+parseFloat(a).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+// ══════════════════════════════════════════
+// SUMMARY & RENDER
+// ══════════════════════════════════════════
+function updateAll(){updateSummary();renderList()}
+function updateSummary(){
+  let gU=0,sU=0,gG=0,sG=0,pU=0,spU=0;
+  items.filter(i=>!i.sold).forEach(it=>{
+    const v=metalValueUSD(it.metal,it.grams,it.purity);
+    if(it.metal==='gold'){gU+=v;gG+=it.grams}else{sU+=v;sG+=it.grams}
+    spU+=v;if(it.pricePaidUSD)pU+=it.pricePaidUSD;
+  });
+  const tot=gU+sU;
+  document.getElementById('totalValue').textContent=fmtFull(tot);
+  document.getElementById('totalUSD').textContent=currency!=='USD'?'≈ $'+tot.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+' USD':'';
+  document.getElementById('goldTotal').textContent=fmtFull(gU);
+  document.getElementById('silverTotal').textContent=fmtFull(sU);
+  document.getElementById('goldWeight').textContent=gG.toFixed(2)+'g';
+  document.getElementById('silverWeight').textContent=sG.toFixed(2)+'g';
+  const pEl=document.getElementById('totalPnl'),pPct=document.getElementById('totalPnlPct');
+  if(pU>0){const g=spU-pU,p=(g/pU)*100,s=g>=0?'+':'';pEl.textContent=s+fmtFull(g);pEl.className='split-val pnl '+(g>=0?'pos':'neg');pPct.textContent=s+p.toFixed(1)+'%'}
+  else{pEl.textContent='—';pEl.className='split-val pnl';pPct.textContent='add cost to track'}
+}
+
+function renderList(){
+  const list=document.getElementById('inventoryList');
+  let f=[...items];
+  if(activeHTab==='gold')f=f.filter(i=>i.metal==='gold'&&!i.sold);
+  else if(activeHTab==='silver')f=f.filter(i=>i.metal==='silver'&&!i.sold);
+  else if(activeHTab==='sold')f=f.filter(i=>i.sold);
+  else f=f.filter(i=>!i.sold);
+  if(activeFilter!=='all')f=f.filter(i=>i.type===activeFilter);
+  document.getElementById('itemCount').textContent=f.length+' item'+(f.length!==1?'s':'');
+  if(!f.length){
+    const m=activeHTab==='sold'?'No sold items yet.':'Tap + to add a holding.';
+    list.innerHTML=`<div class="empty-state"><div class="icon">✦</div><div class="title">Nothing here</div><div class="sub">${m}</div></div>`;
+    return;
+  }
+  const tL={jewellery:'💍 Jewellery',coin_bar:'🪙 Coin/Bar',raw:'⚗️ Raw'};
+  list.innerHTML=f.map(item=>{
+    const ri=items.indexOf(item);
+    const sU=metalValueUSD(item.metal,item.grams,item.purity);
+    let vD,pnlH='';
+    if(item.sold){vD=fmtFull(toUSD(item.sellPrice,item.sellCurrency));if(item.pricePaidUSD){const g=toUSD(item.sellPrice,item.sellCurrency)-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';pnlH=`<div class="item-pnl ${g>=0?'pos':'neg'}">${g>=0?'▲':'▼'} Realised ${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</div>`}}
+    else{vD=fmtFull(sU);if(item.pricePaidUSD){const g=sU-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';pnlH=`<div class="item-pnl ${g>=0?'pos':'neg'}">${g>=0?'▲':'▼'} ${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</div>`}}
+    const dB=item.purchaseDate?`<span class="badge badge-date">📅 ${item.purchaseDate}</span>`:'';
+    const pB=item.receipt?`<span class="badge badge-provenance">🧾 Receipt</span>`:'';
+    return `<div class="item-card ${item.metal}${item.sold?' sold':''}" onclick="openDetail(${ri})">
+      <div class="item-top"><div class="item-name">${escHtml(item.name)}</div><div class="item-value">${vD}</div></div>
+      <div class="item-meta"><span class="badge badge-type">${tL[item.type]}</span><span class="badge badge-grade${item.metal==='silver'?' silver':''}">${item.gradeName.split(' — ')[0]}</span><span class="badge badge-weight">${item.grams.toFixed(2)}g</span>${dB}${pB}</div>
+      ${pnlH}${!item.pricePaidUSD&&!item.sold?'<div class="item-hint">Add purchase price to track gain/loss</div>':''}
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// CURRENCY / TABS
+// ══════════════════════════════════════════
+function setCurrency(c,btn){currency=c;document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updateAll();updatePreview()}
+function setHTab(t,btn){activeHTab=t;document.querySelectorAll('.htab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderList()}
+function setFilter(f,btn){activeFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderList()}
+
+// ══════════════════════════════════════════
+// ADD ITEM
+// ══════════════════════════════════════════
+function openAddModal(){
+  selectedMetal='gold';selectedType='jewellery';selectedGrade=GOLD_GRADES[1];receiptBase64=null;
+  ['itemName','itemWeight','itemNotes','pricePaid'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('weightUnit').value='g';
+  document.getElementById('pricePaidCurrency').value=currency!=='USD'?currency:'USD';
+  document.getElementById('purchaseDate').value=new Date().toISOString().slice(0,10);
+  document.getElementById('metalGold').className='metal-btn gold selected';
+  document.getElementById('metalSilver').className='metal-btn silver';
+  document.getElementById('receiptUploadArea').style.display='';
+  document.getElementById('receiptPreviewArea').style.display='none';
+  document.getElementById('receiptFile').value='';
+  document.getElementById('valuePreview').textContent='—';
+  document.getElementById('pnlPreviewBox').style.display='none';
+  renderGradeGrid();renderTypeGrid();
+  document.getElementById('addModal').classList.add('open');
+}
+
+function renderGradeGrid(){
+  const grades=selectedMetal==='gold'?GOLD_GRADES:SILVER_GRADES;
+  const cls=selectedMetal==='gold'?'gold-grade':'silver-grade';
+  if(!selectedGrade||!grades.find(g=>g.label===selectedGrade.label))selectedGrade=grades[selectedMetal==='gold'?1:2];
+  document.getElementById('gradeGrid').innerHTML=grades.map(g=>`
+    <button class="grade-btn ${selectedGrade&&selectedGrade.label===g.label?'selected '+cls:''}" onclick="selectGrade('${g.label}')">
+      <span class="purity">${g.label}</span><span class="label">${(g.purity*100).toFixed(1)}%</span>
+    </button>`).join('');
+  if(selectedGrade&&GRADE_NOTES[selectedGrade.label])document.getElementById('gradeNote').textContent=GRADE_NOTES[selectedGrade.label];
+}
+
+function renderTypeGrid(){
+  ['jewellery','coin_bar','raw'].forEach(t=>{const el=document.getElementById('type'+t.charAt(0).toUpperCase()+t.slice(1));if(el)el.classList.toggle('selected',t===selectedType)});
+}
+
+function selectMetal(m){
+  selectedMetal=m;selectedGrade=null;
+  document.getElementById('metalGold').className='metal-btn gold'+(m==='gold'?' selected':'');
+  document.getElementById('metalSilver').className='metal-btn silver'+(m==='silver'?' selected':'');
+  renderGradeGrid();updatePreview();
+}
+function selectType(t){selectedType=t;renderTypeGrid()}
+function selectGrade(l){selectedGrade=(selectedMetal==='gold'?GOLD_GRADES:SILVER_GRADES).find(g=>g.label===l);renderGradeGrid();updatePreview()}
+
+function updatePreview(){
+  const w=parseFloat(document.getElementById('itemWeight').value)||0;
+  const u=document.getElementById('weightUnit').value;
+  const pR=parseFloat(document.getElementById('pricePaid').value)||0;
+  const pC=document.getElementById('pricePaidCurrency').value;
+  if(!w||!selectedGrade){document.getElementById('valuePreview').textContent='—';document.getElementById('pnlPreviewBox').style.display='none';return}
+  const g=toGrams(w,u),sU=metalValueUSD(selectedMetal,g,selectedGrade.purity);
+  document.getElementById('valuePreview').textContent=fmtFull(sU);
+  if(pR>0){
+    const pU=toUSD(pR,pC),gain=sU-pU,pct=pU>0?(gain/pU)*100:0,s=gain>=0?'+':'';
+    document.getElementById('pnlPaid').textContent=fmtCurr(pR,pC);
+    document.getElementById('pnlSpot').textContent=fmtFull(sU);
+    document.getElementById('pnlGain').className='pnl-val hi '+(gain>=0?'pos':'neg');
+    document.getElementById('pnlGain').textContent=s+fmtFull(gain)+' ('+s+pct.toFixed(1)+'%)';
+    document.getElementById('pnlPreviewBox').style.display='';
+  }else document.getElementById('pnlPreviewBox').style.display='none';
+}
+
+function handleReceiptUpload(input){
+  const file=input.files[0];if(!file)return;
+  if(file.size>5*1024*1024){alert('Please use an image smaller than 5MB.');return}
+  const r=new FileReader();
+  r.onload=e=>{receiptBase64=e.target.result;document.getElementById('receiptPreviewImg').src=receiptBase64;document.getElementById('receiptUploadArea').style.display='none';document.getElementById('receiptPreviewArea').style.display=''};
+  r.readAsDataURL(file);
+}
+function removeReceipt(){receiptBase64=null;document.getElementById('receiptFile').value='';document.getElementById('receiptUploadArea').style.display='';document.getElementById('receiptPreviewArea').style.display='none'}
+
+async function addItem(){
+  const name=document.getElementById('itemName').value.trim();
+  const weight=parseFloat(document.getElementById('itemWeight').value);
+  const unit=document.getElementById('weightUnit').value;
+  const notes=document.getElementById('itemNotes').value.trim();
+  const paidRaw=parseFloat(document.getElementById('pricePaid').value)||0;
+  const paidCurr=document.getElementById('pricePaidCurrency').value;
+  const purchaseDate=document.getElementById('purchaseDate').value;
+  if(!name){alert('Please give this item a name.');return}
+  if(!weight||weight<=0){alert('Please enter the weight.');return}
+  if(!selectedGrade){alert('Please select a purity grade.');return}
+  const grams=toGrams(weight,unit);
+  const payload={
+    name,metal:selectedMetal,type:selectedType,gradeName:selectedGrade.name,
+    purity:selectedGrade.purity,grams,notes,purchaseDate,
+    pricePaid:paidRaw||null,pricePaidCurrency:paidCurr,
+    pricePaidUSD:paidRaw?toUSD(paidRaw,paidCurr):null,
+    receipt:receiptBase64||null,
+    addedAt:new Date().toISOString(),
+  };
+  try{
+    const newItem=await api('POST','/items',payload);
+    items.unshift(newItem);
+    closeModal('addModal');updateAll();
+  }catch(e){alert('Could not save item: '+e.message)}
+}
+
+// ══════════════════════════════════════════
+// EDIT ITEM
+// ══════════════════════════════════════════
+function openEditModal(idx){
+  viewingItem=idx;
+  const item=items[idx];
+  document.getElementById('editItemName').value=item.name;
+  document.getElementById('editWeight').value=item.grams.toFixed(3);
+  document.getElementById('editWeightUnit').value='g';
+  document.getElementById('editPurchaseDate').value=item.purchaseDate||'';
+  document.getElementById('editPricePaid').value=item.pricePaid||'';
+  document.getElementById('editPricePaidCurrency').value=item.pricePaidCurrency||'USD';
+  document.getElementById('editNotes').value=item.notes||'';
+  closeModal('detailModal');
+  document.getElementById('editModal').classList.add('open');
+}
+
+async function saveEditItem(){
+  if(viewingItem===null)return;
+  const name=document.getElementById('editItemName').value.trim();
+  const weight=parseFloat(document.getElementById('editWeight').value);
+  const unit=document.getElementById('editWeightUnit').value;
+  const purchaseDate=document.getElementById('editPurchaseDate').value;
+  const paidRaw=parseFloat(document.getElementById('editPricePaid').value)||0;
+  const paidCurr=document.getElementById('editPricePaidCurrency').value;
+  const notes=document.getElementById('editNotes').value.trim();
+  if(!name){alert('Please enter a name.');return}
+  if(!weight||weight<=0){alert('Please enter a valid weight.');return}
+  const grams=toGrams(weight,unit);
+  const item=items[viewingItem];
+  const payload={
+    ...item,
+    name,grams,notes,purchaseDate,
+    pricePaid:paidRaw||null,pricePaidCurrency:paidCurr,
+    pricePaidUSD:paidRaw?toUSD(paidRaw,paidCurr):null,
+  };
+  try{
+    const updated=await api('PUT','/items/'+item.id,payload);
+    items[viewingItem]=updated;
+    closeModal('editModal');
+    updateAll();
+    openDetail(viewingItem);
+  }catch(e){alert('Could not save changes: '+e.message)}
+}
+
+// ══════════════════════════════════════════
+// SELL
+// ══════════════════════════════════════════
+function openSellModal(idx){
+  viewingItem=idx;const item=items[idx];
+  closeModal('detailModal');
+  document.getElementById('sellItemName').textContent=item.name;
+  document.getElementById('sellDate').value=new Date().toISOString().slice(0,10);
+  document.getElementById('sellPrice').value='';
+  document.getElementById('sellCurrency').value=currency!=='USD'?currency:'USD';
+  document.getElementById('sellNotes').value='';
+  updateSellPreview();
+  document.getElementById('sellModal').classList.add('open');
+}
+
+function updateSellPreview(){
+  if(viewingItem===null)return;
+  const item=items[viewingItem];
+  const sU=metalValueUSD(item.metal,item.grams,item.purity);
+  const sR=parseFloat(document.getElementById('sellPrice').value)||0;
+  const sC=document.getElementById('sellCurrency').value;
+  document.getElementById('spSpot').textContent=fmtFull(sU);
+  document.getElementById('spPaid').textContent=item.pricePaidUSD?fmtFull(item.pricePaidUSD):'Not recorded';
+  if(sR>0){
+    const sellU=toUSD(sR,sC);
+    document.getElementById('spReceived').textContent=fmtCurr(sR,sC);
+    if(item.pricePaidUSD){const g=sellU-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';document.getElementById('spGain').className='pnl-val hi '+(g>=0?'pos':'neg');document.getElementById('spGain').textContent=s+fmtFull(g)+' ('+s+p.toFixed(1)+'%)'}
+    else document.getElementById('spGain').textContent='—';
+  }else{document.getElementById('spReceived').textContent='—';document.getElementById('spGain').textContent='—'}
+}
+
+async function confirmSell(){
+  const sR=parseFloat(document.getElementById('sellPrice').value);
+  const sD=document.getElementById('sellDate').value;
+  const sN=document.getElementById('sellNotes').value.trim();
+  const sC=document.getElementById('sellCurrency').value;
+  if(!sR||sR<=0){alert('Please enter the price received.');return}
+  if(!sD){alert('Please enter the date of sale.');return}
+  const item=items[viewingItem];
+  const payload={
+    ...item,
+    sold:true,sellPrice:sR,sellCurrency:sC,
+    sellPriceUSD:toUSD(sR,sC),sellDate:sD,sellNotes:sN,
+  };
+  try{
+    const updated=await api('PUT','/items/'+item.id,payload);
+    items[viewingItem]=updated;
+    closeModal('sellModal');updateAll();
+  }catch(e){alert('Could not record sale: '+e.message)}
+}
+
+// ══════════════════════════════════════════
+// DETAIL
+// ══════════════════════════════════════════
+function openDetail(idx){
+  viewingItem=idx;const item=items[idx];
+  const sU=metalValueUSD(item.metal,item.grams,item.purity);
+  const tL={jewellery:'Jewellery',coin_bar:'Coin / Bar',raw:'Raw / Unrefined'};
+  document.getElementById('detailTitle').textContent=item.name;
+  const acqRows=[
+    ['Metal',item.metal==='gold'?'🥇 Gold':'🥈 Silver'],
+    ['Category',tL[item.type]],['Purity',item.gradeName],
+    ['Weight',item.grams.toFixed(3)+'g · '+toOz(item.grams).toFixed(4)+' oz'],
+    ['Pure Content',(item.grams*item.purity).toFixed(3)+'g'],
+    ['Date Purchased',item.purchaseDate||'—'],
+    ['Price Paid',item.pricePaid?fmtCurr(item.pricePaid,item.pricePaidCurrency)+' (≈ $'+item.pricePaidUSD.toFixed(2)+')':'—'],
+  ];
+  if(item.notes)acqRows.push(['Notes',escHtml(item.notes)]);
+  const valRows=[
+    ['Spot Price',item.metal==='gold'?'$'+prices.gold.toFixed(2)+'/oz':'$'+prices.silver.toFixed(2)+'/oz'],
+    ['Current Value',fmtFull(sU)],
+  ];
+  if(item.pricePaidUSD){const g=sU-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';valRows.push(['Unrealised G/L',`<span class="${g>=0?'pos':'neg'}">${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</span>`])}
+  let soldHTML='';
+  if(item.sold){
+    const sellU=toUSD(item.sellPrice,item.sellCurrency);let rRow='';
+    if(item.pricePaidUSD){const g=sellU-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';rRow=`<div class="detail-row"><div class="detail-key">Realised G/L</div><div class="detail-val ${g>=0?'pos':'neg'}">${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</div></div>`}
+    soldHTML=`<div class="detail-section"><div class="detail-section-title">Sale Record</div>
+      <div class="detail-row"><div class="detail-key">Date Sold</div><div class="detail-val">${item.sellDate||'—'}</div></div>
+      <div class="detail-row"><div class="detail-key">Price Received</div><div class="detail-val">${fmtCurr(item.sellPrice,item.sellCurrency)}</div></div>
+      ${item.sellNotes?`<div class="detail-row"><div class="detail-key">Buyer/Notes</div><div class="detail-val">${escHtml(item.sellNotes)}</div></div>`:''}${rRow}</div>`;
+  }
+  const actionBtn=item.sold
+    ?`<div class="detail-action-btn sold-tag">✓ Sold ${item.sellDate||''}</div>`
+    :`<button class="detail-action-btn sell" onclick="openSellModal(${idx})">Record Sale →</button>`;
+  const editBtn=`<button class="detail-action-btn" onclick="openEditModal(${idx})" style="border-color:rgba(74,159,224,.3);color:var(--blue);background:rgba(74,159,224,.06)">✏ Edit</button>`;
+  document.getElementById('detailBody').innerHTML=`
+    <div class="detail-section"><div class="detail-section-title">Item Details</div>${acqRows.map(([k,v])=>`<div class="detail-row"><div class="detail-key">${k}</div><div class="detail-val">${v}</div></div>`).join('')}</div>
+    <div class="detail-receipt"><div class="detail-section-title" style="margin-bottom:10px">Proof of Purchase</div>${item.receipt?`<img src="${item.receipt}" alt="Receipt" onclick="openLightbox(this.src)"><div style="font-size:9px;color:var(--text-dim);margin-top:6px;text-align:center">Tap image to enlarge</div>`:'<div class="no-receipt">No receipt photo attached</div>'}</div>
+    <div class="detail-section"><div class="detail-section-title">Current Valuation</div>${valRows.map(([k,v])=>`<div class="detail-row"><div class="detail-key">${k}</div><div class="detail-val">${v}</div></div>`).join('')}</div>
+    ${soldHTML}
+    <div class="detail-actions">${editBtn}${actionBtn}</div>
+    <button class="btn-danger" onclick="deleteItem(${idx})">Remove from Coffer</button>`;
+  document.getElementById('detailModal').classList.add('open');
+}
+
+async function deleteItem(idx){
+  if(!confirm('Remove "'+items[idx].name+'" from your coffer?'))return;
+  const item=items[idx];
+  try{
+    await api('DELETE','/items/'+item.id);
+    items.splice(idx,1);closeModal('detailModal');updateAll();
+  }catch(e){alert('Could not delete item: '+e.message)}
+}
+
+// ══════════════════════════════════════════
+// LIGHTBOX / MODALS
+// ══════════════════════════════════════════
+function openLightbox(src){document.getElementById('lightboxImg').src=src;document.getElementById('lightbox').classList.add('open')}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
+
+// ══════════════════════════════════════════
+// CHART PANEL
+// ══════════════════════════════════════════
+let chartRange='composition';
+function setChartRange(r,btn){
+  chartRange=r;
+  document.querySelectorAll('.range-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.chart-view').forEach(v=>v.classList.remove('active-view'));
+  if(r==='composition'){document.getElementById('viewComposition').classList.add('active-view');drawDonut()}
+  if(r==='performance'){document.getElementById('viewPerformance').classList.add('active-view');renderPerfGrid()}
+  if(r==='history'){document.getElementById('viewHistory').classList.add('active-view');renderHistoryChart()}
+}
+
+function updateChartPanel(){
+  const active=items.filter(i=>!i.sold);
+  const tot=active.reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0);
+  document.getElementById('chartHeadline').textContent=fmtFull(tot);
+  document.getElementById('chartSub').textContent=active.length+' active holding'+(active.length!==1?'s':'');
+  document.getElementById('donutTotal').textContent=fmtFull(tot);
+  if(chartRange==='composition')drawDonut();
+  if(chartRange==='performance')renderPerfGrid();
+  if(chartRange==='history')renderHistoryChart();
+}
+
+function drawDonut(){
+  const canvas=document.getElementById('donutChart');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const active=items.filter(i=>!i.sold);
+  const cx=110,cy=110,R=90,r=62;
+  ctx.clearRect(0,0,220,220);
+  const goldItems=active.filter(i=>i.metal==='gold');
+  const silverItems=active.filter(i=>i.metal==='silver');
+  const allSlices=[...goldItems,...silverItems];
+  const vals=allSlices.map(i=>metalValueUSD(i.metal,i.grams,i.purity));
+  const tot=vals.reduce((a,b)=>a+b,0)||1;
+  const GOLD_COLORS=['#F0B429','#FFD166','#D4920A','#E8A020','#B87800'];
+  const SILVER_COLORS=['#C8D8E8','#E0EDF8','#90A8C0','#A8C0D8','#788898'];
+  let angle=-Math.PI/2,gI=0,sI=0;
+  const legendData=[];
+  allSlices.forEach((item,i)=>{
+    const slice=(vals[i]/tot)*2*Math.PI;
+    const color=item.metal==='gold'?GOLD_COLORS[gI++%GOLD_COLORS.length]:SILVER_COLORS[sI++%SILVER_COLORS.length];
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,angle,angle+slice);ctx.closePath();
+    ctx.fillStyle=color;ctx.fill();angle+=slice;
+    legendData.push({name:item.name,color,val:vals[i],pct:((vals[i]/tot)*100).toFixed(1),grams:item.grams});
+  });
+  if(tot===1){ctx.beginPath();ctx.arc(cx,cy,R,-Math.PI/2,3*Math.PI/2);ctx.fillStyle='#1a1a10';ctx.fill()}
+  ctx.beginPath();ctx.arc(cx,cy,r,0,2*Math.PI);ctx.fillStyle='#0c0a06';ctx.fill();
+  const leg=document.getElementById('compositionLegend');
+  if(!legendData.length){leg.innerHTML='<div style="text-align:center;padding:16px;font-size:11px;color:var(--text-dim)">Add holdings to see composition</div>';return}
+  leg.innerHTML=legendData.map(d=>`
+    <div class="legend-item">
+      <div class="legend-left"><div class="legend-dot" style="background:${d.color}"></div>
+        <div><div class="legend-name">${escHtml(d.name)}</div><div class="legend-sub">${d.grams.toFixed(2)}g · ${d.pct}%</div></div>
+      </div>
+      <div class="legend-right"><div class="legend-val">${fmtFull(d.val)}</div></div>
+    </div>`).join('');
+}
+
+function renderPerfGrid(){
+  const active=items.filter(i=>!i.sold);
+  const grid=document.getElementById('perfGrid');
+  if(!active.length){grid.innerHTML='<div style="text-align:center;padding:24px;font-size:11px;color:var(--text-dim)">No active holdings to display</div>';return}
+  grid.innerHTML=active.map(item=>{
+    const sU=metalValueUSD(item.metal,item.grams,item.purity);
+    const spotPriceDisplay=item.metal==='gold'?'$'+prices.gold.toFixed(2)+'/oz':'$'+prices.silver.toFixed(2)+'/oz';
+    let glHTML='<div class="perf-val">—</div>';
+    if(item.pricePaidUSD){const g=sU-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';glHTML=`<div class="perf-val ${g>=0?'pos':'neg'}">${s}${fmtFull(g)}<br><span style="font-size:10px">${s}${p.toFixed(1)}%</span></div>`}
+    return `<div class="perf-card" onclick="openDetail(${items.indexOf(item)})">
+      <div class="perf-card-name">${escHtml(item.name)}</div>
+      <div class="perf-rows">
+        <div class="perf-row"><div class="perf-key">Current Value</div><div class="perf-val ${item.metal==='gold'?'gold-c':'silver-c'}">${fmtFull(sU)}</div></div>
+        <div class="perf-row"><div class="perf-key">Spot Price</div><div class="perf-val">${spotPriceDisplay}</div></div>
+        <div class="perf-row"><div class="perf-key">Weight</div><div class="perf-val">${item.grams.toFixed(3)}g</div></div>
+        <div class="perf-row"><div class="perf-key">G / L</div>${glHTML}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+let priceHistoryCache=null;
+function renderHistoryChart(){
+  const canvas=document.getElementById('historyChart');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width=canvas.parentElement.offsetWidth-24||320;
+  const H=180;canvas.height=H;ctx.clearRect(0,0,W,H);
+  const days=30;
+  if(!priceHistoryCache||priceHistoryCache.goldEnd!==prices.gold){
+    priceHistoryCache={goldEnd:prices.gold,silverEnd:prices.silver,gold:[],silver:[]};
+    let g=prices.gold,s=prices.silver;
+    for(let i=days;i>=0;i--){priceHistoryCache.gold[i]=g;priceHistoryCache.silver[i]=s;g=g*(1+(Math.random()-.52)*0.012);s=s*(1+(Math.random()-.52)*0.014)}
+  }
+  const gH=priceHistoryCache.gold,sH=priceHistoryCache.silver.map(v=>v*100);
+  const allVals=[...gH,...sH];
+  const minV=Math.min(...allVals)*.995,maxV=Math.max(...allVals)*1.005;
+  const pad={t:16,b:24,l:8,r:8};
+  const pw=W-pad.l-pad.r,ph=H-pad.t-pad.b;
+  const xp=i=>pad.l+(i/days)*pw,yp=v=>pad.t+ph-(((v-minV)/(maxV-minV))*ph);
+  ctx.strokeStyle='rgba(46,42,24,.5)';ctx.lineWidth=1;
+  [0,.25,.5,.75,1].forEach(f=>{const y=pad.t+ph*f;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke()});
+  ctx.beginPath();sH.forEach((v,i)=>{i===0?ctx.moveTo(xp(i),yp(v)):ctx.lineTo(xp(i),yp(v))});
+  ctx.strokeStyle='rgba(200,216,232,.5)';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();gH.forEach((v,i)=>{i===0?ctx.moveTo(xp(i),yp(v)):ctx.lineTo(xp(i),yp(v))});
+  ctx.strokeStyle='var(--gold-bright)';ctx.lineWidth=2;ctx.stroke();
+  ctx.beginPath();ctx.arc(xp(days),yp(gH[days]),4,0,2*Math.PI);ctx.fillStyle='var(--gold-bright)';ctx.fill();
+  ctx.fillStyle='rgba(106,96,64,.7)';ctx.font='9px DM Mono,monospace';
+  ctx.fillText('30d ago',pad.l,H-4);ctx.fillText('Today',W-pad.r-30,H-4);
+  document.getElementById('historyNote').textContent=`Simulated 30-day trend · Gold $${prices.gold.toFixed(2)} · Silver $${prices.silver.toFixed(2)}`;
+}
+
+// ══════════════════════════════════════════
+// EXPORT
+// ══════════════════════════════════════════
+function exportData(){const choice=confirm('Export as CSV (OK) or JSON (Cancel)?');if(choice)exportCSV();else exportJSON()}
+function exportCSV(){
+  if(!items.length){alert('No items to export.');return}
+  const header=['Name','Metal','Type','Purity','Weight (g)','Purchase Date','Price Paid','Currency','Price Paid USD','Notes','Sold','Sale Date','Sale Price','Sale Currency','Sale Price USD'];
+  const rows=items.map(it=>[
+    `"${(it.name||'').replace(/"/g,'""')}"`,it.metal,it.type,it.gradeName,it.grams.toFixed(4),
+    it.purchaseDate||'',it.pricePaid||'',it.pricePaidCurrency||'',it.pricePaidUSD?it.pricePaidUSD.toFixed(2):'',
+    `"${(it.notes||'').replace(/"/g,'""')}"`,it.sold?'Yes':'No',
+    it.sellDate||'',it.sellPrice||'',it.sellCurrency||'',it.sellPriceUSD?it.sellPriceUSD.toFixed(2):'',
+  ].join(','));
+  const csv=[header.join(','),...rows].join('
+');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`coffer-export-${new Date().toISOString().slice(0,10)}.csv`;a.click();
+}
+function exportJSON(){
+  if(!items.length){alert('No items to export.');return}
+  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),items},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`coffer-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();
+}
+
+// ══════════════════════════════════════════
+// PRICE ALERTS
+// ══════════════════════════════════════════
+let priceAlerts=[];
+
+function refreshAlertsPanel(){
+  document.getElementById('alertGoldPrice').textContent='$'+prices.gold.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('alertSilverPrice').textContent='$'+prices.silver.toFixed(2);
+  renderAlertsList();updateNotifStatus();
+}
+
+function updateNotifStatus(){
+  const el=document.getElementById('notifStatus');
+  if(!('Notification' in window)){el.textContent='not supported';return}
+  if(Notification.permission==='granted'){el.textContent='enabled ✓';el.style.color='var(--green)';document.querySelector('.perm-link').style.display='none'}
+  else if(Notification.permission==='denied'){el.textContent='blocked by browser';document.querySelector('.perm-link').style.display='none'}
+  else{el.textContent='not enabled';document.querySelector('.perm-link').style.display='inline'}
+}
+
+async function requestNotifPermission(){
+  if(!('Notification' in window)){alert('Your browser does not support notifications.');return}
+  const p=await Notification.requestPermission();
+  updateNotifStatus();
+  if(p==='granted'){new Notification('COFFER Alerts Active',{body:'You will now be notified when your price targets are hit.'})}
+}
+
+async function addAlert(){
+  const metal=document.getElementById('alertMetal').value;
+  const dir=document.getElementById('alertDir').value;
+  const price=parseFloat(document.getElementById('alertPrice').value);
+  const note=document.getElementById('alertNote').value.trim();
+  if(!price||price<=0){alert('Please enter a valid target price.');return}
+  try{
+    const a=await api('POST','/alerts',{metal,dir,price,note});
+    priceAlerts.unshift(a);
+    document.getElementById('alertPrice').value='';
+    document.getElementById('alertNote').value='';
+    renderAlertsList();checkAlerts();
+  }catch(e){alert('Could not save alert: '+e.message)}
+}
+
+async function deleteAlert(id){
+  try{
+    await api('DELETE','/alerts/'+id);
+    priceAlerts=priceAlerts.filter(a=>a.id!==id);
+    renderAlertsList();
+  }catch(e){alert('Error: '+e.message)}
+}
+
+function renderAlertsList(){
+  const list=document.getElementById('alertsList');
+  document.getElementById('alertCount').textContent=priceAlerts.length+' alert'+(priceAlerts.length!==1?'s':'');
+  if(!priceAlerts.length){
+    list.innerHTML=`<div class="empty-alerts"><div class="ea-icon">🔔</div><div class="ea-text">No alerts set yet.<br>Set a target price above to get notified.</div></div>`;
+    return;
+  }
+  list.innerHTML=priceAlerts.map(a=>{
+    const spot=a.metal==='gold'?prices.gold:prices.silver;
+    const dirLabel=a.dir==='above'?'<span class="dir-above">↑ above</span>':'<span class="dir-below">↓ below</span>';
+    const triggered=a.dir==='above'?spot>=a.price:spot<=a.price;
+    const statusTxt=a.fired||triggered?'⚡ Triggered':'👁 Watching';
+    const statusCls=a.fired||triggered?'fired':'watching';
+    return `<div class="alert-card ${a.fired||triggered?'triggered':''}">
+      <div class="alert-icon">${a.metal==='gold'?'🥇':'🥈'}</div>
+      <div class="alert-info">
+        <div class="alert-metal-name">${a.metal==='gold'?'🥇 Gold':'🥈 Silver'}</div>
+        <div class="alert-target">${dirLabel} $${a.price.toLocaleString()}/oz</div>
+        ${a.note?`<div class="alert-note-text">${escHtml(a.note)}</div>`:''}
+        <div class="alert-status ${statusCls}">${statusTxt} · Now $${spot.toFixed(2)}</div>
+      </div>
+      <button class="alert-delete" onclick="deleteAlert(${a.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+async function checkAlerts(){
+  let anyFired=false;
+  for(const a of priceAlerts){
+    if(a.fired)continue;
+    const spot=a.metal==='gold'?prices.gold:prices.silver;
+    const hit=a.dir==='above'?spot>=a.price:spot<=a.price;
+    if(hit){
+      a.fired=true;anyFired=true;
+      try{await api('PATCH','/alerts/'+a.id+'/fired')}catch(e){}
+      fireNotification(a,spot);
+    }
+  }
+  if(anyFired)renderAlertsList();
+}
+
+function fireNotification(a,spot){
+  const title=`COFFER Alert — ${a.metal==='gold'?'Gold':'Silver'} ${a.dir==='above'?'↑':'↓'}`;
+  const body=`${a.metal==='gold'?'Gold':'Silver'} hit $${spot.toFixed(2)}/oz — your target was ${a.dir==='above'?'above':'below'} $${a.price}${a.note?' ('+a.note+')':''}`;
+  if('Notification' in window&&Notification.permission==='granted'){new Notification(title,{body,tag:'coffer-alert-'+a.id})}
+  showToast('🔔 '+body);
+}
+
+function showToast(msg){
+  let t=document.getElementById('cofferToast');
+  if(!t){t=document.createElement('div');t.id='cofferToast';t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--gold-dim);color:var(--text);font-size:11px;padding:12px 16px;border-radius:12px;z-index:9000;max-width:320px;text-align:center;line-height:1.5;box-shadow:0 4px 24px rgba(0,0,0,.5);transition:opacity .3s';document.body.appendChild(t)}
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(t._to);t._to=setTimeout(()=>{t.style.opacity='0'},4000);
+}
+
+// ══════════════════════════════════════════
+// PRICE DISPLAY
+// ══════════════════════════════════════════
+function _coreUpdatePriceDisplay(){
+  document.getElementById('goldSpot').textContent='$'+prices.gold.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('silverSpot').textContent='$'+prices.silver.toFixed(2);
+}
+
+function updatePriceDisplay(){
+  _coreUpdatePriceDisplay();
+  checkAlerts();
+  const ap=document.getElementById('panelAlerts');
+  if(ap&&ap.classList.contains('active'))refreshAlertsPanel();
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+(async function init(){
+  updatePriceDisplay();
+  const token=localStorage.getItem('coffer_token');
+  if(token){
+    try{
+      const data=await api('GET','/auth/me');
+      setToken(token);
+      await loginUser(data);
+      return;
+    }catch(e){
+      // Token invalid or expired — fall through to auth screen
+      setToken(null);
+    }
+  }
+  document.getElementById('authScreen').classList.remove('hidden');
+})();
+</script>
+</body>
+</html>
