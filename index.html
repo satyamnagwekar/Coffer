@@ -702,6 +702,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="price" id="silverSpot"><span class="loading-dot"></span></div>
       </div>
     </div>
+    <div id="inrDutyNote" style="display:none;font-size:8px;color:var(--text-dim);text-align:right;padding:2px 16px 4px;letter-spacing:.04em;opacity:0.7">incl. 15% import duty + 3% GST</div>
   </div>
 
   <!-- Nav -->
@@ -866,8 +867,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div class="sq-price" id="alertSilverPrice">—</div>
         </div>
       </div>
-
-      <!-- Add alert form -->
+      <div id="alertDutyNote" style="display:none;font-size:8px;color:var(--text-dim);text-align:center;padding:2px 0 6px;letter-spacing:.04em;opacity:0.7">incl. 15% import duty + 3% GST</div>
       <div class="alert-form-card">
         <div class="alert-form-title">New Alert</div>
         <div class="field-row" style="margin-bottom:10px">
@@ -2034,6 +2034,8 @@ function refreshAlertsPanel(){
   const INDIA_FACTOR = (10/31.1035) * 1.15 * 1.03;
   const goldINR10g   = prices.gold   * rates.INR * INDIA_FACTOR;
   const silverINR10g = prices.silver * rates.INR * INDIA_FACTOR;
+  const alertDutyNote = document.getElementById('alertDutyNote');
+  if(alertDutyNote) alertDutyNote.style.display = isINR ? 'block' : 'none';
   if(isINR){
     document.getElementById('alertGoldLabel').textContent   = 'Gold / 10g (MCX)';
     document.getElementById('alertSilverLabel').textContent = 'Silver / 10g (MCX)';
@@ -2151,6 +2153,9 @@ function _coreUpdatePriceDisplay(){
   const INDIA_FACTOR = (10/31.1035) * 1.15 * 1.03;
   const goldINR10g   = prices.gold   * rates.INR * INDIA_FACTOR;
   const silverINR10g = prices.silver * rates.INR * INDIA_FACTOR;
+
+  const dutyNote = document.getElementById('inrDutyNote');
+  if(dutyNote) dutyNote.style.display = isINR ? 'block' : 'none';
 
   if(isINR){
     document.getElementById('goldSpotLabel').textContent   = 'GOLD /10g (MCX)';
