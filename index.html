@@ -2031,18 +2031,19 @@ let priceAlerts=[];
 
 function refreshAlertsPanel(){
   const isINR = currency === 'INR';
-  const goldPer10gINR = prices.gold * (10/31.1035) * rates.INR;
-  const silverPer10gINR = prices.silver * (10/31.1035) * rates.INR;
+  const INDIA_FACTOR = (10/31.1035) * 1.15 * 1.03;
+  const goldINR10g   = prices.gold   * rates.INR * INDIA_FACTOR;
+  const silverINR10g = prices.silver * rates.INR * INDIA_FACTOR;
   if(isINR){
-    document.getElementById('alertGoldLabel').textContent = 'Gold / 10g';
-    document.getElementById('alertSilverLabel').textContent = 'Silver / 10g';
-    document.getElementById('alertGoldPrice').textContent = '₹' + Math.round(goldPer10gINR).toLocaleString('en-IN');
-    document.getElementById('alertSilverPrice').textContent = '₹' + Math.round(silverPer10gINR).toLocaleString('en-IN');
+    document.getElementById('alertGoldLabel').textContent   = 'Gold / 10g (MCX)';
+    document.getElementById('alertSilverLabel').textContent = 'Silver / 10g (MCX)';
+    document.getElementById('alertGoldPrice').textContent   = '₹' + Math.round(goldINR10g).toLocaleString('en-IN');
+    document.getElementById('alertSilverPrice').textContent = '₹' + Math.round(silverINR10g).toLocaleString('en-IN');
   } else {
     const sym = SYMBOLS[currency] || '$';
-    document.getElementById('alertGoldLabel').textContent = 'Gold / oz';
+    document.getElementById('alertGoldLabel').textContent   = 'Gold / oz';
     document.getElementById('alertSilverLabel').textContent = 'Silver / oz';
-    document.getElementById('alertGoldPrice').textContent = sym + (prices.gold*(rates[currency]||1)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('alertGoldPrice').textContent   = sym + (prices.gold*(rates[currency]||1)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
     document.getElementById('alertSilverPrice').textContent = sym + (prices.silver*(rates[currency]||1)).toFixed(2);
   }
   renderAlertsList();updateNotifStatus();
@@ -2146,23 +2147,23 @@ function showToast(msg){
 // ══════════════════════════════════════════
 function _coreUpdatePriceDisplay(){
   const isINR = currency === 'INR';
-  // Gold: USD/oz or INR/10g
-  // 1 troy oz = 31.1035g, so per 10g = price * (10/31.1035) * rate
-  const goldPer10gINR = prices.gold * (10/31.1035) * rates.INR;
-  const silverPer10gINR = prices.silver * (10/31.1035) * rates.INR;
+  // Indian market price = spot × INR rate × (10/31.1035) × 1.15 (import duty) × 1.03 (GST)
+  const INDIA_FACTOR = (10/31.1035) * 1.15 * 1.03;
+  const goldINR10g   = prices.gold   * rates.INR * INDIA_FACTOR;
+  const silverINR10g = prices.silver * rates.INR * INDIA_FACTOR;
 
   if(isINR){
-    document.getElementById('goldSpotLabel').textContent = 'GOLD /10g';
-    document.getElementById('silverSpotLabel').textContent = 'SILVER /10g';
-    document.getElementById('goldSpot').textContent = '₹' + Math.round(goldPer10gINR).toLocaleString('en-IN');
-    document.getElementById('silverSpot').textContent = '₹' + Math.round(silverPer10gINR).toLocaleString('en-IN');
+    document.getElementById('goldSpotLabel').textContent   = 'GOLD /10g (MCX)';
+    document.getElementById('silverSpotLabel').textContent = 'SILVER /10g (MCX)';
+    document.getElementById('goldSpot').textContent   = '₹' + Math.round(goldINR10g).toLocaleString('en-IN');
+    document.getElementById('silverSpot').textContent = '₹' + Math.round(silverINR10g).toLocaleString('en-IN');
   } else {
     const sym = SYMBOLS[currency] || '$';
-    const goldDisp = prices.gold * (rates[currency]||1);
+    const goldDisp   = prices.gold   * (rates[currency]||1);
     const silverDisp = prices.silver * (rates[currency]||1);
-    document.getElementById('goldSpotLabel').textContent = 'GOLD /oz';
+    document.getElementById('goldSpotLabel').textContent   = 'GOLD /oz';
     document.getElementById('silverSpotLabel').textContent = 'SILVER /oz';
-    document.getElementById('goldSpot').textContent = sym + goldDisp.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('goldSpot').textContent   = sym + goldDisp.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
     document.getElementById('silverSpot').textContent = sym + silverDisp.toFixed(2);
   }
 }
