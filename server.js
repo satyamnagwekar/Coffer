@@ -122,21 +122,71 @@ async function refreshPrices() {
   let usd_eur = priceCache.usd_eur;
   let usd_gbp = priceCache.usd_gbp;
 
-  // Metals — try metals.live
+  let pricesFetched = false;
+
+  // Source 1: metals-api.com (free, reliable)
   try {
-    const data = await fetchJSON('https://api.metals.live/v1/spot');
-    if (Array.isArray(data)) {
-      data.forEach(item => {
-        if (item.gold)   gold   = item.gold;
-        if (item.silver) silver = item.silver;
-      });
-      console.log(`[prices] Gold: $${gold} Silver: $${silver}`);
+    const data = await fetchJSON('https://metals-api.com/api/latest?access_key=&base=USD&symbols=XAU,XAG');
+    // This may fail without key — that's fine, falls through
+    if (data && data.rates && data.rates.XAU) {
+      gold = 1 / data.rates.XAU;
+      silver = 1 / data.rates.XAG;
+      if (gold > 1000) { pricesFetched = true; console.log(`[prices] metals-api — Gold: $${gold.toFixed(2)}`); }
     }
-  } catch (e) {
-    console.warn('[prices] metals.live failed:', e.message);
+  } catch(e) { console.warn('[prices] metals-api failed:', e.message); }
+
+  // Source 2: metals.live
+  if (!pricesFetched) {
+    try {
+      const data = await fetchJSON('https://api.metals.live/v1/spot');
+      if (Array.isArray(data)) {
+        data.forEach(item => {
+          if (item.gold)   gold   = item.gold;
+          if (item.silver) silver = item.silver;
+        });
+        if (gold > 1000 && silver > 0) {
+          pricesFetched = true;
+          console.log(`[prices] metals.live — Gold: $${gold} Silver: $${silver}`);
+        }
+      }
+    } catch (e) { console.warn('[prices] metals.live failed:', e.message); }
   }
 
-  // Exchange rates
+  // Source 3: goldbroker scrape-friendly JSON
+  if (!pricesFetched) {
+    try {
+      const data = await fetchJSON('https://data-asg.goldprice.org/dbXRates/USD');
+      if (data && data.items && data.items[0]) {
+        gold   = data.items[0].xauPrice;
+        silver = data.items[0].xagPrice;
+        if (gold > 1000) { pricesFetched = true; console.log(`[prices] goldprice.org — Gold: $${gold}`); }
+      }
+    } catch(e) { console.warn('[prices] goldprice.org failed:', e.message); }
+  }
+
+  // Source 4: frankfurter XAU/XAG
+  if (!pricesFetched) {
+    try {
+      const data = await fetchJSON('https://api.frankfurter.app/latest?from=XAU&to=USD');
+      if (data && data.rates && data.rates.USD) {
+        gold = data.rates.USD;
+        console.log(`[prices] frankfurter XAU — Gold: $${gold}`);
+      }
+      const data2 = await fetchJSON('https://api.frankfurter.app/latest?from=XAG&to=USD');
+      if (data2 && data2.rates && data2.rates.USD) {
+        silver = data2.rates.USD;
+        console.log(`[prices] frankfurter XAG — Silver: $${silver}`);
+      }
+      if (gold > 1000) pricesFetched = true;
+    } catch (e) { console.warn('[prices] frankfurter failed:', e.message); }
+  }
+
+  if (!pricesFetched) {
+    console.warn('[prices] All price sources failed, using cached values');
+  }
+
+  // Exchange rates — try multiple sources
+  let fxFetched = false;
   try {
     const fx = await fetchJSON('https://api.exchangerate-api.com/v4/latest/USD');
     if (fx && fx.rates) {
@@ -144,9 +194,22 @@ async function refreshPrices() {
       usd_aed = fx.rates.AED || usd_aed;
       usd_eur = fx.rates.EUR || usd_eur;
       usd_gbp = fx.rates.GBP || usd_gbp;
+      fxFetched = true;
+      console.log(`[prices] FX — INR: ${usd_inr}`);
     }
-  } catch (e) {
-    console.warn('[prices] exchangerate-api failed:', e.message);
+  } catch (e) { console.warn('[prices] exchangerate-api failed:', e.message); }
+
+  if (!fxFetched) {
+    try {
+      const fx2 = await fetchJSON('https://open.er-api.com/v6/latest/USD');
+      if (fx2 && fx2.rates) {
+        usd_inr = fx2.rates.INR || usd_inr;
+        usd_aed = fx2.rates.AED || usd_aed;
+        usd_eur = fx2.rates.EUR || usd_eur;
+        usd_gbp = fx2.rates.GBP || usd_gbp;
+        console.log(`[prices] FX fallback — INR: ${usd_inr}`);
+      }
+    } catch(e) { console.warn('[prices] open.er-api failed:', e.message); }
   }
 
   // Update DB + in-memory cache
