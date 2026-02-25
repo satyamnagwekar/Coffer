@@ -694,11 +694,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     </div>
     <div class="spot-strip">
       <div class="spot-item gold">
-        <div class="metal">GOLD /oz</div>
+        <div class="metal" id="goldSpotLabel">GOLD /oz</div>
         <div class="price" id="goldSpot"><span class="loading-dot"></span></div>
       </div>
       <div class="spot-item silver">
-        <div class="metal">SILVER /oz</div>
+        <div class="metal" id="silverSpotLabel">SILVER /oz</div>
         <div class="price" id="silverSpot"><span class="loading-dot"></span></div>
       </div>
     </div>
@@ -858,11 +858,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <!-- Current spot quick view -->
       <div class="spot-quick">
         <div class="spot-quick-item gold-q">
-          <div class="sq-label">Gold / oz</div>
+          <div class="sq-label" id="alertGoldLabel">Gold / oz</div>
           <div class="sq-price" id="alertGoldPrice">—</div>
         </div>
         <div class="spot-quick-item silver-q">
-          <div class="sq-label">Silver / oz</div>
+          <div class="sq-label" id="alertSilverLabel">Silver / oz</div>
           <div class="sq-price" id="alertSilverPrice">—</div>
         </div>
       </div>
@@ -1626,7 +1626,7 @@ function renderList(){
 // ══════════════════════════════════════════
 // CURRENCY / TABS
 // ══════════════════════════════════════════
-function setCurrency(c,btn){currency=c;document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updateAll();updatePreview()}
+function setCurrency(c,btn){currency=c;document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updatePriceDisplay();updateAll();updatePreview()}
 function setHTab(t,btn){activeHTab=t;document.querySelectorAll('.htab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderList()}
 function setFilter(f,btn){activeFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderList()}
 
@@ -2030,8 +2030,21 @@ function exportJSON(){
 let priceAlerts=[];
 
 function refreshAlertsPanel(){
-  document.getElementById('alertGoldPrice').textContent='$'+prices.gold.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-  document.getElementById('alertSilverPrice').textContent='$'+prices.silver.toFixed(2);
+  const isINR = currency === 'INR';
+  const goldPer10gINR = prices.gold * (10/31.1035) * rates.INR;
+  const silverPer10gINR = prices.silver * (10/31.1035) * rates.INR;
+  if(isINR){
+    document.getElementById('alertGoldLabel').textContent = 'Gold / 10g';
+    document.getElementById('alertSilverLabel').textContent = 'Silver / 10g';
+    document.getElementById('alertGoldPrice').textContent = '₹' + Math.round(goldPer10gINR).toLocaleString('en-IN');
+    document.getElementById('alertSilverPrice').textContent = '₹' + Math.round(silverPer10gINR).toLocaleString('en-IN');
+  } else {
+    const sym = SYMBOLS[currency] || '$';
+    document.getElementById('alertGoldLabel').textContent = 'Gold / oz';
+    document.getElementById('alertSilverLabel').textContent = 'Silver / oz';
+    document.getElementById('alertGoldPrice').textContent = sym + (prices.gold*(rates[currency]||1)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('alertSilverPrice').textContent = sym + (prices.silver*(rates[currency]||1)).toFixed(2);
+  }
   renderAlertsList();updateNotifStatus();
 }
 
@@ -2132,8 +2145,26 @@ function showToast(msg){
 // PRICE DISPLAY
 // ══════════════════════════════════════════
 function _coreUpdatePriceDisplay(){
-  document.getElementById('goldSpot').textContent='$'+prices.gold.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-  document.getElementById('silverSpot').textContent='$'+prices.silver.toFixed(2);
+  const isINR = currency === 'INR';
+  // Gold: USD/oz or INR/10g
+  // 1 troy oz = 31.1035g, so per 10g = price * (10/31.1035) * rate
+  const goldPer10gINR = prices.gold * (10/31.1035) * rates.INR;
+  const silverPer10gINR = prices.silver * (10/31.1035) * rates.INR;
+
+  if(isINR){
+    document.getElementById('goldSpotLabel').textContent = 'GOLD /10g';
+    document.getElementById('silverSpotLabel').textContent = 'SILVER /10g';
+    document.getElementById('goldSpot').textContent = '₹' + Math.round(goldPer10gINR).toLocaleString('en-IN');
+    document.getElementById('silverSpot').textContent = '₹' + Math.round(silverPer10gINR).toLocaleString('en-IN');
+  } else {
+    const sym = SYMBOLS[currency] || '$';
+    const goldDisp = prices.gold * (rates[currency]||1);
+    const silverDisp = prices.silver * (rates[currency]||1);
+    document.getElementById('goldSpotLabel').textContent = 'GOLD /oz';
+    document.getElementById('silverSpotLabel').textContent = 'SILVER /oz';
+    document.getElementById('goldSpot').textContent = sym + goldDisp.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('silverSpot').textContent = sym + silverDisp.toFixed(2);
+  }
 }
 
 function updatePriceDisplay(){
