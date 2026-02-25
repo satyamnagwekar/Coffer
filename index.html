@@ -2012,8 +2012,7 @@ function exportCSV(){
     `"${(it.notes||'').replace(/"/g,'""')}"`,it.sold?'Yes':'No',
     it.sellDate||'',it.sellPrice||'',it.sellCurrency||'',it.sellPriceUSD?it.sellPriceUSD.toFixed(2):'',
   ].join(','));
-  const csv=[header.join(','),...rows].join('
-');
+  const csv=[header.join(','),...rows].join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download=`coffer-export-${new Date().toISOString().slice(0,10)}.csv`;a.click();
