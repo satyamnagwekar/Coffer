@@ -40,64 +40,80 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* ═══════════════════════════════════════
    AUTH SCREENS
 ═══════════════════════════════════════ */
-.auth-screen{position:fixed;inset:0;background:var(--bg);z-index:800;overflow-y:auto;display:flex;flex-direction:column}
+.auth-screen{position:fixed;inset:0;background:#F5F0E8;z-index:800;overflow-y:auto;display:flex;flex-direction:column}
 .auth-screen.hidden{display:none}
 
-.auth-hero{padding:44px 26px 24px;position:relative;overflow:hidden;flex-shrink:0}
+/* Top section: login box left + tagline right */
+.auth-top{display:flex;gap:32px;padding:32px 28px 24px;align-items:stretch;flex-wrap:wrap}
 
-/* Decorative SVG ingot / seal watermark */
-.auth-hero::before{content:'';position:absolute;top:-60px;right:-70px;width:260px;height:260px;background:radial-gradient(circle,rgba(240,180,41,.12) 0%,transparent 65%);border-radius:50%;pointer-events:none}
-.auth-hero::after{content:'';position:absolute;bottom:-30px;left:-30px;width:140px;height:140px;background:radial-gradient(circle,rgba(200,216,232,.05) 0%,transparent 70%);border-radius:50%;pointer-events:none}
+/* Compact login box */
+.auth-box{background:#fff;border:1px solid #DDD5C0;border-radius:14px;padding:24px 22px;width:300px;flex-shrink:0;box-shadow:0 4px 24px rgba(0,0,0,.07)}
+.auth-wordmark{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;letter-spacing:.2em;color:#B8860B;margin-bottom:2px}
+.auth-tagline{font-size:9px;color:#999;letter-spacing:.2em;text-transform:uppercase;margin-bottom:18px}
 
-.auth-wordmark{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;letter-spacing:.25em;color:var(--gold-light);margin-bottom:2px;text-shadow:0 0 40px rgba(240,180,41,.3)}
-.auth-tagline{font-size:10px;color:var(--text-dim);letter-spacing:.22em;text-transform:uppercase;margin-bottom:20px}
+/* Tab switcher inside box */
+.auth-tabs{display:flex;background:#F5F0E8;border-radius:9px;padding:3px;border:1px solid #DDD5C0;margin-bottom:16px}
+.auth-tab{flex:1;padding:9px 4px;border-radius:7px;border:none;background:transparent;color:#999;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.auth-tab.active{background:#fff;color:#B8860B;border:1px solid #DDD5C0;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 
-/* Decorative gold rule */
-.auth-rule{display:flex;align-items:center;gap:10px;margin-bottom:18px}
-.auth-rule-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent)}
-.auth-rule-icon{font-size:14px;color:var(--gold-dim)}
-
-.auth-headline{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;line-height:1.3;color:var(--text);margin-bottom:12px}
-.auth-headline em{color:var(--gold-bright);font-style:italic}
-.auth-desc{font-size:12px;color:var(--text-mid);line-height:1.85}
-
-/* WHY PHYSICAL section */
-.physical-case{margin-top:20px;border:1px solid var(--border-gold);border-radius:var(--radius);background:linear-gradient(135deg,rgba(240,180,41,.05),rgba(30,26,16,.8));overflow:hidden}
-.physical-case-header{padding:14px 18px 10px;border-bottom:1px solid var(--border-gold);display:flex;align-items:center;gap:8px}
-.physical-case-title{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:500}
-.physical-pillar{padding:13px 18px;border-bottom:1px solid rgba(46,42,24,.6);display:flex;gap:13px;align-items:flex-start}
-.physical-pillar:last-child{border-bottom:none}
-.pillar-icon{font-size:20px;flex-shrink:0;margin-top:1px}
-.pillar-body{}
-.pillar-title{font-size:12px;color:var(--gold-light);font-weight:500;margin-bottom:3px;letter-spacing:.03em}
-.pillar-desc{font-size:10px;color:var(--text-mid);line-height:1.7}
-.pillar-desc strong{color:var(--text);font-weight:500}
-
-/* Auth tab switcher */
-.auth-tabs{display:flex;margin:0 20px;background:var(--bg3);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border)}
-.auth-tab{flex:1;padding:12px 4px;border-radius:9px;border:none;background:transparent;color:var(--text-dim);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;cursor:pointer;transition:all .2s;text-transform:uppercase}
-.auth-tab.active{background:var(--bg);color:var(--gold-light);border:1px solid var(--border-gold);box-shadow:0 1px 8px rgba(0,0,0,.5)}
-
-/* Auth form panels */
-.auth-panels{flex:1;padding:0 20px 40px}
-.auth-panel{display:none;padding-top:20px;flex-direction:column;gap:15px}
+/* Form fields inside box */
+.auth-panels{flex:1}
+.auth-panel{display:none;flex-direction:column;gap:12px}
 .auth-panel.active{display:flex}
-
-/* Form fields — auth context */
-.af{display:flex;flex-direction:column;gap:7px}
-.af label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-mid);font-weight:500}
-.af input,.af select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Mono',monospace;font-size:15px;padding:14px 16px;outline:none;width:100%;transition:all .2s;-webkit-appearance:none}
-.af input:focus,.af select:focus{border-color:rgba(240,180,41,.5);background:var(--bg4);box-shadow:0 0 0 3px rgba(240,180,41,.08)}
-.af input::placeholder{color:var(--text-dim)}
-.af select option{background:var(--bg3)}
-.af-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.af-hint{font-size:9px;color:var(--text-dim);line-height:1.5;margin-top:-4px}
-
-/* Password wrapper */
+.af{display:flex;flex-direction:column;gap:5px}
+.af label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#888;font-weight:500}
+.af input,.af select{background:#F9F6F0;border:1px solid #DDD5C0;border-radius:9px;color:#2C2410;font-family:'DM Mono',monospace;font-size:13px;padding:10px 12px;outline:none;width:100%;transition:all .2s;-webkit-appearance:none}
+.af input:focus,.af select:focus{border-color:#B8860B;background:#fff;box-shadow:0 0 0 3px rgba(184,134,11,.1)}
+.af input::placeholder{color:#BBB}
+.af select option{background:#fff;color:#2C2410}
+.af-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.af-hint{font-size:8px;color:#AAA;line-height:1.5;margin-top:-3px}
 .pw-wrap{position:relative}
-.pw-wrap input{padding-right:48px}
-.pw-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;padding:4px;line-height:1}
-.pw-toggle:hover{color:var(--gold)}
+.pw-wrap input{padding-right:40px}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#BBB;cursor:pointer;font-size:14px;padding:4px;line-height:1}
+.pw-toggle:hover{color:#B8860B}
+
+.btn-auth{width:100%;padding:12px;background:linear-gradient(135deg,#B8860B,#D4A017);border:none;border-radius:9px;color:#fff;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;cursor:pointer;font-weight:500;margin-top:2px;transition:all .2s}
+.btn-auth:hover{background:linear-gradient(135deg,#D4A017,#F0B429);box-shadow:0 4px 16px rgba(184,134,11,.3)}
+
+.auth-disclaimer{font-size:8px;color:#AAA;line-height:1.6;padding:10px;background:#F5F0E8;border-radius:8px;border:1px solid #E8E0D0}
+.auth-disclaimer strong{color:#888}
+
+/* Right side: headline fills height of login box */
+.auth-hero{flex:1;min-width:260px;padding:0;display:flex;flex-direction:column;justify-content:center}
+.auth-hero::before,.auth-hero::after{display:none}
+.auth-rule{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.auth-rule-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,#DDD5C0,transparent)}
+.auth-rule-icon{font-size:12px;color:#C8A84B}
+.auth-headline{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;line-height:1.15;color:#2C2410;margin-bottom:16px}
+.auth-headline em{color:#B8860B;font-style:italic}
+.auth-desc{font-size:13px;color:#555;line-height:1.9;margin-bottom:20px}
+
+/* Free badge — plain monospace text, no pill */
+.free-badge{display:flex;align-items:center;gap:8px;font-size:9px;color:#999;letter-spacing:.12em;font-family:'DM Mono',monospace;text-transform:uppercase;margin-top:auto}
+.free-badge .dot{width:5px;height:5px;border-radius:50%;background:#4CAF50;flex-shrink:0}
+
+/* Why physical — full-width horizontal grid below auth-top */
+.physical-case{border-top:1px solid #DDD5C0;background:#fff;padding:28px 28px 24px}
+.physical-case-header{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.physical-case-title{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#B8860B;font-weight:500}
+.physical-pillars-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.physical-pillar{display:flex;flex-direction:column;gap:8px;padding:18px 16px;background:#F9F6F0;border:1px solid #EDE8DC;border-radius:12px}
+.pillar-icon{font-size:28px}
+.pillar-title{font-size:12px;color:#2C2410;font-weight:500;letter-spacing:.02em;line-height:1.4}
+.pillar-desc{font-size:10px;color:#777;line-height:1.7}
+.pillar-desc strong{color:#444;font-weight:500}
+
+/* About strip — three columns at the bottom */
+.auth-about{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:start;gap:0;padding:24px 28px 32px;border-top:1px solid #EDE8DC;background:#F5F0E8}
+.about-item{padding:0 8px}
+.about-label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#B8860B;font-weight:500;margin-bottom:8px;font-family:'DM Mono',monospace}
+.about-text{font-size:10px;color:#666;line-height:1.8}
+.about-divider{width:1px;background:#DDD5C0;align-self:stretch;margin:0 16px}
+
+/* Success/error messages */
+.msg-success{color:#2E7D32;background:#E8F5E9;border:1px solid #A5D6A7;border-radius:8px;padding:8px 12px;font-size:10px}
+.msg-error{color:#C62828;background:#FFEBEE;border:1px solid #EF9A9A;border-radius:8px;padding:8px 12px;font-size:10px}
 
 /* Strength meter */
 .strength-bar{height:3px;border-radius:2px;background:var(--border);overflow:hidden;margin-top:4px}
@@ -499,184 +515,181 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
      AUTH SCREEN
 ══════════════════════════════════════════════════ -->
 <div class="auth-screen" id="authScreen">
-  <div class="auth-hero">
-    <div class="auth-wordmark">COFFER</div>
-    <div class="auth-tagline">Precious Metals Ledger</div>
+  <div class="auth-top">
 
-    <div class="auth-rule">
-      <div class="auth-rule-line"></div>
-      <div class="auth-rule-icon">✦</div>
-      <div class="auth-rule-line"></div>
-    </div>
+    <!-- Compact login box top-left -->
+    <div class="auth-box">
+      <div class="auth-wordmark">COFFER</div>
+      <div class="auth-tagline">Precious Metals Ledger</div>
 
-    <div class="auth-headline">Your gold &amp; silver,<br><em>valued in real time.</em></div>
-    <div class="auth-desc">
-      A private digital ledger for tracking the live market value of physical gold and silver — jewellery, hallmarked coins, investment bars, and raw metal. Prices update from global spot markets in real time.
-    </div>
-
-    <div class="physical-case">
-      <div class="physical-case-header">
-        <span style="font-size:16px">🏅</span>
-        <div class="physical-case-title">Why physical metal beats paper gold</div>
+      <div class="auth-tabs" id="authTabsRow">
+        <button class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</button>
+        <button class="auth-tab" onclick="switchAuthTab('register',this)">Create Account</button>
       </div>
 
+      <div class="auth-panels">
+
+        <!-- ── LOGIN PANEL ── -->
+        <div class="auth-panel active" id="panelLogin">
+          <div id="loginMsg"></div>
+
+          <div class="af">
+            <label>Email</label>
+            <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
+          </div>
+
+          <div class="af">
+            <label>Password</label>
+            <div class="pw-wrap">
+              <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+              <button class="pw-toggle" onclick="togglePw('loginPassword',this)" type="button">👁</button>
+            </div>
+          </div>
+
+          <button class="btn-auth" onclick="doLogin()">Open My Coffer →</button>
+
+          <div style="text-align:center;margin-top:-4px">
+            <span style="font-size:9px;color:#AAA">No account? </span>
+            <button onclick="switchAuthTab('register',document.querySelectorAll('.auth-tab')[1])" style="background:none;border:none;color:#B8860B;font-size:9px;font-family:'DM Mono',monospace;cursor:pointer;letter-spacing:.06em">Create one →</button>
+          </div>
+        </div>
+
+        <!-- ── REGISTER PANEL ── -->
+        <div class="auth-panel" id="panelRegister">
+          <div id="registerMsg"></div>
+
+          <div class="af-row">
+            <div class="af">
+              <label>First Name</label>
+              <input type="text" id="regFirstName" placeholder="Priya" autocomplete="given-name">
+            </div>
+            <div class="af">
+              <label>Last Name</label>
+              <input type="text" id="regLastName" placeholder="Sharma" autocomplete="family-name">
+            </div>
+          </div>
+
+          <div class="af-row">
+            <div class="af">
+              <label>Age</label>
+              <input type="number" id="regAge" placeholder="35" min="18" max="100">
+            </div>
+            <div class="af">
+              <label>Country</label>
+              <select id="regCountry">
+                <option value="">Select…</option>
+                <option>India</option>
+                <option>United Arab Emirates</option>
+                <option>United Kingdom</option>
+                <option>United States</option>
+                <option>Australia</option>
+                <option>Canada</option>
+                <option>Singapore</option>
+                <option>Germany</option>
+                <option>France</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="af">
+            <label>Email</label>
+            <input type="email" id="regEmail" placeholder="your@email.com" autocomplete="email">
+          </div>
+
+          <div class="af">
+            <label>Password</label>
+            <div class="pw-wrap">
+              <input type="password" id="regPassword" placeholder="Create a password" autocomplete="new-password" oninput="checkStrength(this.value)">
+              <button class="pw-toggle" onclick="togglePw('regPassword',this)" type="button">👁</button>
+            </div>
+            <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+            <div class="strength-label" id="strengthLabel">Enter a password</div>
+          </div>
+
+          <div class="af">
+            <label>Confirm Password</label>
+            <div class="pw-wrap">
+              <input type="password" id="regPasswordConfirm" placeholder="Repeat password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doRegister()">
+              <button class="pw-toggle" onclick="togglePw('regPasswordConfirm',this)" type="button">👁</button>
+            </div>
+          </div>
+
+          <button class="btn-auth" onclick="doRegister()">Create My Coffer →</button>
+
+          <div style="text-align:center;margin-top:-4px">
+            <span style="font-size:9px;color:#AAA">Have an account? </span>
+            <button onclick="switchAuthTab('login',document.querySelectorAll('.auth-tab')[0])" style="background:none;border:none;color:#B8860B;font-size:9px;font-family:'DM Mono',monospace;cursor:pointer;letter-spacing:.06em">Sign in →</button>
+          </div>
+        </div>
+
+      </div><!-- /auth-panels -->
+    </div><!-- /auth-box -->
+
+    <!-- Right: hero content -->
+    <div class="auth-hero">
+      <div class="auth-rule">
+        <div class="auth-rule-line"></div>
+        <div class="auth-rule-icon">✦</div>
+        <div class="auth-rule-line"></div>
+      </div>
+      <div class="auth-headline">Your gold &amp;<br>silver, valued<br><em>in real time.</em></div>
+      <div class="auth-desc">
+        A private digital ledger for tracking the live market value of physical gold and silver — jewellery, hallmarked coins, investment bars, and raw metal. Prices update from global spot markets in real time.
+      </div>
+      <div class="free-badge"><span class="dot"></span>Free to use · No data sharing</div>
+    </div><!-- /auth-hero -->
+
+  </div><!-- /auth-top -->
+
+  <!-- Full-width horizontal why physical block -->
+  <div class="physical-case">
+    <div class="physical-case-header">
+      <span style="font-size:18px">🏅</span>
+      <div class="physical-case-title">Why physical metal beats paper gold</div>
+    </div>
+    <div class="physical-pillars-grid">
       <div class="physical-pillar">
         <div class="pillar-icon">🔐</div>
-        <div class="pillar-body">
-          <div class="pillar-title">You own it outright — no counterparty risk</div>
-          <div class="pillar-desc">Demat gold, ETFs, and digital gold are <strong>IOUs</strong>. If the fund, custodian, or platform fails, your claim may be worth nothing. Physical metal in your hand has <strong>zero counterparty risk</strong> — it cannot be frozen, suspended, or defaulted on.</div>
-        </div>
+        <div class="pillar-title">No counterparty risk</div>
+        <div class="pillar-desc">Demat gold, ETFs, and digital gold are <strong>IOUs</strong>. Physical metal cannot be frozen, suspended, or defaulted on.</div>
       </div>
-
       <div class="physical-pillar">
         <div class="pillar-icon">💸</div>
-        <div class="pillar-body">
-          <div class="pillar-title">No management fees eroding your returns</div>
-          <div class="pillar-desc">Gold ETFs and sovereign gold bonds carry <strong>annual expense ratios</strong> (0.5–1%) that compound against you silently over decades. Physical metal holds its <strong>full weight, forever</strong>, with no ongoing charges.</div>
-        </div>
+        <div class="pillar-title">No fees eroding returns</div>
+        <div class="pillar-desc">Gold ETFs carry <strong>annual expense ratios</strong> that compound against you silently. Physical metal holds its full weight, forever.</div>
       </div>
-
       <div class="physical-pillar">
         <div class="pillar-icon">🌐</div>
-        <div class="pillar-body">
-          <div class="pillar-title">Universal, borderless, always liquid</div>
-          <div class="pillar-desc">Physical gold is accepted <strong>everywhere in the world</strong> at fair market value. Demat holdings are tied to one country's exchange infrastructure, subject to <strong>capital controls, trading halts</strong>, and platform outages during the exact crises when you need liquidity most.</div>
-        </div>
+        <div class="pillar-title">Universal &amp; always liquid</div>
+        <div class="pillar-desc">Accepted <strong>everywhere</strong> at fair market value — not subject to trading halts, capital controls, or platform outages.</div>
       </div>
-
-      <div class="physical-pillar">
-        <div class="pillar-icon">🏦</div>
-        <div class="pillar-body">
-          <div class="pillar-title">Private wealth — outside the banking system</div>
-          <div class="pillar-desc">Bank accounts can be <strong>seized, frozen, or bailed-in</strong>. Digital holdings leave a paper trail. Physical gold passes privately between generations, holds value through <strong>currency collapses and bank failures</strong>, and requires no permission to transact.</div>
-        </div>
-      </div>
-
       <div class="physical-pillar">
         <div class="pillar-icon">📈</div>
-        <div class="pillar-body">
-          <div class="pillar-title">Intrinsic value — not a promise</div>
-          <div class="pillar-desc">Gold has been money for <strong>5,000 years</strong>. Unlike stocks, bonds, or digital proxies, it has no earnings risk, no management to misallocate, and no bankruptcy scenario. It is the <strong>asset of last resort</strong> when all else fails.</div>
-        </div>
+        <div class="pillar-title">Intrinsic value — not a promise</div>
+        <div class="pillar-desc">Gold has been money for <strong>5,000 years</strong>. It is the <strong>asset of last resort</strong> when all else fails.</div>
       </div>
-    </div>
-
-    <div style="margin-top:16px">
-      <div class="free-badge"><span class="dot"></span>Free forever · No ads · No data sharing · Runs on your device</div>
     </div>
   </div>
 
-  <div class="auth-tabs" id="authTabsRow">
-    <button class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</button>
-    <button class="auth-tab" onclick="switchAuthTab('register',this)">Create Account</button>
+  <!-- Full-width about strip -->
+  <div class="auth-about">
+    <div class="about-item">
+      <div class="about-label">What is Coffer?</div>
+      <div class="about-text">A private ledger for physical gold and silver. Track jewellery, coins, bars, and raw metal at live MCX-aligned prices — with full P&amp;L history.</div>
+    </div>
+    <div class="about-divider"></div>
+    <div class="about-item">
+      <div class="about-label">Who is it for?</div>
+      <div class="about-text">Anyone who owns physical precious metals and wants a clean, private way to know what their holdings are worth — in real time, in their currency.</div>
+    </div>
+    <div class="about-divider"></div>
+    <div class="about-item">
+      <div class="about-label">How does it work?</div>
+      <div class="about-text">Add your holdings with weight, purity, and purchase price. Coffer fetches live spot prices every five minutes and calculates your portfolio value automatically.</div>
+    </div>
   </div>
 
-  <div class="auth-panels">
-
-    <!-- ── LOGIN PANEL ── -->
-    <div class="auth-panel active" id="panelLogin">
-      <div id="loginMsg"></div>
-
-      <div class="af">
-        <label>Email Address</label>
-        <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
-      </div>
-
-      <div class="af">
-        <label>Password</label>
-        <div class="pw-wrap">
-          <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-          <button class="pw-toggle" onclick="togglePw('loginPassword',this)" type="button">👁</button>
-        </div>
-      </div>
-
-      <button class="btn-auth" onclick="doLogin()">Open My Coffer →</button>
-
-      <div style="text-align:center;margin-top:-4px">
-        <span style="font-size:10px;color:var(--text-dim)">No account yet? </span>
-        <button onclick="switchAuthTab('register',document.querySelectorAll('.auth-tab')[1])" style="background:none;border:none;color:var(--gold);font-size:10px;font-family:'DM Mono',monospace;cursor:pointer;letter-spacing:.06em">Create one →</button>
-      </div>
-
-      <div class="auth-disclaimer">
-        <strong>⚠ Demo notice:</strong> This app runs entirely in your browser. Passwords are stored locally on this device only — not on any server. Do not use a password you use elsewhere. <a href="#" onclick="return false" style="color:var(--blue)">Learn more</a>
-      </div>
-    </div>
-
-    <!-- ── REGISTER PANEL ── -->
-    <div class="auth-panel" id="panelRegister">
-      <div id="registerMsg"></div>
-
-      <div class="af-row">
-        <div class="af">
-          <label>First Name</label>
-          <input type="text" id="regFirstName" placeholder="Priya" autocomplete="given-name">
-        </div>
-        <div class="af">
-          <label>Last Name</label>
-          <input type="text" id="regLastName" placeholder="Sharma" autocomplete="family-name">
-        </div>
-      </div>
-
-      <div class="af-row">
-        <div class="af">
-          <label>Age</label>
-          <input type="number" id="regAge" placeholder="35" min="18" max="100">
-        </div>
-        <div class="af">
-          <label>Country</label>
-          <select id="regCountry">
-            <option value="">Select…</option>
-            <option>India</option>
-            <option>United Arab Emirates</option>
-            <option>United Kingdom</option>
-            <option>United States</option>
-            <option>Australia</option>
-            <option>Canada</option>
-            <option>Singapore</option>
-            <option>Germany</option>
-            <option>France</option>
-            <option>Other</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="af">
-        <label>Email Address</label>
-        <input type="email" id="regEmail" placeholder="your@email.com" autocomplete="email">
-        <div class="af-hint">Used as your login username only — not verified or shared</div>
-      </div>
-
-      <div class="af">
-        <label>Password</label>
-        <div class="pw-wrap">
-          <input type="password" id="regPassword" placeholder="Create a password" autocomplete="new-password" oninput="checkStrength(this.value)">
-          <button class="pw-toggle" onclick="togglePw('regPassword',this)" type="button">👁</button>
-        </div>
-        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
-        <div class="strength-label" id="strengthLabel">Enter a password</div>
-      </div>
-
-      <div class="af">
-        <label>Confirm Password</label>
-        <div class="pw-wrap">
-          <input type="password" id="regPasswordConfirm" placeholder="Repeat your password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doRegister()">
-          <button class="pw-toggle" onclick="togglePw('regPasswordConfirm',this)" type="button">👁</button>
-        </div>
-      </div>
-
-      <div class="auth-disclaimer">
-        <strong>⚠ Demo notice:</strong> This is a client-side demo. Your profile and password are stored in <strong>this browser's local storage only</strong>. Clearing browser data will erase your account. Never use a sensitive or reused password here.
-      </div>
-
-      <button class="btn-auth" onclick="doRegister()">Create My Coffer →</button>
-
-      <div style="text-align:center;margin-top:-4px">
-        <span style="font-size:10px;color:var(--text-dim)">Already have an account? </span>
-        <button onclick="switchAuthTab('login',document.querySelectorAll('.auth-tab')[0])" style="background:none;border:none;color:var(--gold);font-size:10px;font-family:'DM Mono',monospace;cursor:pointer;letter-spacing:.06em">Sign in →</button>
-      </div>
-    </div>
-
-  </div><!-- /auth-panels -->
 </div><!-- /auth-screen -->
 
 <!-- ══════════════════════════════════════════════════
@@ -718,8 +731,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
     <div class="currency-bar">
       <span class="currency-label">View in:</span>
-      <button class="currency-btn active" onclick="setCurrency('USD',this)">$ USD</button>
-      <button class="currency-btn" onclick="setCurrency('INR',this)">₹ INR</button>
+      <button class="currency-btn" onclick="setCurrency('USD',this)">$ USD</button>
+      <button class="currency-btn active" onclick="setCurrency('INR',this)">₹ INR</button>
       <button class="currency-btn" onclick="setCurrency('AED',this)">AED</button>
       <button class="currency-btn" onclick="setCurrency('EUR',this)">€ EUR</button>
     </div>
@@ -1246,7 +1259,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 // ══════════════════════════════════════════
 let prices={gold:3320,silver:33.2};
 let rates={USD:1,INR:83.5,AED:3.67,EUR:0.92};
-let currency='USD';
+let currency='INR';
 let items=[];
 let activeHTab='all',activeFilter='all';
 let selectedMetal='gold',selectedType='jewellery',selectedGrade=null;
@@ -1322,7 +1335,7 @@ function showMsg(id,text,type){
   const el=document.getElementById(id);
   if(!el)return;
   el.textContent=text;
-  el.className='msg '+type;
+  el.className='msg-'+type;
 }
 
 function togglePw(inputId, btn){
@@ -1367,8 +1380,9 @@ async function doRegister(){
   btn.disabled=true;btn.textContent='Creating…';
   try{
     const data=await api('POST','/auth/register',{email,password:pw,firstName:first,lastName:last,age,country});
-    setToken(data.token);
-    loginUser(data.user);
+    btn.disabled=false;btn.textContent='Create My Coffer →';
+    showMsg('registerMsg','Account created! Please sign in.','success');
+    setTimeout(()=>switchAuthTab('login',document.querySelectorAll('.auth-tab')[0]),1200);
   }catch(e){
     showMsg('registerMsg',e.message,'error');
     btn.disabled=false;btn.textContent='Create My Coffer →';
