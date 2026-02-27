@@ -552,6 +552,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
             <span style="font-size:9px;color:#AAA">No account? </span>
             <button onclick="switchAuthTab('register',document.querySelectorAll('.auth-tab')[1])" style="background:none;border:none;color:#B8860B;font-size:9px;font-family:'DM Mono',monospace;cursor:pointer;letter-spacing:.06em">Create one →</button>
           </div>
+
+          <div style="text-align:center;margin-top:-8px">
+            <button onclick="showForgotForm()" style="background:none;border:none;color:#BBB;font-size:9px;font-family:'DM Mono',monospace;cursor:pointer;letter-spacing:.06em">Forgot password?</button>
+          </div>
         </div>
 
         <!-- ── REGISTER PANEL ── -->
@@ -2213,6 +2217,115 @@ function updatePriceDisplay(){
   }
   document.getElementById('authScreen').classList.remove('hidden');
 })();
+</script>
+<!-- ══════════════════════════════════════════════════
+     FORGOT / RESET PASSWORD OVERLAYS
+══════════════════════════════════════════════════ -->
+<div id="forgotOverlay" style="display:none;position:fixed;inset:0;background:rgba(245,240,232,0.97);z-index:1000;display:none;align-items:center;justify-content:center">
+  <div style="background:#fff;border:1px solid #DDD5C0;border-radius:14px;padding:28px 24px;width:300px;box-shadow:0 4px 24px rgba(0,0,0,.1)">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#B8860B;letter-spacing:.2em;margin-bottom:4px">COFFER</div>
+    <div style="font-size:9px;color:#999;letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px">Reset Password</div>
+    <div id="forgotMsg"></div>
+    <div class="af" style="margin-bottom:14px">
+      <label>Your Email</label>
+      <input type="email" id="forgotEmail" placeholder="your@email.com" autocomplete="email">
+    </div>
+    <button class="btn-auth" onclick="doForgot()">Send Reset Link →</button>
+    <div style="text-align:center;margin-top:10px">
+      <button onclick="hideForgotForm()" style="background:none;border:none;color:#BBB;font-size:9px;font-family:'DM Mono',monospace;cursor:pointer;letter-spacing:.06em">← Back to sign in</button>
+    </div>
+  </div>
+</div>
+
+<div id="resetOverlay" style="display:none;position:fixed;inset:0;background:rgba(245,240,232,0.97);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:#fff;border:1px solid #DDD5C0;border-radius:14px;padding:28px 24px;width:300px;box-shadow:0 4px 24px rgba(0,0,0,.1)">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#B8860B;letter-spacing:.2em;margin-bottom:4px">COFFER</div>
+    <div style="font-size:9px;color:#999;letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px">Set New Password</div>
+    <div id="resetMsg"></div>
+    <div class="af" style="margin-bottom:12px">
+      <label>New Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="resetPassword" placeholder="At least 6 characters" autocomplete="new-password">
+        <button class="pw-toggle" onclick="togglePw('resetPassword',this)" type="button">👁</button>
+      </div>
+    </div>
+    <div class="af" style="margin-bottom:14px">
+      <label>Confirm Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="resetPasswordConfirm" placeholder="Repeat password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doReset()">
+        <button class="pw-toggle" onclick="togglePw('resetPasswordConfirm',this)" type="button">👁</button>
+      </div>
+    </div>
+    <button class="btn-auth" onclick="doReset()">Save New Password →</button>
+  </div>
+</div>
+
+<script>
+// ── FORGOT PASSWORD ──
+function showForgotForm() {
+  document.getElementById('forgotMsg').textContent = '';
+  document.getElementById('forgotEmail').value = '';
+  const el = document.getElementById('forgotOverlay');
+  el.style.display = 'flex';
+}
+function hideForgotForm() {
+  document.getElementById('forgotOverlay').style.display = 'none';
+}
+async function doForgot() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  if (!email) return showMsg('forgotMsg', 'Please enter your email.', 'error');
+  const btn = document.querySelector('#forgotOverlay .btn-auth');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    await api('POST', '/api/auth/forgot-password', { email });
+    document.getElementById('forgotMsg').className = 'msg-success';
+    document.getElementById('forgotMsg').textContent = 'If an account exists, a reset link has been sent.';
+    btn.textContent = 'Sent ✓';
+  } catch(e) {
+    showMsg('forgotMsg', e.message, 'error');
+    btn.disabled = false; btn.textContent = 'Send Reset Link →';
+  }
+}
+
+// ── RESET PASSWORD (token from URL) ──
+let _resetToken = null;
+
+function checkResetToken() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('reset');
+  if (!token) return;
+  _resetToken = token;
+  document.getElementById('resetMsg').textContent = '';
+  document.getElementById('resetPassword').value = '';
+  document.getElementById('resetPasswordConfirm').value = '';
+  document.getElementById('resetOverlay').style.display = 'flex';
+  // Clean URL
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+async function doReset() {
+  const pw = document.getElementById('resetPassword').value;
+  const pw2 = document.getElementById('resetPasswordConfirm').value;
+  if (pw.length < 6) return showMsg('resetMsg', 'Password must be at least 6 characters.', 'error');
+  if (pw !== pw2) return showMsg('resetMsg', 'Passwords do not match.', 'error');
+  const btn = document.querySelector('#resetOverlay .btn-auth');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    await api('POST', '/api/auth/reset-password', { token: _resetToken, password: pw });
+    document.getElementById('resetMsg').className = 'msg-success';
+    document.getElementById('resetMsg').textContent = 'Password updated! Please sign in.';
+    btn.textContent = 'Done ✓';
+    setTimeout(() => {
+      document.getElementById('resetOverlay').style.display = 'none';
+    }, 2000);
+  } catch(e) {
+    showMsg('resetMsg', e.message, 'error');
+    btn.disabled = false; btn.textContent = 'Save New Password →';
+  }
+}
+
+// Check for reset token on load
+window.addEventListener('DOMContentLoaded', checkResetToken);
 </script>
 </body>
 </html>
