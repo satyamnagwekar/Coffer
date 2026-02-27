@@ -2230,7 +2230,7 @@ function updatePriceDisplay(){
       <label>Your Email</label>
       <input type="email" id="forgotEmail" placeholder="your@email.com" autocomplete="email">
     </div>
-    <button class="btn-auth" onclick="doForgot()">Send Reset Link →</button>
+    <button id="forgotBtn" class="btn-auth" onclick="doForgot()">Send Reset Link →</button>
     <div style="text-align:center;margin-top:10px">
       <button onclick="hideForgotForm()" style="background:none;border:none;color:#BBB;font-size:9px;font-family:'DM Mono',monospace;cursor:pointer;letter-spacing:.06em">← Back to sign in</button>
     </div>
@@ -2273,8 +2273,8 @@ function hideForgotForm() {
 }
 async function doForgot() {
   const email = document.getElementById('forgotEmail').value.trim();
-  if (!email) return showMsg('forgotMsg', 'Please enter your email.', 'error');
-  const btn = document.querySelector('#forgotOverlay .btn-auth');
+  if (!email) { document.getElementById('forgotMsg').className='msg-error'; document.getElementById('forgotMsg').textContent='Please enter your email.'; return; }
+  const btn = document.getElementById('forgotBtn');
   btn.disabled = true; btn.textContent = 'Sending…';
   try {
     await api('POST', '/auth/forgot-password', { email });
@@ -2282,7 +2282,8 @@ async function doForgot() {
     document.getElementById('forgotMsg').textContent = 'If an account exists, a reset link has been sent.';
     btn.textContent = 'Sent ✓';
   } catch(e) {
-    showMsg('forgotMsg', e.message, 'error');
+    document.getElementById('forgotMsg').className = 'msg-error';
+    document.getElementById('forgotMsg').textContent = e.message;
     btn.disabled = false; btn.textContent = 'Send Reset Link →';
   }
 }
