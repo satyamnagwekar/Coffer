@@ -2277,7 +2277,7 @@ async function doForgot() {
   const btn = document.querySelector('#forgotOverlay .btn-auth');
   btn.disabled = true; btn.textContent = 'Sending…';
   try {
-    await api('POST', '/api/auth/forgot-password', { email });
+    await api('POST', '/auth/forgot-password', { email });
     document.getElementById('forgotMsg').className = 'msg-success';
     document.getElementById('forgotMsg').textContent = 'If an account exists, a reset link has been sent.';
     btn.textContent = 'Sent ✓';
@@ -2311,7 +2311,7 @@ async function doReset() {
   const btn = document.querySelector('#resetOverlay .btn-auth');
   btn.disabled = true; btn.textContent = 'Saving…';
   try {
-    await api('POST', '/api/auth/reset-password', { token: _resetToken, password: pw });
+    await api('POST', '/auth/reset-password', { token: _resetToken, password: pw });
     document.getElementById('resetMsg').className = 'msg-success';
     document.getElementById('resetMsg').textContent = 'Password updated! Please sign in.';
     btn.textContent = 'Done ✓';
