@@ -1,4 +1,4 @@
-'use strict'; // v2 - postgres
+'use strict'; // v3 - password reset
 const express  = require('express');
 const { Pool } = require('pg');
 const bcrypt   = require('bcryptjs');
@@ -9,8 +9,10 @@ const path     = require('path');
 const fs       = require('fs');
 const https    = require('https');
 
-const PORT       = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'coffer-change-this-secret-in-production';
+const PORT        = process.env.PORT || 3000;
+const JWT_SECRET  = process.env.JWT_SECRET || 'coffer-change-this-secret-in-production';
+const RESEND_KEY  = process.env.RESEND_API_KEY || 're_fRNcgdah_DpCTSZadCkssrXNJmSMpzdq5';
+const APP_URL     = process.env.APP_URL || 'https://mycoffer.up.railway.app';
 
 console.log('[config] DATABASE_URL:', process.env.DATABASE_URL ? process.env.DATABASE_URL.slice(0, 40) + '...' : 'NOT SET');
 
@@ -79,6 +81,14 @@ async function initDB() {
       usd_eur    REAL NOT NULL DEFAULT 0.92,
       usd_gbp    REAL NOT NULL DEFAULT 0.79,
       fetched_at TIMESTAMPTZ DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id         SERIAL PRIMARY KEY,
+      user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      token      TEXT NOT NULL UNIQUE,
+      expires_at TIMESTAMPTZ NOT NULL,
+      used       BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMPTZ DEFAULT NOW()
     );
     INSERT INTO price_cache (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
   `);
@@ -238,6 +248,107 @@ app.patch('/api/auth/profile', requireAuth, async (req, res) => {
 app.delete('/api/auth/account', requireAuth, async (req, res) => {
   try { await q('DELETE FROM users WHERE id=$1', [req.user.userId]); res.json({ ok:true }); }
   catch(e) { res.status(500).json({ error:'Server error' }); }
+});
+
+// ─────────────────────────────────────────
+//  EMAIL HELPER
+// ─────────────────────────────────────────
+async function sendEmail({ to, subject, html }) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({ from:'Coffer <onboarding@resend.dev>', to, subject, html });
+    const req = https.request({
+      hostname: 'api.resend.com',
+      path: '/emails',
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+    }, res => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => { console.log('[email] Resend response:', res.statusCode, data); resolve(data); });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+// ─────────────────────────────────────────
+//  ROUTES — PASSWORD RESET
+// ─────────────────────────────────────────
+
+// POST /api/auth/forgot-password
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email required' });
+
+  try {
+    const result = await q('SELECT * FROM users WHERE LOWER(email)=LOWER($1)', [email.trim()]);
+    const user = result.rows[0];
+
+    // Always return success to prevent email enumeration
+    if (!user) return res.json({ ok: true });
+
+    // Generate a secure token
+    const crypto = require('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    // Invalidate old tokens for this user
+    await q('UPDATE password_reset_tokens SET used=TRUE WHERE user_id=$1 AND used=FALSE', [user.id]);
+
+    // Store new token
+    await q('INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES ($1,$2,$3)',
+      [user.id, token, expires]);
+
+    const resetUrl = `${APP_URL}/?reset=${token}`;
+
+    await sendEmail({
+      to: user.email,
+      subject: 'Reset your Coffer password',
+      html: `
+        <div style="font-family:monospace;max-width:480px;margin:0 auto;padding:32px;background:#F5F0E8;border-radius:12px">
+          <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:4px">COFFER</div>
+          <div style="font-size:10px;color:#999;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:24px">Precious Metals Ledger</div>
+          <p style="color:#2C2410;font-size:14px;line-height:1.8">Hi ${user.first_name},</p>
+          <p style="color:#555;font-size:13px;line-height:1.8">We received a request to reset your password. Click the button below — the link expires in 1 hour.</p>
+          <div style="text-align:center;margin:28px 0">
+            <a href="${resetUrl}" style="background:linear-gradient(135deg,#B8860B,#D4A017);color:#fff;padding:14px 28px;border-radius:9px;text-decoration:none;font-size:12px;letter-spacing:0.1em;font-weight:500">Reset My Password →</a>
+          </div>
+          <p style="color:#AAA;font-size:10px;line-height:1.7">If you didn't request this, ignore this email — your password won't change.<br>Link: ${resetUrl}</p>
+        </div>
+      `
+    });
+
+    res.json({ ok: true });
+  } catch(e) {
+    console.error('[reset] forgot-password error:', e);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/auth/reset-password
+app.post('/api/auth/reset-password', async (req, res) => {
+  const { token, password } = req.body;
+  if (!token || !password) return res.status(400).json({ error: 'Token and password required' });
+  if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+  try {
+    const result = await q(
+      'SELECT * FROM password_reset_tokens WHERE token=$1 AND used=FALSE AND expires_at > NOW()',
+      [token]
+    );
+    const resetToken = result.rows[0];
+    if (!resetToken) return res.status(400).json({ error: 'Reset link is invalid or has expired' });
+
+    const hash = await bcrypt.hash(password, 12);
+    await q('UPDATE users SET password=$1, updated_at=NOW() WHERE id=$2', [hash, resetToken.user_id]);
+    await q('UPDATE password_reset_tokens SET used=TRUE WHERE id=$1', [resetToken.id]);
+
+    res.json({ ok: true });
+  } catch(e) {
+    console.error('[reset] reset-password error:', e);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // PRICES
