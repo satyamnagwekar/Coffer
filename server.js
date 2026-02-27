@@ -256,6 +256,7 @@ app.delete('/api/auth/account', requireAuth, async (req, res) => {
 async function sendEmail({ to, subject, html }) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({ from:'Coffer <onboarding@resend.dev>', to, subject, html });
+    console.log('[email] Sending to:', to);
     const req = https.request({
       hostname: 'api.resend.com',
       path: '/emails',
@@ -264,9 +265,9 @@ async function sendEmail({ to, subject, html }) {
     }, res => {
       let data = '';
       res.on('data', chunk => data += chunk);
-      res.on('end', () => { console.log('[email] Resend response:', res.statusCode, data); resolve(data); });
+      res.on('end', () => { console.log('[email] Resend status:', res.statusCode, 'body:', data); resolve(data); });
     });
-    req.on('error', reject);
+    req.on('error', e => { console.error('[email] Request error:', e.message); reject(e); });
     req.write(body);
     req.end();
   });
@@ -286,7 +287,9 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     const user = result.rows[0];
 
     // Always return success to prevent email enumeration
-    if (!user) return res.json({ ok: true });
+    if (!user) { console.log('[reset] No user found for:', email); return res.json({ ok: true }); }
+
+    console.log('[reset] Sending reset email to:', user.email);
 
     // Generate a secure token
     const crypto = require('crypto');
