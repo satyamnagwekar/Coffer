@@ -788,11 +788,40 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     </div>
 
     <div class="inventory-list pb" id="inventoryList">
-      <div class="empty-state">
-        <div class="icon">✦</div>
-        <div class="title">Your coffer is empty</div>
-        <div class="sub">Tap the + button below to add your first gold or silver holding.</div>
+      <div class="empty-state" id="emptyOnboarding">
+        <div style="font-size:48px;margin-bottom:8px">🏛</div>
+        <div class="title" id="onboardingGreeting">Welcome to your Coffer</div>
+        <div class="sub" style="margin-bottom:24px">Your vault is empty. Start by adding a holding — anything physical: jewellery, coins, bars, or raw metal.</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:320px;margin:0 auto 24px;text-align:left">
+          <div onclick="openAddModalWith('gold','jewellery')" style="padding:14px;background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:12px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(240,180,41,.14)'" onmouseout="this.style.background='rgba(240,180,41,.08)'">
+            <div style="font-size:22px;margin-bottom:6px">💍</div>
+            <div style="font-size:11px;color:var(--gold-light);font-weight:500;margin-bottom:3px">Jewellery</div>
+            <div style="font-size:9px;color:var(--text-dim);line-height:1.5">Necklaces, bangles, rings — any karat</div>
+          </div>
+          <div onclick="openAddModalWith('gold','coin_bar')" style="padding:14px;background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:12px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(240,180,41,.14)'" onmouseout="this.style.background='rgba(240,180,41,.08)'">
+            <div style="font-size:22px;margin-bottom:6px">🪙</div>
+            <div style="font-size:11px;color:var(--gold-light);font-weight:500;margin-bottom:3px">Coins &amp; Bars</div>
+            <div style="font-size:9px;color:var(--text-dim);line-height:1.5">Hallmarked coins, investment bars</div>
+          </div>
+          <div onclick="openAddModalWith('silver','jewellery')" style="padding:14px;background:rgba(200,216,232,.08);border:1px solid rgba(200,216,232,.15);border-radius:12px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(200,216,232,.14)'" onmouseout="this.style.background='rgba(200,216,232,.08)'">
+            <div style="font-size:22px;margin-bottom:6px">🥈</div>
+            <div style="font-size:11px;color:var(--silver-bright);font-weight:500;margin-bottom:3px">Silver Jewellery</div>
+            <div style="font-size:9px;color:var(--text-dim);line-height:1.5">Silver ornaments and accessories</div>
+          </div>
+          <div onclick="openAddModalWith('gold','raw')" style="padding:14px;background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:12px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(240,180,41,.14)'" onmouseout="this.style.background='rgba(240,180,41,.08)'">
+            <div style="font-size:22px;margin-bottom:6px">✨</div>
+            <div style="font-size:11px;color:var(--gold-light);font-weight:500;margin-bottom:3px">Raw Metal</div>
+            <div style="font-size:9px;color:var(--text-dim);line-height:1.5">Scrap gold, unrefined metal</div>
+          </div>
+        </div>
+
         <div class="empty-cta" onclick="openAddModal()">+ Add First Holding</div>
+
+        <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border);font-size:9px;color:var(--text-dim);line-height:1.9;letter-spacing:.04em">
+          Prices update every 5 minutes from global spot markets<br>
+          INR prices include 15% import duty + 3% GST
+        </div>
       </div>
     </div>
 
@@ -1461,6 +1490,7 @@ function refreshHeader(){
   const init=(currentUser.firstName[0]||'?').toUpperCase();
   document.getElementById('headerAvatar').textContent=init;
   document.getElementById('headerName').textContent=currentUser.firstName;
+  updateOnboardingGreeting(currentUser.firstName);
 }
 
 function refreshProfile(){
@@ -1666,6 +1696,21 @@ function openAddModal(){
   document.getElementById('pnlPreviewBox').style.display='none';
   renderGradeGrid();renderTypeGrid();
   document.getElementById('addModal').classList.add('open');
+}
+
+function openAddModalWith(metal, type){
+  openAddModal();
+  selectedMetal = metal;
+  selectedType  = type;
+  if(metal==='gold'){ document.getElementById('metalGold').className='metal-btn gold selected'; document.getElementById('metalSilver').className='metal-btn silver'; }
+  else { document.getElementById('metalSilver').className='metal-btn silver selected'; document.getElementById('metalGold').className='metal-btn gold'; }
+  selectedGrade = metal==='gold' ? GOLD_GRADES[1] : SILVER_GRADES[0];
+  renderGradeGrid(); renderTypeGrid();
+}
+
+function updateOnboardingGreeting(firstName){
+  const el = document.getElementById('onboardingGreeting');
+  if(el && firstName) el.textContent = `Welcome, ${firstName}`;
 }
 
 function renderGradeGrid(){
