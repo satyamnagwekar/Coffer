@@ -15,7 +15,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'coffer-change-this-secret-in-produ
 console.log('[config] DATABASE_URL:', process.env.DATABASE_URL ? process.env.DATABASE_URL.slice(0, 40) + '...' : 'NOT SET');
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:HCqkEOVjGNJKsdwkIgPUhSHkQBEdZLZE@turntable.proxy.rlwy.net:36567/railway',
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
 
