@@ -90,7 +90,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .auth-rule-icon{font-size:12px;color:#C8A84B}
 .auth-headline{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;line-height:1.15;color:#2C2410;margin-bottom:16px;white-space:nowrap}
 .auth-headline em{color:#B8860B;font-style:italic}
-.auth-desc{font-size:15px;color:#444;line-height:1.8;margin-bottom:20px}
+.auth-desc{font-size:13px;color:#555;line-height:1.9;margin-bottom:20px}
 
 /* Free badge — plain monospace text, no pill */
 .free-badge{display:flex;align-items:center;gap:8px;font-size:9px;color:#999;letter-spacing:.12em;font-family:'DM Mono',monospace;text-transform:uppercase;margin-top:auto}
@@ -178,7 +178,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 /* Nav tabs */
 .nav-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg3)}
-.nav-tab{flex:1;padding:12px 4px;border:none;background:transparent;color:var(--text-dim);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;cursor:pointer;transition:all .2s;text-transform:uppercase;position:relative}
+.nav-tab{flex:1;padding:12px 4px;border:none;background:transparent;color:var(--text-dim);font-family:'DM Mono',monospace;font-size:14px;letter-spacing:.04em;cursor:pointer;transition:all .2s;text-transform:uppercase;position:relative}
 .nav-tab.active{color:var(--brand)}
 .nav-tab.active::after{content:'';position:absolute;bottom:0;left:15%;right:15%;height:2px;background:var(--brand);border-radius:2px 2px 0 0}
 
@@ -200,7 +200,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .summary-card{margin:14px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:22px;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .summary-card::before{display:none}
 .summary-card::after{display:none}
-.summary-eyebrow{font-size:9px;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px}
+.summary-eyebrow{font-size:14px;letter-spacing:.16em;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px}
 .summary-value{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;color:var(--brand);line-height:1;margin-bottom:3px}
 .summary-usd{font-size:12px;color:var(--text-dim);margin-bottom:16px}
 .summary-split{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding-top:16px;border-top:1px solid var(--border)}
@@ -214,7 +214,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 /* Holdings tabs */
 .htabs{display:flex;margin:0 14px 10px;background:var(--bg3);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border)}
-.htab{flex:1;padding:9px 4px;border-radius:9px;border:none;background:transparent;color:var(--text-dim);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.htab{flex:1;padding:9px 4px;border-radius:9px;border:none;background:transparent;color:var(--text-dim);font-family:'DM Mono',monospace;font-size:14px;cursor:pointer;transition:all .2s;text-transform:uppercase}
 .htab.active{background:var(--bg2);color:var(--brand);border:1px solid var(--border-gold);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 
 .filter-bar{display:flex;gap:6px;padding:0 14px 10px;overflow-x:auto}
@@ -408,8 +408,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .chart-panel{padding-bottom:100px}
 .chart-header{padding:16px 16px 0}
 .chart-title-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
-.chart-eyebrow{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px}
-.chart-headline{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--brand);line-height:1}
+.chart-eyebrow{font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px}
+.chart-headline{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:300;color:var(--brand);line-height:1}
 .chart-sub{font-size:10px;color:var(--text-dim);margin-top:2px}
 .chart-export-btn{display:flex;align-items:center;gap:5px;padding:8px 14px;border-radius:20px;border:1px solid var(--brand-dim);background:rgba(139,105,20,.07);color:var(--brand);font-size:10px;cursor:pointer;letter-spacing:.06em;white-space:nowrap;transition:all .2s;flex-shrink:0}
 .chart-export-btn:hover{background:rgba(240,180,41,.15)}
@@ -472,7 +472,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 ═══════════════════════════════════════ */
 .alerts-panel{padding-bottom:100px}
 .alerts-header{padding:20px 18px 12px;border-bottom:1px solid var(--border)}
-.alerts-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--text);margin-bottom:3px}
+.alerts-title{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--text);margin-bottom:3px}
 .alerts-sub{font-size:11px;color:var(--text-dim)}
 .spot-quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px}
 .spot-quick-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center}
@@ -643,7 +643,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       </div>
       <div class="auth-headline">Your gold &amp; silver, valued <em>in real time.</em></div>
       <div class="auth-desc">
-        A private digital ledger for tracking the live market value of physical gold and silver — jewellery, hallmarked coins, investment bars, and raw metal. Prices update from global spot markets in real time.
+        A private digital ledger for tracking the live market value of physical gold and silver — jewellery, hallmarked coins, investment bars, and raw metal. Prices update from global spot markets in real time.<br><br>
+        Built for families who hold physical gold as a long-term store of wealth. Know exactly what your holdings are worth today, in your currency, with full gain and loss history. No fees, no ads, no data sharing — ever.
       </div>
       <div class="free-badge"><span class="dot"></span>Free to use · No data sharing</div>
     </div><!-- /auth-hero -->
