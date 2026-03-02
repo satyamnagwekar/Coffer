@@ -204,13 +204,13 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .summary-value{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;color:var(--brand);line-height:1;margin-bottom:3px}
 .summary-usd{font-size:12px;color:var(--text-dim);margin-bottom:16px}
 .summary-split{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding-top:16px;border-top:1px solid var(--border)}
-.split-label{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px}
-.split-val{font-size:14px;font-weight:500}
+.split-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px}
+.split-val{font-size:18px;font-weight:500}
 .split-val.gold{color:var(--brand)}
 .split-val.silver{color:var(--silver)}
 .split-val.pnl.pos{color:var(--green)}
 .split-val.pnl.neg{color:var(--red)}
-.split-sub{font-size:9px;color:var(--text-dim);margin-top:2px}
+.split-sub{font-size:11px;color:var(--text-dim);margin-top:2px}
 
 /* Holdings tabs */
 .htabs{display:flex;margin:0 14px 10px;background:var(--bg3);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border)}
@@ -279,8 +279,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 .profile-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:16px}
 .stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 10px;text-align:center}
-.stat-num{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--brand);margin-bottom:3px}
-.stat-lbl{font-size:9px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--brand);margin-bottom:3px}
+.stat-lbl{font-size:11px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase}
 
 .btn-profile-action{width:100%;padding:14px;border:none;border-radius:var(--radius-sm);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-bottom:8px}
 .btn-edit-profile{background:var(--bg3);color:var(--text-mid);border:1px solid var(--border)}
@@ -772,6 +772,21 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div class="split-val pnl" id="totalPnl">—</div>
           <div class="split-sub" id="totalPnlPct">vs cost paid</div>
         </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 14px 14px">
+      <div style="background:var(--bg2);border:1px solid var(--border-gold);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(139,105,20,.08),transparent 70%);border-radius:50%"></div>
+        <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🥇 Gold spot</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--brand);line-height:1;margin-bottom:3px" id="homeGoldSpot">—</div>
+        <div style="font-size:10px;color:var(--text-dim)" id="homeGoldUnit">per oz · USD</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(122,142,160,.06),transparent 70%);border-radius:50%"></div>
+        <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🥈 Silver spot</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--silver-bright);line-height:1;margin-bottom:3px" id="homeSilverSpot">—</div>
+        <div style="font-size:10px;color:var(--text-dim)" id="homeSilverUnit">per oz · USD</div>
       </div>
     </div>
 
@@ -2257,7 +2272,6 @@ function showToast(msg){
 // ══════════════════════════════════════════
 function _coreUpdatePriceDisplay(){
   const isINR = currency === 'INR';
-  // Indian market price = spot × INR rate × (10/31.1035) × 1.15 (import duty) × 1.03 (GST)
   const INDIA_FACTOR = (10/31.1035) * 1.15 * 1.03;
   const goldINR10g   = prices.gold   * rates.INR * INDIA_FACTOR;
   const silverINR10g = prices.silver * rates.INR * INDIA_FACTOR;
@@ -2278,6 +2292,26 @@ function _coreUpdatePriceDisplay(){
     document.getElementById('silverSpotLabel').textContent = 'SILVER /oz';
     document.getElementById('goldSpot').textContent   = sym + goldDisp.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
     document.getElementById('silverSpot').textContent = sym + silverDisp.toFixed(2);
+  }
+
+  // Home spot cards
+  const hgEl = document.getElementById('homeGoldSpot');
+  const hsEl = document.getElementById('homeSilverSpot');
+  const hgU  = document.getElementById('homeGoldUnit');
+  const hsU  = document.getElementById('homeSilverUnit');
+  if(hgEl && hsEl){
+    if(isINR){
+      hgEl.textContent = '₹' + Math.round(goldINR10g).toLocaleString('en-IN');
+      hsEl.textContent = '₹' + Math.round(silverINR10g).toLocaleString('en-IN');
+      if(hgU) hgU.textContent = 'per 10g · MCX incl. duty+GST';
+      if(hsU) hsU.textContent = 'per 10g · MCX incl. duty+GST';
+    } else {
+      const sym = SYMBOLS[currency] || '$';
+      hgEl.textContent = sym + (prices.gold * (rates[currency]||1)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+      hsEl.textContent = sym + (prices.silver * (rates[currency]||1)).toFixed(2);
+      if(hgU) hgU.textContent = 'per oz · ' + currency;
+      if(hsU) hsU.textContent = 'per oz · ' + currency;
+    }
   }
 }
 
