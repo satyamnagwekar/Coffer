@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#F5F0E8">
 <title>Coffer — Precious Metals Tracker</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%23F5F0E8'/><text x='32' y='44' font-family='Georgia,serif' font-size='22' font-weight='300' fill='%238B6914' text-anchor='middle' letter-spacing='2'>C</text></svg>"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -87,9 +88,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .auth-rule{display:flex;align-items:center;gap:10px;margin-bottom:20px}
 .auth-rule-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,#DDD5C0,transparent)}
 .auth-rule-icon{font-size:12px;color:#C8A84B}
-.auth-headline{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;line-height:1.15;color:#2C2410;margin-bottom:16px}
+.auth-headline{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;line-height:1.15;color:#2C2410;margin-bottom:16px;white-space:nowrap}
 .auth-headline em{color:#B8860B;font-style:italic}
-.auth-desc{font-size:13px;color:#555;line-height:1.9;margin-bottom:20px}
+.auth-desc{font-size:15px;color:#444;line-height:1.8;margin-bottom:20px}
 
 /* Free badge — plain monospace text, no pill */
 .free-badge{display:flex;align-items:center;gap:8px;font-size:9px;color:#999;letter-spacing:.12em;font-family:'DM Mono',monospace;text-transform:uppercase;margin-top:auto}
@@ -139,7 +140,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .msg.success{background:rgba(46,204,138,.1);border:1px solid rgba(46,204,138,.25);color:#80e4b8;display:block}
 
 /* Free badge */
-.free-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(46,204,138,.08);border:1px solid var(--green-dim);border-radius:20px;padding:6px 14px;font-size:9px;color:var(--green);letter-spacing:.1em;text-transform:uppercase}
+.free-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(46,204,138,.08);border:1px solid var(--green-dim);border-radius:20px;padding:6px 14px;font-size:9px;color:var(--green);letter-spacing:.1em;text-transform:uppercase;width:fit-content}
 .free-badge .dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
 
@@ -221,7 +222,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .filter-btn.active{background:var(--bg3);border-color:rgba(240,180,41,.3);color:var(--gold-light)}
 
 .section-header{display:flex;align-items:center;justify-content:space-between;padding:0 16px 10px}
-.section-title{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim)}
+.section-title{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);font-weight:500}
 .item-count{font-size:9px;color:var(--text-dim);background:var(--bg3);border:1px solid var(--border);padding:2px 9px;border-radius:10px}
 
 /* Item cards */
@@ -269,7 +270,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* Profile panel */
 .profile-panel{padding:0 0 80px}
 .profile-section{padding:20px;border-bottom:1px solid var(--border)}
-.profile-section-title{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px}
+.profile-section-title{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px;font-weight:500}
 .profile-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(46,42,24,.4)}
 .profile-row:last-child{border-bottom:none}
 .profile-key{font-size:10px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase}
@@ -376,7 +377,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 /* Detail modal */
 .detail-section{padding:15px 20px;border-bottom:1px solid var(--border)}
-.detail-section-title{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:11px}
+.detail-section-title{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-dim);margin-bottom:11px;font-weight:500}
 .detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(46,42,24,.4);gap:14px}
 .detail-row:last-child{border-bottom:none}
 .detail-key{font-size:10px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
@@ -640,7 +641,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="auth-rule-icon">✦</div>
         <div class="auth-rule-line"></div>
       </div>
-      <div class="auth-headline">Your gold &amp;<br>silver, valued<br><em>in real time.</em></div>
+      <div class="auth-headline">Your gold &amp; silver, valued <em>in real time.</em></div>
       <div class="auth-desc">
         A private digital ledger for tracking the live market value of physical gold and silver — jewellery, hallmarked coins, investment bars, and raw metal. Prices update from global spot markets in real time.
       </div>
