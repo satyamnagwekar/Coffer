@@ -1650,8 +1650,46 @@ function renderList(){
   if(activeFilter!=='all')f=f.filter(i=>i.type===activeFilter);
   document.getElementById('itemCount').textContent=f.length+' item'+(f.length!==1?'s':'');
   if(!f.length){
-    const m=activeHTab==='sold'?'No sold items yet.':'Tap + to add a holding.';
-    list.innerHTML=`<div class="empty-state"><div class="icon">✦</div><div class="title">Nothing here</div><div class="sub">${m}</div></div>`;
+    const totalItems = items.filter(i=>!i.sold).length;
+    const soldItems  = items.filter(i=>i.sold).length;
+    const vaultEmpty = totalItems === 0 && soldItems === 0;
+    if(vaultEmpty){
+      // First-time onboarding
+      list.innerHTML=`<div class="empty-state" id="emptyOnboarding">
+        <div style="font-size:48px;margin-bottom:8px">🏛</div>
+        <div class="title" id="onboardingGreeting">Welcome${currentUser?' , '+currentUser.firstName:''}</div>
+        <div class="sub" style="margin-bottom:24px">Your vault is empty. Start by adding a holding — anything physical: jewellery, coins, bars, or raw metal.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:320px;margin:0 auto 24px;text-align:left">
+          <div onclick="openAddModalWith('gold','jewellery')" style="padding:14px;background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:12px;cursor:pointer">
+            <div style="font-size:22px;margin-bottom:6px">💍</div>
+            <div style="font-size:11px;color:var(--gold-light);font-weight:500;margin-bottom:3px">Jewellery</div>
+            <div style="font-size:9px;color:var(--text-dim);line-height:1.5">Necklaces, bangles, rings — any karat</div>
+          </div>
+          <div onclick="openAddModalWith('gold','coin_bar')" style="padding:14px;background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:12px;cursor:pointer">
+            <div style="font-size:22px;margin-bottom:6px">🪙</div>
+            <div style="font-size:11px;color:var(--gold-light);font-weight:500;margin-bottom:3px">Coins &amp; Bars</div>
+            <div style="font-size:9px;color:var(--text-dim);line-height:1.5">Hallmarked coins, investment bars</div>
+          </div>
+          <div onclick="openAddModalWith('silver','jewellery')" style="padding:14px;background:rgba(200,216,232,.08);border:1px solid rgba(200,216,232,.15);border-radius:12px;cursor:pointer">
+            <div style="font-size:22px;margin-bottom:6px">🥈</div>
+            <div style="font-size:11px;color:var(--silver-bright);font-weight:500;margin-bottom:3px">Silver Jewellery</div>
+            <div style="font-size:9px;color:var(--text-dim);line-height:1.5">Silver ornaments and accessories</div>
+          </div>
+          <div onclick="openAddModalWith('gold','raw')" style="padding:14px;background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:12px;cursor:pointer">
+            <div style="font-size:22px;margin-bottom:6px">✨</div>
+            <div style="font-size:11px;color:var(--gold-light);font-weight:500;margin-bottom:3px">Raw Metal</div>
+            <div style="font-size:9px;color:var(--text-dim);line-height:1.5">Scrap gold, unrefined metal</div>
+          </div>
+        </div>
+        <div class="empty-cta" onclick="openAddModal()">+ Add First Holding</div>
+        <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border);font-size:9px;color:var(--text-dim);line-height:1.9;letter-spacing:.04em">
+          Prices update every 5 minutes · INR includes 15% import duty + 3% GST
+        </div>
+      </div>`;
+    } else {
+      const m = activeHTab==='sold' ? 'No sold items yet.' : 'Tap + to add a holding.';
+      list.innerHTML=`<div class="empty-state"><div class="icon">✦</div><div class="title">Nothing here</div><div class="sub">${m}</div></div>`;
+    }
     return;
   }
   const tL={jewellery:'💍 Jewellery',coin_bar:'🪙 Coin/Bar',raw:'⚗️ Raw'};
