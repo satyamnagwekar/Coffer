@@ -22,7 +22,7 @@ try { webpush = require('web-push'); } catch(e) { console.warn('[webpush] web-pu
 
 const PORT        = process.env.PORT || 3000;
 const JWT_SECRET  = process.env.JWT_SECRET || 'aurum-change-this-secret-in-production';
-const RESEND_KEY  = process.env.RESEND_API_KEY || 're_fRNcgdah_DpCTSZadCkssrXNJmSMpzdq5';
+const RESEND_KEY  = process.env.RESEND_API_KEY || '';
 const APP_URL     = process.env.APP_URL || 'https://myaurum.app';
 const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || '';
 const VAPID_PRIVATE= process.env.VAPID_PRIVATE_KEY || '';
@@ -30,8 +30,12 @@ const VAPID_EMAIL  = process.env.VAPID_EMAIL || 'mailto:admin@myaurum.app';
 
 console.log('[config] DATABASE_URL:', process.env.DATABASE_URL ? process.env.DATABASE_URL.slice(0, 40) + '...' : 'NOT SET');
 
+if (!process.env.DATABASE_URL) {
+  console.error('[fatal] DATABASE_URL env var is not set');
+  process.exit(1);
+}
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:HCqkEOVjGNJKsdwkIgPUhSHkQBEdZLZE@turntable.proxy.rlwy.net:36567/railway',
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
 
