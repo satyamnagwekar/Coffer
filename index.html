@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Sentry error monitoring -->
+  <script>
+    window.SENTRY_DSN = ''; // Set this to your Sentry DSN, e.g. https://xxx@oyyy.ingest.sentry.io/zzz
+  </script>
+  <script
+    src="https://browser.sentry-cdn.com/7.99.0/bundle.min.js"
+    crossorigin="anonymous"
+    onload="if(window.SENTRY_DSN){Sentry.init({dsn:window.SENTRY_DSN,release:'coffer@1.0.0',environment:'production',tracesSampleRate:0.2,beforeSend(event){if(event.exception){var e=event.exception.values?.[0];if(e&&(e.type==='NetworkError'||e.value?.includes('fetch')))return null;}return event;}})}">
+  </script>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -598,6 +607,15 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   #toastContainer{bottom:80px;width:90%}
   #toastContainer .toast{width:100%;max-width:100%}
 }
+
+/* ── Email verify banner ── */
+#verifyBanner{position:fixed;top:0;left:0;right:0;z-index:600;background:#7A4500;color:#FFE8C0;font-size:11px;letter-spacing:.06em;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;transform:translateY(-100%);transition:transform .3s ease;line-height:1.5}
+#verifyBanner.show{transform:translateY(0)}
+#verifyBanner a{color:#FFE8C0;text-decoration:underline;cursor:pointer;white-space:nowrap}
+#verifyBanner button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#FFE8C0;font-size:10px;letter-spacing:.08em;padding:4px 10px;border-radius:10px;cursor:pointer;font-family:inherit;white-space:nowrap}
+/* ── Push permission note ── */
+#pushPermNote{font-size:11px;color:var(--text-dim);text-align:center;margin-top:6px;line-height:1.6}
+#pushPermNote span{color:var(--blue);cursor:pointer;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -857,6 +875,15 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 ══════════════════════════════════════════════════ -->
 <div class="app-screen" id="appScreen">
 
+
+<!-- Email verify banner -->
+<div id="verifyBanner">
+  <span>📧 Please verify your email address to enable price alert emails.</span>
+  <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+    <a onclick="resendVerifyEmail()">Resend link</a>
+    <button onclick="document.getElementById('verifyBanner').classList.remove('show')">✕</button>
+  </div>
+</div>
 <div id="toastContainer"></div>
 
 <!-- Pull-to-refresh indicator -->
@@ -1150,6 +1177,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="alert-permission-note" id="alertPermNote">
           📧 Email alert will be sent to <strong id="alertEmailDisplay"></strong> when triggered.<br>
           <span id="browserNotifNote">Also get browser alerts: <strong id="notifStatus">not enabled</strong>. <span class="perm-link" onclick="requestNotifPermission()">Enable →</span></span>
+        </div>
+        <div id="pushPermNote" style="display:none">
+          🔔 Get instant push notifications even when the app is closed. <span onclick="subscribePush()">Enable push →</span>
         </div>
       </div>
 
@@ -1680,6 +1710,11 @@ async function loginUser(user){
   // Auto-refresh prices every 5 minutes while session is active
   if(window._priceInterval) clearInterval(window._priceInterval);
   window._priceInterval = setInterval(fetchPrices, 5 * 60 * 1000);
+  // Post-login: email verify banner + web push
+  setTimeout(()=>{
+    if(currentUser && !currentUser.emailVerified) showEmailVerifyBanner();
+    initWebPush();
+  }, 800);
 }
 
 async function doLogout(){
@@ -2047,10 +2082,26 @@ function updatePreview(){
 
 function handleReceiptUpload(input){
   const file=input.files[0];if(!file)return;
-  if(file.size>5*1024*1024){alert('Please use an image smaller than 5MB.');return}
-  const r=new FileReader();
-  r.onload=e=>{receiptBase64=e.target.result;document.getElementById('receiptPreviewImg').src=receiptBase64;document.getElementById('receiptUploadArea').style.display='none';document.getElementById('receiptPreviewArea').style.display=''};
-  r.readAsDataURL(file);
+  if(file.size>20*1024*1024){alert('Please use an image smaller than 20MB.');return}
+  // Compress to max 800px wide, JPEG 0.82 quality before storing
+  const img=new Image();
+  const objectUrl=URL.createObjectURL(file);
+  img.onload=()=>{
+    URL.revokeObjectURL(objectUrl);
+    const MAX=800;
+    let w=img.width,h=img.height;
+    if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+    const canvas=document.createElement('canvas');
+    canvas.width=w;canvas.height=h;
+    canvas.getContext('2d').drawImage(img,0,0,w,h);
+    receiptBase64=canvas.toDataURL('image/jpeg',0.82);
+    document.getElementById('receiptPreviewImg').src=receiptBase64;
+    document.getElementById('receiptUploadArea').style.display='none';
+    document.getElementById('receiptPreviewArea').style.display='';
+    const kb=Math.round(receiptBase64.length*0.75/1024);
+    console.log(`[receipt] Compressed to ~${kb}KB`);
+  };
+  img.src=objectUrl;
 }
 function removeReceipt(){receiptBase64=null;document.getElementById('receiptFile').value='';document.getElementById('receiptUploadArea').style.display='';document.getElementById('receiptPreviewArea').style.display='none'}
 
@@ -2352,34 +2403,67 @@ function renderPerfGrid(){
 }
 
 let priceHistoryCache=null;
-function renderHistoryChart(){
+let priceHistoryLoading=false;
+
+function drawHistoryCanvas(rows){
   const canvas=document.getElementById('historyChart');
   if(!canvas)return;
   const ctx=canvas.getContext('2d');
   const W=canvas.width=canvas.parentElement.offsetWidth-24||320;
   const H=180;canvas.height=H;ctx.clearRect(0,0,W,H);
-  const days=30;
-  if(!priceHistoryCache||priceHistoryCache.goldEnd!==prices.gold){
-    priceHistoryCache={goldEnd:prices.gold,silverEnd:prices.silver,gold:[],silver:[]};
-    let g=prices.gold,s=prices.silver;
-    for(let i=days;i>=0;i--){priceHistoryCache.gold[i]=g;priceHistoryCache.silver[i]=s;g=g*(1+(Math.random()-.52)*0.012);s=s*(1+(Math.random()-.52)*0.014)}
+  if(!rows||!rows.length){
+    ctx.fillStyle='rgba(106,96,64,.5)';ctx.font='11px DM Mono,monospace';ctx.textAlign='center';
+    ctx.fillText('No history yet — check back after prices update',W/2,H/2);
+    document.getElementById('historyNote').textContent='Price snapshots recorded every 5 minutes · builds up over time';
+    return;
   }
-  const gH=priceHistoryCache.gold,sH=priceHistoryCache.silver.map(v=>v*100);
+  const gH=rows.map(r=>r.gold);
+  const sH=rows.map(r=>r.silver*100); // scale silver for visibility
   const allVals=[...gH,...sH];
   const minV=Math.min(...allVals)*.995,maxV=Math.max(...allVals)*1.005;
+  const n=rows.length-1||1;
   const pad={t:16,b:24,l:8,r:8};
   const pw=W-pad.l-pad.r,ph=H-pad.t-pad.b;
-  const xp=i=>pad.l+(i/days)*pw,yp=v=>pad.t+ph-(((v-minV)/(maxV-minV))*ph);
+  const xp=i=>pad.l+(i/n)*pw,yp=v=>pad.t+ph-(((v-minV)/(maxV-minV))*ph);
   ctx.strokeStyle='rgba(46,42,24,.5)';ctx.lineWidth=1;
   [0,.25,.5,.75,1].forEach(f=>{const y=pad.t+ph*f;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke()});
   ctx.beginPath();sH.forEach((v,i)=>{i===0?ctx.moveTo(xp(i),yp(v)):ctx.lineTo(xp(i),yp(v))});
   ctx.strokeStyle='rgba(200,216,232,.5)';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
   ctx.beginPath();gH.forEach((v,i)=>{i===0?ctx.moveTo(xp(i),yp(v)):ctx.lineTo(xp(i),yp(v))});
   ctx.strokeStyle='var(--gold-bright)';ctx.lineWidth=2;ctx.stroke();
-  ctx.beginPath();ctx.arc(xp(days),yp(gH[days]),4,0,2*Math.PI);ctx.fillStyle='var(--gold-bright)';ctx.fill();
-  ctx.fillStyle='rgba(106,96,64,.7)';ctx.font='9px DM Mono,monospace';
-  ctx.fillText('30d ago',pad.l,H-4);ctx.fillText('Today',W-pad.r-30,H-4);
-  document.getElementById('historyNote').textContent=`Simulated 30-day trend · Gold $${prices.gold.toFixed(2)} · Silver $${prices.silver.toFixed(2)}`;
+  ctx.beginPath();ctx.arc(xp(n),yp(gH[n]),4,0,2*Math.PI);ctx.fillStyle='var(--gold-bright)';ctx.fill();
+  ctx.fillStyle='rgba(106,96,64,.7)';ctx.font='9px DM Mono,monospace';ctx.textAlign='left';
+  const oldest=new Date(rows[0].recorded_at).toLocaleDateString([],{month:'short',day:'numeric'});
+  ctx.fillText(oldest,pad.l,H-4);ctx.fillText('Today',W-pad.r-30,H-4);
+  const days=rows.length>1?Math.round((new Date(rows[rows.length-1].recorded_at)-new Date(rows[0].recorded_at))/(86400000)):0;
+  document.getElementById('historyNote').textContent=`${days}d of real spot data · Gold $${gH[n].toFixed(2)} · Silver $${(sH[n]/100).toFixed(2)}`;
+}
+
+async function renderHistoryChart(){
+  if(priceHistoryLoading)return;
+  // Use cache if fresh (< 5 min)
+  if(priceHistoryCache&&Date.now()-priceHistoryCache.fetchedAt<5*60*1000){
+    drawHistoryCanvas(priceHistoryCache.rows);return;
+  }
+  priceHistoryLoading=true;
+  document.getElementById('historyNote').textContent='Loading price history…';
+  try{
+    const rows=await api('GET','/prices/history?days=30');
+    priceHistoryCache={rows,fetchedAt:Date.now()};
+    drawHistoryCanvas(rows);
+  }catch(e){
+    // Fall back to simulated data so the chart isn't blank
+    const days=30,simRows=[];
+    let g=prices.gold,s=prices.silver;
+    const now=Date.now();
+    for(let i=days;i>=0;i--){
+      simRows.push({gold:g,silver:s,recorded_at:new Date(now-i*86400000).toISOString()});
+      g=g*(1+(Math.random()-.52)*0.012);s=s*(1+(Math.random()-.52)*0.014);
+    }
+    simRows.reverse();
+    drawHistoryCanvas(simRows);
+    document.getElementById('historyNote').textContent=`Estimated 30-day trend (live history builds up over time)`;
+  }finally{priceHistoryLoading=false;}
 }
 
 // ══════════════════════════════════════════
@@ -2878,8 +2962,96 @@ async function doReset() {
   }
 }
 
-// Check for reset token on load
-window.addEventListener('DOMContentLoaded', checkResetToken);
+
+// ══════════════════════════════════════════
+// EMAIL VERIFICATION
+// ══════════════════════════════════════════
+function showEmailVerifyBanner(){
+  const b=document.getElementById('verifyBanner');
+  if(b) b.classList.add('show');
+}
+
+async function resendVerifyEmail(){
+  try{
+    await api('POST','/auth/resend-verification',{});
+    showToast('Verification email sent — check your inbox','success',4000);
+  }catch(e){ showToast('Could not send email: '+e.message,'error'); }
+}
+
+async function checkVerifyToken(){
+  const params=new URLSearchParams(window.location.search);
+  const token=params.get('verify');
+  if(!token)return;
+  window.history.replaceState({},document.title,window.location.pathname);
+  try{
+    await api('GET','/auth/verify-email?token='+encodeURIComponent(token));
+    if(currentUser) currentUser.emailVerified=true;
+    document.getElementById('verifyBanner')?.classList.remove('show');
+    showToast('✅ Email verified — your alerts are fully activated','success',5000);
+  }catch(e){
+    showToast('Verification failed: '+e.message,'error',5000);
+  }
+}
+
+// ══════════════════════════════════════════
+// WEB PUSH
+// ══════════════════════════════════════════
+let _pushSubscription=null;
+
+async function initWebPush(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window))return;
+  try{
+    // Check if VAPID key is configured on server
+    const { key } = await api('GET','/push/vapid-public-key');
+    if(!key)return;
+    // Register a minimal inline service worker
+    const swCode=`self.addEventListener('push',e=>{const d=e.data?e.data.json():{};e.waitUntil(self.registration.showNotification(d.title||'COFFER Alert',{body:d.body||'',icon:'/favicon.ico',badge:'/favicon.ico',tag:'coffer-alert',data:{url:d.url||'/'}}))});self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(clients.openWindow(e.notification.data.url||'/'))});`;
+    const swBlob=new Blob([swCode],{type:'application/javascript'});
+    const swUrl=URL.createObjectURL(swBlob);
+    const reg=await navigator.serviceWorker.register(swUrl);
+    await navigator.serviceWorker.ready;
+    const existing=await reg.pushManager.getSubscription();
+    if(existing){ _pushSubscription=existing; return; }
+    // Show the enable push note in alerts panel
+    const note=document.getElementById('pushPermNote');
+    if(note) note.style.display='block';
+    window._swReg=reg;
+    window._vapidKey=key;
+  }catch(e){ console.warn('[push] init failed:',e.message); }
+}
+
+async function subscribePush(){
+  if(!window._swReg||!window._vapidKey)return;
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted'){showToast('Push notifications blocked by browser','warn');return;}
+    // Convert base64 VAPID key to Uint8Array
+    const raw=atob(window._vapidKey.replace(/-/g,'+').replace(/_/g,'/'));
+    const key=new Uint8Array(raw.length);
+    for(let i=0;i<raw.length;i++) key[i]=raw.charCodeAt(i);
+    const sub=await window._swReg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key});
+    _pushSubscription=sub;
+    const j=sub.toJSON();
+    await api('POST','/push/subscribe',{endpoint:j.endpoint,keys:{p256dh:j.keys.p256dh,auth:j.keys.auth}});
+    document.getElementById('pushPermNote').style.display='none';
+    showToast('🔔 Push notifications enabled','success',3000);
+  }catch(e){ showToast('Could not enable push: '+e.message,'error'); }
+}
+
+// Check for verify token on load
+window.addEventListener('DOMContentLoaded',()=>{
+  checkResetToken();
+  checkVerifyToken();
+});
+
+// Global error reporting to Sentry
+window.addEventListener('unhandledrejection', e => {
+  if(window.Sentry && e.reason) Sentry.captureException(e.reason);
+});
+window.onerror = (msg, src, line, col, err) => {
+  if(window.Sentry && err) Sentry.captureException(err);
+};
+
 </script>
 <div id="privacyOverlay" style="display:none;position:fixed;inset:0;background:rgba(245,240,232,.97);z-index:1000;align-items:flex-start;justify-content:center;overflow-y:auto;padding:32px 20px">
   <div style="max-width:560px;width:100%;background:#fff;border:1px solid #DDD5C0;border-radius:16px;padding:28px 24px;box-shadow:0 4px 24px rgba(0,0,0,.08)">
