@@ -182,8 +182,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .spot-strip{display:flex;gap:12px;font-size:11px;color:var(--text-dim);text-transform:uppercase}
 .spot-item{display:flex;flex-direction:column;align-items:flex-end}
 .spot-item .metal{font-size:11px;color:var(--text-dim);margin-bottom:1px}
+.spot-item .price-row{display:flex;align-items:center;gap:5px}
 /* Price change badge */
-.price-change{display:inline-block;font-size:10px;font-family:'DM Mono',monospace;padding:1px 5px;border-radius:4px;margin-left:5px;font-weight:500;vertical-align:middle;letter-spacing:.02em}
+.price-change{display:inline-block;font-size:10px;font-family:'DM Mono',monospace;padding:1px 5px;border-radius:4px;font-weight:500;letter-spacing:.02em}
 .price-change.up{color:var(--green);background:var(--green-dim)}
 .price-change.down{color:var(--red);background:var(--red-dim)}
 .price-change.flat{color:var(--text-dim);background:var(--bg3)}
@@ -829,11 +830,17 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     <div class="spot-strip">
       <div class="spot-item gold">
         <div class="metal" id="goldSpotLabel">GOLD /oz</div>
-        <div class="price" id="goldSpot"><span class="loading-dot"></span><span class="price-change flat" id="goldChange" style="display:none"></span></div>
+        <div class="price-row">
+          <div class="price" id="goldSpot"><span class="loading-dot"></span></div>
+          <span class="price-change flat" id="goldChange" style="display:none"></span>
+        </div>
       </div>
       <div class="spot-item silver">
         <div class="metal" id="silverSpotLabel">SILVER /oz</div>
-        <div class="price" id="silverSpot"><span class="loading-dot"></span><span class="price-change flat" id="silverChange" style="display:none"></span></div>
+        <div class="price-row">
+          <div class="price" id="silverSpot"><span class="loading-dot"></span></div>
+          <span class="price-change flat" id="silverChange" style="display:none"></span>
+        </div>
       </div>
       <div style="display:flex;align-items:flex-end;padding-bottom:1px">
         <span style="font-size:10px;color:var(--text-dim);letter-spacing:.06em;opacity:.7" title="Prices are indicative spot rates and may differ from local jeweller or exchange prices">indicative</span>
@@ -892,13 +899,19 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <div style="background:var(--bg2);border:1px solid var(--border-gold);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
         <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(139,105,20,.08),transparent 70%);border-radius:50%"></div>
         <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🥇 Gold spot</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--brand);line-height:1;margin-bottom:3px" id="homeGoldSpot">—<span class="price-change flat" id="homeGoldChange" style="font-family:'DM Mono',monospace;font-size:11px;display:none"></span></div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:3px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--brand);line-height:1" id="homeGoldSpot">—</div>
+          <span class="price-change flat" id="homeGoldChange" style="display:none"></span>
+        </div>
         <div style="font-size:11px;color:var(--text-dim)" id="homeGoldUnit">per oz · USD</div>
       </div>
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
         <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(122,142,160,.06),transparent 70%);border-radius:50%"></div>
         <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🥈 Silver spot</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--silver-bright);line-height:1;margin-bottom:3px" id="homeSilverSpot">—<span class="price-change flat" id="homeSilverChange" style="font-family:'DM Mono',monospace;font-size:11px;display:none"></span></div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:3px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--silver-bright);line-height:1" id="homeSilverSpot">—</div>
+          <span class="price-change flat" id="homeSilverChange" style="display:none"></span>
+        </div>
         <div style="font-size:11px;color:var(--text-dim)" id="homeSilverUnit">per oz · USD</div>
       </div>
     </div>
@@ -2427,16 +2440,16 @@ function _coreUpdatePriceDisplay(){
   if(isINR){
     document.getElementById('goldSpotLabel').textContent   = 'GOLD /10g (MCX)';
     document.getElementById('silverSpotLabel').textContent = 'SILVER /10g (MCX)';
-    document.getElementById('goldSpot').childNodes[0].textContent   = '₹' + Math.round(goldINR10g).toLocaleString('en-IN');
-    document.getElementById('silverSpot').childNodes[0].textContent = '₹' + Math.round(silverINR10g).toLocaleString('en-IN');
+    document.getElementById('goldSpot').textContent   = '₹' + Math.round(goldINR10g).toLocaleString('en-IN');
+    document.getElementById('silverSpot').textContent = '₹' + Math.round(silverINR10g).toLocaleString('en-IN');
   } else {
     const sym = SYMBOLS[currency] || '$';
     const goldDisp   = prices.gold   * (rates[currency]||1);
     const silverDisp = prices.silver * (rates[currency]||1);
     document.getElementById('goldSpotLabel').textContent   = 'GOLD /oz';
     document.getElementById('silverSpotLabel').textContent = 'SILVER /oz';
-    document.getElementById('goldSpot').childNodes[0].textContent   = sym + goldDisp.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-    document.getElementById('silverSpot').childNodes[0].textContent = sym + silverDisp.toFixed(2);
+    document.getElementById('goldSpot').textContent   = sym + goldDisp.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('silverSpot').textContent = sym + silverDisp.toFixed(2);
   }
 
   // Always compute % change relative to MCX baseline regardless of display currency
@@ -2450,14 +2463,14 @@ function _coreUpdatePriceDisplay(){
   const hsU  = document.getElementById('homeSilverUnit');
   if(hgEl && hsEl){
     if(isINR){
-      hgEl.childNodes[0].textContent = '₹' + Math.round(goldINR10g).toLocaleString('en-IN');
-      hsEl.childNodes[0].textContent = '₹' + Math.round(silverINR10g).toLocaleString('en-IN');
+      hgEl.textContent = '₹' + Math.round(goldINR10g).toLocaleString('en-IN');
+      hsEl.textContent = '₹' + Math.round(silverINR10g).toLocaleString('en-IN');
       if(hgU) hgU.textContent = 'per 10g · MCX incl. duty+GST';
       if(hsU) hsU.textContent = 'per 10g · MCX incl. duty+GST';
     } else {
       const sym = SYMBOLS[currency] || '$';
-      hgEl.childNodes[0].textContent = sym + (prices.gold * (rates[currency]||1)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-      hsEl.childNodes[0].textContent = sym + (prices.silver * (rates[currency]||1)).toFixed(2);
+      hgEl.textContent = sym + (prices.gold * (rates[currency]||1)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+      hsEl.textContent = sym + (prices.silver * (rates[currency]||1)).toFixed(2);
       if(hgU) hgU.textContent = 'per oz · ' + currency;
       if(hsU) hsU.textContent = 'per oz · ' + currency;
     }
