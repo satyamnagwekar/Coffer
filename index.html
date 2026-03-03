@@ -1133,8 +1133,14 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           </div>
         </div>
         <div class="field" style="margin-bottom:14px">
-          <div class="field-label-row"><label>Target Price (USD / oz)</label></div>
-          <input type="number" id="alertPrice" class="alert-input" placeholder="e.g. 3400" step="1" min="1">
+          <div class="field-label-row"><label id="alertPriceLabel">Target Price (USD / oz)</label></div>
+          <div style="display:flex;gap:8px;align-items:stretch">
+            <input type="number" id="alertPrice" class="alert-input" placeholder="e.g. 3400" step="1" min="1" style="flex:1">
+            <select id="alertPriceCurrency" class="alert-input" style="width:auto;flex-shrink:0;padding:13px 10px" onchange="updateAlertCurrencyUI()">
+              <option value="USD">USD /oz</option>
+              <option value="INR">INR /10g</option>
+            </select>
+          </div>
         </div>
         <div class="field" style="margin-bottom:16px">
           <div class="field-label-row"><label>Note</label><span class="field-hint">optional</span></div>
@@ -2429,6 +2435,12 @@ function refreshAlertsPanel(){
     document.getElementById('alertSilverPrice').textContent = sym + (prices.silver*(rates[currency]||1)).toFixed(2);
   }
   renderAlertsList();updateNotifStatus();
+  // Default price currency selector to match current display currency
+  const alertCurrEl=document.getElementById('alertPriceCurrency');
+  if(alertCurrEl){
+    alertCurrEl.value=(currency==='INR')?'INR':'USD';
+    updateAlertCurrencyUI();
+  }
 }
 
 function updateNotifStatus(){
@@ -2446,14 +2458,37 @@ async function requestNotifPermission(){
   if(p==='granted'){new Notification('COFFER Alerts Active',{body:'You will now be notified when your price targets are hit.'})}
 }
 
+function updateAlertCurrencyUI(){
+  const c = document.getElementById('alertPriceCurrency').value;
+  const label = document.getElementById('alertPriceLabel');
+  const input = document.getElementById('alertPrice');
+  if(c === 'INR'){
+    label.textContent = 'Target Price (INR / 10g · MCX)';
+    input.placeholder = 'e.g. 96000';
+    input.step = '100';
+  } else {
+    label.textContent = 'Target Price (USD / oz)';
+    input.placeholder = 'e.g. 3400';
+    input.step = '1';
+  }
+}
+
 async function addAlert(){
   const metal=document.getElementById('alertMetal').value;
   const dir=document.getElementById('alertDir').value;
-  const price=parseFloat(document.getElementById('alertPrice').value);
+  const priceRaw=parseFloat(document.getElementById('alertPrice').value);
+  const priceCurrency=document.getElementById('alertPriceCurrency').value;
   const note=document.getElementById('alertNote').value.trim();
-  if(!price||price<=0){alert('Please enter a valid target price.');return}
+  if(!priceRaw||priceRaw<=0){alert('Please enter a valid target price.');return}
+
+  // Normalise to USD/oz for comparison — INR/10g → USD/oz
+  const INDIA_FACTOR=(10/31.1035)*1.15*1.03;
+  const priceUSD = priceCurrency==='INR'
+    ? priceRaw / (rates.INR * INDIA_FACTOR)
+    : priceRaw;
+
   try{
-    const a=await api('POST','/alerts',{metal,dir,price,note});
+    const a=await api('POST','/alerts',{metal,dir,price:priceUSD,priceDisplay:priceRaw,priceCurrency,note});
     priceAlerts.unshift(a);
     document.getElementById('alertPrice').value='';
     document.getElementById('alertNote').value='';
@@ -2482,13 +2517,23 @@ function renderAlertsList(){
     const triggered=a.dir==='above'?spot>=a.price:spot<=a.price;
     const statusTxt=a.fired||triggered?'⚡ Triggered':'👁 Watching';
     const statusCls=a.fired||triggered?'fired':'watching';
+    const INDIA_FACTOR=(10/31.1035)*1.15*1.03;
+    let priceDisplay,spotDisplay;
+    if(a.priceCurrency==='INR'){
+      const inrVal=a.priceDisplay||Math.round(a.price*rates.INR*INDIA_FACTOR);
+      priceDisplay='₹'+Math.round(inrVal).toLocaleString('en-IN')+'/10g';
+      spotDisplay='₹'+Math.round(spot*rates.INR*INDIA_FACTOR).toLocaleString('en-IN')+'/10g';
+    } else {
+      priceDisplay='$'+(a.priceDisplay||a.price).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'/oz';
+      spotDisplay='$'+spot.toFixed(2)+'/oz';
+    }
     return `<div class="alert-card ${a.fired||triggered?'triggered':''}">
       <div class="alert-icon">${a.metal==='gold'?'🥇':'🥈'}</div>
       <div class="alert-info">
         <div class="alert-metal-name">${a.metal==='gold'?'🥇 Gold':'🥈 Silver'}</div>
-        <div class="alert-target">${dirLabel} $${a.price.toLocaleString()}/oz</div>
+        <div class="alert-target">${dirLabel} ${priceDisplay}</div>
         ${a.note?`<div class="alert-note-text">${escHtml(a.note)}</div>`:''}
-        <div class="alert-status ${statusCls}">${statusTxt} · Now $${spot.toFixed(2)}</div>
+        <div class="alert-status ${statusCls}">${statusTxt} · Now ${spotDisplay}</div>
       </div>
       <button class="alert-delete" onclick="deleteAlert(${a.id})">✕</button>
     </div>`;
@@ -2512,7 +2557,17 @@ async function checkAlerts(){
 
 function fireNotification(a,spot){
   const title=`COFFER Alert — ${a.metal==='gold'?'Gold':'Silver'} ${a.dir==='above'?'↑':'↓'}`;
-  const body=`${a.metal==='gold'?'Gold':'Silver'} hit $${spot.toFixed(2)}/oz — your target was ${a.dir==='above'?'above':'below'} $${a.price}${a.note?' ('+a.note+')':''}`;
+  const INDIA_FACTOR=(10/31.1035)*1.15*1.03;
+  let spotStr,targetStr;
+  if(a.priceCurrency==='INR'){
+    spotStr='₹'+Math.round(spot*rates.INR*INDIA_FACTOR).toLocaleString('en-IN')+'/10g';
+    const inrTarget=a.priceDisplay||Math.round(a.price*rates.INR*INDIA_FACTOR);
+    targetStr='₹'+Math.round(inrTarget).toLocaleString('en-IN')+'/10g';
+  } else {
+    spotStr='$'+spot.toFixed(2)+'/oz';
+    targetStr='$'+(a.priceDisplay||a.price)+'/oz';
+  }
+  const body=`${a.metal==='gold'?'Gold':'Silver'} hit ${spotStr} — your target was ${a.dir==='above'?'above':'below'} ${targetStr}${a.note?' ('+a.note+')':''}`;
   if('Notification' in window&&Notification.permission==='granted'){new Notification(title,{body,tag:'coffer-alert-'+a.id})}
   showToast('🔔 '+body);
 }
