@@ -510,6 +510,178 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .empty-alerts{text-align:center;padding:32px 20px}
 .empty-alerts .ea-icon{font-size:34px;margin-bottom:10px}
 .empty-alerts .ea-text{font-size:11px;color:var(--text-dim);line-height:1.7}
+
+/* ═══════════════════════════════════════
+   MOBILE OPTIMISATIONS  (max-width: 600px)
+═══════════════════════════════════════ */
+@media (max-width: 600px) {
+
+  /* ── Auth screen ── */
+  .auth-screen { overflow-y: auto; }
+
+  .auth-top {
+    flex-direction: column;
+    gap: 0;
+    padding: 20px 16px 0;
+  }
+
+  /* Login box full-width */
+  .auth-box {
+    width: 100%;
+    border-radius: 14px;
+    padding: 20px 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.07);
+  }
+
+  .auth-wordmark { font-size: 24px; }
+  .auth-tagline  { font-size: 8px; margin-bottom: 14px; }
+
+  .auth-tab { font-size: 9px; padding: 10px 4px; }
+
+  .af input, .af select {
+    font-size: 16px; /* prevents iOS zoom */
+    padding: 12px 12px;
+  }
+
+  .af-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .btn-auth { padding: 15px; font-size: 12px; }
+
+  /* Hero — stack below login box, reduced */
+  .auth-hero {
+    padding: 20px 0 16px;
+    min-width: unset;
+  }
+
+  .auth-rule { margin-bottom: 14px; }
+
+  .auth-headline {
+    font-size: 28px;
+    white-space: normal;
+    margin-bottom: 12px;
+  }
+
+  .auth-desc { font-size: 12px; line-height: 1.75; margin-bottom: 14px; }
+
+  .free-badge { font-size: 8px; }
+
+  /* Why physical — single column */
+  .physical-case { padding: 20px 16px 18px; }
+  .physical-pillars-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .physical-pillar { padding: 14px 12px; }
+  .pillar-icon { font-size: 22px; }
+  .pillar-title { font-size: 11px; }
+  .pillar-desc { font-size: 9px; }
+
+  /* About + Founder — single column */
+  .auth-about {
+    grid-template-columns: 1fr;
+    padding: 20px 16px 24px;
+  }
+  .about-divider { display: none; }
+  .about-item { padding: 12px 0; border-bottom: 1px solid #EDE8DC; }
+  .about-item:last-child { border-bottom: none; }
+
+  /* ── Main app header ── */
+  .header { padding: 10px 12px; gap: 8px; }
+  .logo { font-size: 19px; }
+  .spot-strip { gap: 8px; }
+  .spot-item .price { font-size: 11px; }
+
+  /* Nav tabs — larger tap targets */
+  .nav-tab { font-size: 12px; padding: 14px 2px; }
+
+  /* Currency bar */
+  .currency-bar { padding: 8px 12px; gap: 5px; }
+  .currency-btn { padding: 7px 11px; font-size: 10px; }
+
+  /* Summary card */
+  .summary-card { margin: 10px 10px; padding: 18px 16px; }
+  .summary-value { font-size: 40px; }
+  .summary-split { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .split-val { font-size: 16px; }
+
+  /* Holdings tabs */
+  .htabs { margin: 0 10px 8px; }
+  .htab { font-size: 12px; padding: 10px 4px; }
+
+  .filter-bar { padding: 0 10px 8px; }
+
+  /* Item cards */
+  .inventory-list { padding: 0 10px; gap: 8px; }
+  .item-card { padding: 14px 14px; }
+  .item-name { font-size: 18px; }
+  .item-value { font-size: 14px; }
+
+  /* FAB */
+  .fab { width: 54px; height: 54px; font-size: 26px; }
+  .fab-wrap { bottom: 20px; right: 14px; }
+
+  /* Modals — full screen on mobile */
+  .modal { border-radius: 20px 20px 0 0; max-height: 96vh; }
+  .modal-body { padding: 16px; gap: 14px; }
+  .modal-header { padding: 14px 16px 12px; }
+  .modal-title { font-size: 22px; }
+
+  /* Form fields in modals */
+  .field input, .field select {
+    font-size: 16px; /* prevents iOS zoom */
+  }
+
+  /* Grade / type grids */
+  .grade-grid { grid-template-columns: repeat(3,1fr); gap: 5px; }
+  .type-grid  { grid-template-columns: repeat(3,1fr); gap: 5px; }
+  .grade-btn  { padding: 10px 4px; }
+  .type-btn   { padding: 10px 4px; }
+
+  /* Detail modal */
+  .detail-actions { padding: 12px 14px 4px; gap: 8px; }
+  .detail-action-btn { padding: 12px 6px; font-size: 9px; }
+
+  /* Chart panel */
+  .chart-header { padding: 12px 12px 0; }
+  .chart-headline { font-size: 30px; }
+  .chart-title-row { flex-direction: column; gap: 10px; align-items: flex-start; }
+  .chart-export-btn { align-self: flex-start; }
+  .chart-range-tabs { margin-bottom: 12px; }
+  .range-tab { font-size: 8px; padding: 8px 2px; }
+  .chart-view { padding: 0 12px 12px; }
+  .donut-wrap { width: 180px; height: 180px; }
+  .export-btns { grid-template-columns: 1fr 1fr; gap: 6px; }
+
+  /* Alerts panel */
+  .alerts-header { padding: 16px 14px 10px; }
+  .alerts-title { font-size: 28px; }
+  .spot-quick { padding: 10px 12px; gap: 8px; }
+  .sq-price { font-size: 20px; }
+  .alert-form-card { margin: 0 12px 12px; padding: 14px; }
+  .alerts-list { padding: 0 12px; }
+
+  /* Profile panel */
+  .profile-stats { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .stat-num { font-size: 26px; }
+  .stat-lbl { font-size: 9px; }
+  .profile-section { padding: 16px; }
+
+  /* About / founder section in auth */
+  .auth-about-two-col { grid-template-columns: 1fr !important; gap: 28px !important; }
+
+  /* Value preview */
+  .vp-amt { font-size: 26px; }
+
+  /* About + Privacy inline-style sections */
+  .mobile-pad { padding: 24px 16px 28px !important; }
+  .mobile-pad-footer { padding: 24px 16px 28px !important; }
+  .footer-flex { flex-direction: column !important; gap: 6px !important; }
+}
+
+/* Slightly wider phones (601–768) */
+@media (min-width: 601px) and (max-width: 768px) {
+  .auth-top { padding: 24px 20px; }
+  .auth-box { width: 100%; max-width: 340px; }
+  .auth-headline { font-size: 36px; white-space: normal; }
+  .physical-pillars-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+}
 </style>
 </head>
 <body>
@@ -683,14 +855,14 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
   <!-- Full-width about strip -->
   <!-- About + Founder -->
-  <div style="background:#fff;border-top:1px solid #DDD5C0;padding:40px 28px 44px">
+  <div class="mobile-pad" style="background:#fff;border-top:1px solid #DDD5C0;padding:40px 28px 44px">
     <div style="max-width:860px;margin:0 auto">
 
       <!-- Section label -->
       <div style="font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'DM Mono',monospace;margin-bottom:28px">About the Project</div>
 
       <!-- Two col: project story + founder -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start">
+      <div class="auth-about-two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start">
 
         <div>
           <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#2C2410;line-height:1.25;margin-bottom:16px">Gold has always been India's most trusted store of wealth. But nobody had built a clean way to know what it's actually worth.</div>
@@ -719,12 +891,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   </div>
 
   <!-- Privacy Notice -->
-  <div style="background:#F5F0E8;border-top:1px solid #DDD5C0;padding:36px 28px 40px">
+  <div class="mobile-pad" style="background:#F5F0E8;border-top:1px solid #DDD5C0;padding:36px 28px 40px">
     <div style="max-width:860px;margin:0 auto">
 
       <div style="font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'DM Mono',monospace;margin-bottom:24px">Privacy &amp; Data</div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+      <div class="auth-about-two-col" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
 
         <div>
           <div style="font-size:11px;color:#2C2410;font-weight:500;letter-spacing:.04em;margin-bottom:8px">What we collect</div>
@@ -743,7 +915,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
       </div>
 
-      <div style="margin-top:28px;padding-top:24px;border-top:1px solid #DDD5C0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <div class="footer-flex" style="margin-top:28px;padding-top:24px;border-top:1px solid #DDD5C0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
         <div style="font-size:10px;color:#999;line-height:1.7">© 2025 Coffer · Built by Satyam Nagwekar · Mumbai, India</div>
         <div style="font-size:10px;color:#999;line-height:1.7">Values shown are indicative only and do not constitute financial advice.</div>
       </div>
