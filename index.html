@@ -718,6 +718,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           </div>
 
           <button class="btn-auth" onclick="doRegister()">Create My Coffer →</button>
+          <div style="text-align:center;margin-top:6px;font-size:11px;color:#AAA;line-height:1.5">A verification email will be sent to confirm your address.</div>
 
           <div style="text-align:center;margin-top:-4px">
             <span style="font-size:11px;color:#AAA">Have an account? </span>
@@ -1023,6 +1024,15 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   <!-- ── CHART PANEL ── -->
   <div class="content-panel" id="panelChart">
     <div class="chart-panel pb">
+      <!-- Empty state shown when no holdings -->
+      <div id="chartEmptyState" style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;gap:12px">
+        <div style="font-size:48px">📊</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:var(--text)">Nothing to chart yet</div>
+        <div style="font-size:12px;color:var(--text-dim);line-height:1.7;max-width:260px">Add your first holding to see composition breakdowns, performance, and price history.</div>
+        <div class="empty-cta" onclick="setNavTab('vault',document.getElementById('navCoffer'));openAddModal()" style="margin-top:8px">+ Add First Holding</div>
+      </div>
+
+      <div id="chartContent">
       <div class="chart-header">
         <div class="chart-title-row">
           <div>
@@ -1079,6 +1089,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <button class="btn-export silver-export" onclick="exportJSON()">⬇ JSON Backup</button>
         </div>
       </div>
+      </div><!-- /chartContent -->
     </div>
   </div><!-- /panelChart -->
 
@@ -1612,8 +1623,8 @@ async function doRegister(){
   try{
     const data=await api('POST','/auth/register',{email,password:pw,firstName:first,lastName:last,age,country});
     btn.disabled=false;btn.textContent='Create My Coffer →';
-    showMsg('registerMsg','Account created! Please sign in.','success');
-    setTimeout(()=>switchAuthTab('login',document.querySelectorAll('.auth-tab')[0]),1200);
+    showMsg('registerMsg','Account created! Check your email to verify your address, then sign in.','success');
+    setTimeout(()=>switchAuthTab('login',document.querySelectorAll('.auth-tab')[0]),2000);
   }catch(e){
     showMsg('registerMsg',e.message,'error');
     btn.disabled=false;btn.textContent='Create My Coffer →';
@@ -1658,10 +1669,14 @@ async function loginUser(user){
   updateAll();
   setNavTab('vault',document.getElementById('navCoffer'));
   fetchPrices();
+  // Auto-refresh prices every 5 minutes while session is active
+  if(window._priceInterval) clearInterval(window._priceInterval);
+  window._priceInterval = setInterval(fetchPrices, 5 * 60 * 1000);
 }
 
 async function doLogout(){
   if(!confirm('Sign out of your coffer?'))return;
+  if(window._priceInterval) clearInterval(window._priceInterval);
   setToken(null);
   currentUser=null;items=[];priceAlerts=[];
   document.getElementById('appScreen').classList.remove('active');
@@ -1675,6 +1690,7 @@ async function doLogout(){
 async function deleteAccount(){
   if(!confirm('Delete your account and ALL coffer data permanently? This cannot be undone.'))return;
   if(!confirm('Are you absolutely sure?'))return;
+  if(window._priceInterval) clearInterval(window._priceInterval);
   try{
     await api('DELETE','/auth/account');
     localStorage.clear(); // wipe token + any cached data
@@ -1699,7 +1715,11 @@ function refreshHeader(){
 
 function refreshProfile(){
   if(!currentUser)return;
-  const joined=new Date(currentUser.joinedAt).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+  let joined = 'Unknown';
+  try {
+    const d = new Date(currentUser.joinedAt);
+    if(!isNaN(d)) joined = d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+  } catch(e) {}
   document.getElementById('profileHeader').innerHTML=`
     <div style="display:flex;align-items:center;gap:16px;position:relative;z-index:1">
       <div class="profile-avatar">${currentUser.firstName[0].toUpperCase()}</div>
@@ -1828,7 +1848,7 @@ function toOz(g){return g/31.1035}
 function toUSD(a,c){return a/rates[c]}
 function metalValueUSD(metal,grams,purity){return toOz(grams*purity)*(metal==='gold'?prices.gold:prices.silver)}
 function fmtFull(usd,curr){curr=curr||currency;const v=usd*rates[curr];return SYMBOLS[curr]+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
-function fmtCurr(a,c){return SYMBOLS[c]+parseFloat(a).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+function fmtCurr(a,c){return (SYMBOLS[c]||c+' ')+parseFloat(a).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
 // ══════════════════════════════════════════
@@ -1939,6 +1959,8 @@ function openAddModal(){
   haptic();
   selectedMetal='gold';selectedType='jewellery';selectedGrade=GOLD_GRADES[1];receiptBase64=null;
   ['itemName','itemWeight','itemNotes','pricePaid'].forEach(id=>document.getElementById(id).value='');
+  const msgEl=document.getElementById('addItemMsg');
+  if(msgEl){msgEl.textContent='';msgEl.className='msg';}
   document.getElementById('weightUnit').value='g';
   document.getElementById('pricePaidCurrency').value=currency!=='USD'?currency:'USD';
   document.getElementById('purchaseDate').value=new Date().toISOString().slice(0,10);
@@ -2052,6 +2074,8 @@ async function addItem(){
 function openEditModal(idx){
   viewingItem=idx;
   const item=items[idx];
+  const msgEl=document.getElementById('editItemMsg');
+  if(msgEl){msgEl.textContent='';msgEl.className='msg';}
   document.getElementById('editItemName').value=item.name;
   document.getElementById('editWeight').value=item.grams.toFixed(3);
   document.getElementById('editWeightUnit').value='g';
@@ -2222,6 +2246,20 @@ function setChartRange(r,btn){
 function updateChartPanel(){
   const active=items.filter(i=>!i.sold);
   const tot=active.reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0);
+
+  // Show/hide empty state overlay for chart
+  const chartEmpty = document.getElementById('chartEmptyState');
+  const chartContent = document.getElementById('chartContent');
+  if(chartEmpty && chartContent){
+    if(!active.length){
+      chartEmpty.style.display='flex';
+      chartContent.style.display='none';
+    } else {
+      chartEmpty.style.display='none';
+      chartContent.style.display='';
+    }
+  }
+
   document.getElementById('chartHeadline').textContent=fmtFull(tot);
   document.getElementById('chartSub').textContent=active.length+' active holding'+(active.length!==1?'s':'');
   document.getElementById('donutTotal').textContent=fmtFull(tot);
@@ -2321,7 +2359,11 @@ function renderHistoryChart(){
 // ══════════════════════════════════════════
 // EXPORT
 // ══════════════════════════════════════════
-function exportData(){const choice=confirm('Export as CSV (OK) or JSON (Cancel)?');if(choice)exportCSV();else exportJSON()}
+function exportData(){
+  // Scroll to the export section which already has two distinct buttons
+  const sec = document.querySelector('.export-section');
+  if(sec) sec.scrollIntoView({behavior:'smooth', block:'center'});
+}
 function exportCSV(){
   if(!items.length){alert('No items to export.');return}
   const header=['Name','Metal','Type','Purity','Weight (g)','Purchase Date','Price Paid','Currency','Price Paid USD','Notes','Sold','Sale Date','Sale Price','Sale Currency','Sale Price USD'];
@@ -2617,6 +2659,7 @@ function showToast(msg, type='info', duration=3500){
 // SESSION TIMEOUT — catch 401s mid-session
 // ══════════════════════════════════════════
 function handleUnauthorised(){
+  if(window._priceInterval) clearInterval(window._priceInterval);
   setToken(null); currentUser=null; items=[]; priceAlerts=[];
   document.getElementById('appScreen').classList.remove('active');
   const authEl = document.getElementById('authScreen');
@@ -2702,17 +2745,15 @@ function hideForgotForm() {
 }
 async function doForgot() {
   const email = document.getElementById('forgotEmail').value.trim();
-  if (!email) { document.getElementById('forgotMsg').className='msg-error'; document.getElementById('forgotMsg').textContent='Please enter your email.'; return; }
+  if (!email || !email.includes('@')) { showMsg('forgotMsg','Please enter a valid email address.','error'); return; }
   const btn = document.getElementById('forgotBtn');
   btn.disabled = true; btn.textContent = 'Sending…';
   try {
     await api('POST', '/auth/forgot-password', { email });
-    document.getElementById('forgotMsg').className = 'msg-success';
-    document.getElementById('forgotMsg').textContent = 'If an account exists, a reset link has been sent.';
+    showMsg('forgotMsg','If an account exists for that email, a reset link has been sent.','success');
     btn.textContent = 'Sent ✓';
   } catch(e) {
-    document.getElementById('forgotMsg').className = 'msg-error';
-    document.getElementById('forgotMsg').textContent = e.message;
+    showMsg('forgotMsg', e.message, 'error');
     btn.disabled = false; btn.textContent = 'Send Reset Link →';
   }
 }
@@ -2769,7 +2810,7 @@ window.addEventListener('DOMContentLoaded', checkResetToken);
       <p><strong style="color:#2C2410">No ads, ever</strong><br>Coffer is free to use and carries no advertising. Your financial data will never be sold, shared, or used to target you. The product exists to serve you — not to monetise your information.</p>
       <p><strong style="color:#2C2410">Third parties</strong><br>We use a third-party market data feed solely to retrieve live gold and silver spot prices. No personal data is transmitted to this service. No other third-party services receive your data.</p>
       <p><strong style="color:#2C2410">Data deletion</strong><br>You can delete your account and all associated data at any time from the Profile tab. Holdings stored in your browser are erased when you clear your browser data or uninstall the app.</p>
-      <p><strong style="color:#2C2410">Contact</strong><br>Questions about your data? Write to us at privacy@coffer.app</p>
+      <p><strong style="color:#2C2410">Contact</strong><br>Questions about your data? Write to us at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="08787a617e696b71486b676e6e6d7a26697878">[email&#160;protected]</a></p>
       <p style="color:#999;font-size:10px">Last updated: January 2025 · Coffer, Mumbai, India</p>
     </div>
   </div>
@@ -2789,4 +2830,4 @@ window.addEventListener('DOMContentLoaded', checkResetToken);
       <p><strong style="color:#2C2410">5. Account responsibility</strong><br>You are responsible for maintaining the security of your account credentials. Coffer is not liable for unauthorised access resulting from compromised credentials.</p>
       <p><strong style="color:#2C2410">6. Availability</strong><br>We make no guarantee of uninterrupted service. Price data depends on third-party market feeds and may occasionally be unavailable or delayed.</p>
       <p><strong style="color:#2C2410">7. Governing law</strong><br>These terms are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of courts in Mumbai, Maharashtra.</p>
-      <p style="color:#999;font-size:10px">Last updated: January 2025 · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfe
+      <p style="col
