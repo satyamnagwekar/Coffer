@@ -1,4 +1,4 @@
-'use strict'; // v4 - email alerts
+'use strict'; // v5 - rate limiting, history, email verify, web push
 const express  = require('express');
 const { Pool } = require('pg');
 const bcrypt   = require('bcryptjs');
@@ -8,11 +8,25 @@ const cron     = require('node-cron');
 const path     = require('path');
 const fs       = require('fs');
 const https    = require('https');
+const rateLimit  = require('express-rate-limit');
+let   Sentry;
+try {
+  Sentry = require('@sentry/node');
+  if (process.env.SENTRY_DSN) {
+    Sentry.init({ dsn: process.env.SENTRY_DSN, tracesSampleRate: 0.2, environment: 'production' });
+    console.log('[sentry] Enabled');
+  }
+} catch(e) { console.warn('[sentry] @sentry/node not installed'); }
+let   webpush;
+try { webpush = require('web-push'); } catch(e) { console.warn('[webpush] web-push not installed — push disabled'); }
 
 const PORT        = process.env.PORT || 3000;
 const JWT_SECRET  = process.env.JWT_SECRET || 'coffer-change-this-secret-in-production';
 const RESEND_KEY  = process.env.RESEND_API_KEY || 're_fRNcgdah_DpCTSZadCkssrXNJmSMpzdq5';
 const APP_URL     = process.env.APP_URL || 'https://mycoffer.up.railway.app';
+const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || '';
+const VAPID_PRIVATE= process.env.VAPID_PRIVATE_KEY || '';
+const VAPID_EMAIL  = process.env.VAPID_EMAIL || 'mailto:admin@coffer.app';
 
 console.log('[config] DATABASE_URL:', process.env.DATABASE_URL ? process.env.DATABASE_URL.slice(0, 40) + '...' : 'NOT SET');
 
@@ -93,6 +107,30 @@ async function initDB() {
       used       BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS price_history (
+      id          SERIAL PRIMARY KEY,
+      gold        REAL NOT NULL,
+      silver      REAL NOT NULL,
+      recorded_at TIMESTAMPTZ DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS email_verify_tokens (
+      id         SERIAL PRIMARY KEY,
+      user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      token      TEXT NOT NULL UNIQUE,
+      expires_at TIMESTAMPTZ NOT NULL,
+      used       BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS push_subscriptions (
+      id         SERIAL PRIMARY KEY,
+      user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      endpoint   TEXT NOT NULL,
+      p256dh     TEXT NOT NULL,
+      auth       TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(user_id, endpoint)
+    );
     INSERT INTO price_cache (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
   `);
 
@@ -100,6 +138,13 @@ async function initDB() {
   await q(`ALTER TABLE alerts ADD COLUMN IF NOT EXISTS price_display  REAL`);
   await q(`ALTER TABLE alerts ADD COLUMN IF NOT EXISTS price_currency TEXT DEFAULT 'USD'`);
   await q(`ALTER TABLE alerts ADD COLUMN IF NOT EXISTS notify_email   TEXT`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE`);
+
+  // Setup VAPID for web push if keys are configured
+  if (webpush && VAPID_PUBLIC && VAPID_PRIVATE) {
+    webpush.setVapidDetails(VAPID_EMAIL, VAPID_PUBLIC, VAPID_PRIVATE);
+    console.log('[webpush] VAPID configured');
+  }
 
   console.log('[db] Tables ready');
 }
@@ -168,8 +213,34 @@ async function refreshPrices() {
     [gold, silver, usd_inr, usd_aed, usd_eur, usd_gbp]);
 
   // Check price alerts after every price refresh
+  // Record daily price snapshot for history chart
+  try {
+    await q('INSERT INTO price_history (gold, silver) VALUES ($1, $2)', [gold, silver]);
+    // Keep only 90 days of history
+    await q("DELETE FROM price_history WHERE recorded_at < NOW() - INTERVAL '90 days'");
+  } catch(e) { console.warn('[history] Could not record price snapshot:', e.message); }
+
   checkAndFireAlerts().catch(e => console.error('[alerts] checkAndFireAlerts error:', e.message));
 }
+
+// ─────────────────────────────────────────
+//  RATE LIMITERS
+// ─────────────────────────────────────────
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  message: { error: 'Too many attempts — please wait 15 minutes and try again.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const forgotLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  message: { error: 'Too many reset requests — please wait an hour and try again.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const app = express();
 app.use(cors({ origin:'*', methods:['GET','POST','PUT','PATCH','DELETE','OPTIONS'], allowedHeaders:['Content-Type','Authorization'] }));
@@ -198,7 +269,7 @@ function alertToClient(r) {
 }
 
 // AUTH ROUTES
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', authLimiter, async (req, res) => {
   const { email, password, firstName, lastName, age, country } = req.body;
   if (!email||!password||!firstName||!lastName) return res.status(400).json({ error:'Missing required fields' });
   if (password.length < 6) return res.status(400).json({ error:'Password must be at least 6 characters' });
@@ -211,11 +282,33 @@ app.post('/api/auth/register', async (req, res) => {
       [email.toLowerCase().trim(), hash, firstName.trim(), lastName.trim(), age||null, country||null]);
     const u = r.rows[0];
     const token = jwt.sign({ userId:u.id, email:u.email }, JWT_SECRET, { expiresIn:'30d' });
-    res.json({ token, user:{ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at } });
+    // Send email verification
+    try {
+      const crypto = require('crypto');
+      const verifyToken = crypto.randomBytes(32).toString('hex');
+      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      await q('INSERT INTO email_verify_tokens (user_id, token, expires_at) VALUES ($1,$2,$3)', [u.id, verifyToken, expires]);
+      const verifyUrl = `${APP_URL}/?verify=${verifyToken}`;
+      await sendEmail({
+        to: u.email,
+        subject: 'Verify your Coffer email address',
+        html: `<div style="font-family:monospace;max-width:480px;margin:0 auto;padding:32px;background:#F5F0E8;border-radius:12px">
+          <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:4px">COFFER</div>
+          <div style="font-size:10px;color:#999;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:24px">Precious Metals Ledger</div>
+          <p style="color:#2C2410;font-size:14px;line-height:1.8">Hi ${u.first_name},</p>
+          <p style="color:#555;font-size:13px;line-height:1.8">Welcome to Coffer. Please verify your email address to activate your account.</p>
+          <div style="text-align:center;margin:28px 0">
+            <a href="${verifyUrl}" style="background:linear-gradient(135deg,#B8860B,#D4A017);color:#fff;padding:14px 28px;border-radius:9px;text-decoration:none;font-size:12px;letter-spacing:0.1em;font-weight:500">Verify My Email →</a>
+          </div>
+          <p style="color:#AAA;font-size:10px;line-height:1.7">This link expires in 24 hours. If you didn't create a Coffer account, ignore this email.</p>
+        </div>`,
+      });
+    } catch(e) { console.warn('[verify] Could not send verification email:', e.message); }
+    res.json({ token, user:{ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:false } });
   } catch(e) { console.error(e); res.status(500).json({ error:'Server error' }); }
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authLimiter, async (req, res) => {
   const { email, password } = req.body;
   if (!email||!password) return res.status(400).json({ error:'Missing email or password' });
   try {
@@ -224,7 +317,7 @@ app.post('/api/auth/login', async (req, res) => {
     if (!u) return res.status(401).json({ error:'No account found with that email' });
     if (!await bcrypt.compare(password, u.password)) return res.status(401).json({ error:'Incorrect password' });
     const token = jwt.sign({ userId:u.id, email:u.email }, JWT_SECRET, { expiresIn:'30d' });
-    res.json({ token, user:{ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at } });
+    res.json({ token, user:{ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:!!u.email_verified } });
   } catch(e) { console.error(e); res.status(500).json({ error:'Server error' }); }
 });
 
@@ -233,7 +326,7 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
     const r = await q('SELECT * FROM users WHERE id=$1', [req.user.userId]);
     const u = r.rows[0];
     if (!u) return res.status(404).json({ error:'User not found' });
-    res.json({ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at });
+    res.json({ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:!!u.email_verified });
   } catch(e) { res.status(500).json({ error:'Server error' }); }
 });
 
@@ -431,13 +524,38 @@ async function checkAndFireAlerts() {
     } catch(e) {
       console.error(`[alerts] Email failed for alert ${alert.id}:`, e.message);
     }
+
+    // Also send web push if user has subscriptions
+    if (webpush && VAPID_PUBLIC) {
+      try {
+        const subs = await q('SELECT * FROM push_subscriptions WHERE user_id=$1', [alert.user_id]);
+        const pushPayload = JSON.stringify({
+          title: `COFFER Alert — ${alert.metal === 'gold' ? 'Gold' : 'Silver'} ${alert.direction === 'above' ? '↑' : '↓'}`,
+          body: text.split('\n').slice(2, 3).join(''),
+          url: APP_URL,
+        });
+        for (const sub of subs.rows) {
+          try {
+            await webpush.sendNotification(
+              { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+              pushPayload
+            );
+          } catch(pushErr) {
+            if (pushErr.statusCode === 410) {
+              // Subscription expired — clean up
+              await q('DELETE FROM push_subscriptions WHERE id=$1', [sub.id]);
+            }
+          }
+        }
+      } catch(e) { console.warn(`[alerts] Push failed for alert ${alert.id}:`, e.message); }
+    }
   }
 }
 
 // ─────────────────────────────────────────
 //  ROUTES — PASSWORD RESET
 // ─────────────────────────────────────────
-app.post('/api/auth/forgot-password', async (req, res) => {
+app.post('/api/auth/forgot-password', forgotLimiter, async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: 'Email required' });
   try {
@@ -584,6 +702,107 @@ app.delete('/api/alerts/:id', requireAuth, async (req, res) => {
   } catch(e) { res.status(500).json({ error:'Server error' }); }
 });
 
+
+// ─────────────────────────────────────────
+//  EMAIL VERIFICATION
+// ─────────────────────────────────────────
+app.get('/api/auth/verify-email', async (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.status(400).json({ error: 'Token required' });
+  try {
+    const result = await q('SELECT * FROM email_verify_tokens WHERE token=$1 AND used=FALSE AND expires_at > NOW()', [token]);
+    const row = result.rows[0];
+    if (!row) return res.status(400).json({ error: 'Verification link is invalid or has expired' });
+    await q('UPDATE users SET email_verified=TRUE WHERE id=$1', [row.user_id]);
+    await q('UPDATE email_verify_tokens SET used=TRUE WHERE id=$1', [row.id]);
+    res.json({ ok: true });
+  } catch(e) { console.error('[verify]', e); res.status(500).json({ error: 'Server error' }); }
+});
+
+app.post('/api/auth/resend-verification', authLimiter, requireAuth, async (req, res) => {
+  try {
+    const r = await q('SELECT * FROM users WHERE id=$1', [req.user.userId]);
+    const u = r.rows[0];
+    if (!u) return res.status(404).json({ error: 'User not found' });
+    if (u.email_verified) return res.json({ ok: true, alreadyVerified: true });
+    const crypto = require('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await q('UPDATE email_verify_tokens SET used=TRUE WHERE user_id=$1 AND used=FALSE', [u.id]);
+    await q('INSERT INTO email_verify_tokens (user_id, token, expires_at) VALUES ($1,$2,$3)', [u.id, token, expires]);
+    const verifyUrl = `${APP_URL}/?verify=${token}`;
+    await sendEmail({
+      to: u.email,
+      subject: 'Verify your Coffer email address',
+      html: `<div style="font-family:monospace;max-width:480px;margin:0 auto;padding:32px;background:#F5F0E8;border-radius:12px">
+        <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:20px">COFFER</div>
+        <p style="color:#555;font-size:13px;line-height:1.8">Click below to verify your email address for your Coffer account.</p>
+        <div style="text-align:center;margin:28px 0">
+          <a href="${verifyUrl}" style="background:linear-gradient(135deg,#B8860B,#D4A017);color:#fff;padding:14px 28px;border-radius:9px;text-decoration:none;font-size:12px;font-weight:500">Verify My Email →</a>
+        </div>
+        <p style="color:#AAA;font-size:10px">This link expires in 24 hours.</p>
+      </div>`,
+    });
+    res.json({ ok: true });
+  } catch(e) { console.error('[verify resend]', e); res.status(500).json({ error: 'Server error' }); }
+});
+
+// ─────────────────────────────────────────
+//  PRICE HISTORY
+// ─────────────────────────────────────────
+app.get('/api/prices/history', async (req, res) => {
+  try {
+    const days = Math.min(parseInt(req.query.days) || 30, 90);
+    const r = await q(
+      `SELECT gold, silver, recorded_at FROM price_history
+       WHERE recorded_at > NOW() - ($1 || ' days')::INTERVAL
+       ORDER BY recorded_at ASC`,
+      [days]
+    );
+    res.json(r.rows);
+  } catch(e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+// ─────────────────────────────────────────
+//  WEB PUSH SUBSCRIPTIONS
+// ─────────────────────────────────────────
+app.get('/api/push/vapid-public-key', (req, res) => {
+  if (!VAPID_PUBLIC) return res.status(404).json({ error: 'Push not configured' });
+  res.json({ key: VAPID_PUBLIC });
+});
+
+app.post('/api/push/subscribe', requireAuth, async (req, res) => {
+  const { endpoint, keys } = req.body;
+  if (!endpoint || !keys?.p256dh || !keys?.auth) return res.status(400).json({ error: 'Invalid subscription object' });
+  if (!VAPID_PUBLIC) return res.status(404).json({ error: 'Push not configured' });
+  try {
+    await q(
+      `INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth)
+       VALUES ($1,$2,$3,$4) ON CONFLICT (user_id, endpoint) DO UPDATE SET p256dh=$3, auth=$4`,
+      [req.user.userId, endpoint, keys.p256dh, keys.auth]
+    );
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.delete('/api/push/unsubscribe', requireAuth, async (req, res) => {
+  const { endpoint } = req.body;
+  try {
+    await q('DELETE FROM push_subscriptions WHERE user_id=$1 AND endpoint=$2', [req.user.userId, endpoint]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+// ─────────────────────────────────────────
+//  SENTRY + GENERIC ERROR HANDLER
+// ─────────────────────────────────────────
+if (Sentry) app.use(Sentry.Handlers.errorHandler());
+app.use((err, req, res, next) => {
+  console.error("[server] Unhandled:", err.message);
+  if (Sentry) Sentry.captureException(err);
+  res.status(500).json({ error: "Server error" });
+});
+
 // FRONTEND
 app.get('*', (req, res) => {
   const indexPath = path.join(__dirname, 'index.html');
@@ -599,6 +818,15 @@ initDB()
   .then(r => {
     if (r.rows[0]) priceCache = r.rows[0];
     cron.schedule('*/5 * * * *', refreshPrices);
+
+    // Daily cleanup — expired tokens
+    cron.schedule('0 3 * * *', async () => {
+      try {
+        const r1 = await q("DELETE FROM password_reset_tokens WHERE expires_at < NOW()");
+        const r2 = await q("DELETE FROM email_verify_tokens WHERE expires_at < NOW()");
+        console.log(`[cleanup] Deleted ${r1.rowCount} reset tokens, ${r2.rowCount} verify tokens`);
+      } catch(e) { console.error('[cleanup] Token cleanup failed:', e.message); }
+    });
     refreshPrices().catch(console.error);
     app.listen(PORT, () => console.log(`\n🏛  Coffer running on port ${PORT} (PostgreSQL)\n`));
   })
