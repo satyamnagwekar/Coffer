@@ -521,6 +521,14 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .empty-alerts .ea-icon{font-size:34px;margin-bottom:10px}
 .empty-alerts .ea-text{font-size:11px;color:var(--text-dim);line-height:1.7}
 
+/* ── Toast notifications ── */
+#toastContainer{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:800;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:var(--text);color:var(--bg2);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;padding:10px 18px;border-radius:20px;box-shadow:0 4px 16px rgba(0,0,0,.2);opacity:0;transform:translateY(8px);transition:all .25s ease;pointer-events:auto;max-width:320px;text-align:center;line-height:1.5}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.warn{background:#7A4500;color:#FFE8C0}
+.toast.error{background:#6B1C1C;color:#FFD0D0}
+.toast.success{background:#1A4A30;color:#C0FFD8}
+
 /* iOS keyboard — ensure focused inputs scroll into view inside modals */
 .modal{scroll-behavior:smooth}
 
@@ -546,6 +554,50 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 }
 @keyframes splash-spin{to{transform:rotate(360deg)}}
 .splash-sub{font-size:11px;color:var(--text-dim);letter-spacing:.18em;text-transform:uppercase}
+
+/* ── Landscape on small phones ── */
+@media (max-height: 500px) and (orientation: landscape){
+  .auth-top{flex-direction:row;padding:12px 16px;gap:16px}
+  .auth-box{width:260px;padding:14px 16px}
+  .auth-hero{display:none}
+  .auth-headline{font-size:28px}
+  .physical-case,.auth-about{display:none}
+}
+
+/* ── Mobile (≤600px) ── */
+@media (max-width:600px){
+  .auth-top{flex-direction:column;gap:0;padding:20px 16px 0}
+  .auth-box{width:100%;border-radius:14px;padding:20px 18px}
+  .auth-wordmark{font-size:24px}
+  .auth-hero{padding:20px 0 16px;min-width:unset}
+  .auth-headline{font-size:28px;white-space:normal;margin-bottom:12px}
+  .auth-desc{font-size:12px;line-height:1.75;margin-bottom:14px}
+  .physical-case{padding:20px 16px 18px}
+  .physical-pillars-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .af input,.af select,.field input,.field select{font-size:16px}
+  .btn-auth{padding:15px}
+  .header{padding:10px 12px;gap:8px}
+  .logo{font-size:19px}
+  .nav-tab{font-size:12px;padding:14px 2px}
+  .currency-bar{padding:8px 12px;gap:5px}
+  .summary-card{margin:10px 10px;padding:18px 16px}
+  .summary-value{font-size:40px}
+  .htabs{margin:0 10px 8px}
+  .inventory-list{padding:0 10px;gap:8px}
+  .item-card{padding:14px 14px}
+  .item-name{font-size:18px}
+  .fab{width:54px;height:54px;font-size:26px}
+  .fab-wrap{bottom:20px;right:14px}
+  .modal{border-radius:20px 20px 0 0;max-height:96vh}
+  .modal-body{padding:16px;gap:14px}
+  .modal-title{font-size:22px}
+  .chart-headline{font-size:30px}
+  .alerts-title{font-size:28px}
+  .profile-section{padding:16px}
+  .auth-about-two-col{grid-template-columns:1fr !important;gap:28px !important}
+  #toastContainer{bottom:80px;width:90%}
+  #toastContainer .toast{width:100%;max-width:100%}
+}
 </style>
 </head>
 <body>
@@ -761,7 +813,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   </div>
 
   <!-- Privacy Notice -->
-  <div style="background:#F5F0E8;border-top:1px solid #DDD5C0;padding:36px 28px 40px">
+  <div id="privacySection" style="background:#F5F0E8;border-top:1px solid #DDD5C0;padding:36px 28px 40px">
     <div style="max-width:860px;margin:0 auto">
 
       <div style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'DM Mono',monospace;margin-bottom:24px">Privacy &amp; Data</div>
@@ -787,7 +839,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
       <div style="margin-top:28px;padding-top:24px;border-top:1px solid #DDD5C0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
         <div style="font-size:11px;color:#999;line-height:1.7">© 2025 Coffer · Built by Satyam Nagwekar · Mumbai, India</div>
-        <div style="font-size:11px;color:#999;line-height:1.7">Values shown are indicative only and do not constitute financial advice.</div>
+        <div style="font-size:11px;color:#999;line-height:1.7;display:flex;gap:16px;flex-wrap:wrap">
+          <span>Values shown are indicative only and do not constitute financial advice.</span>
+          <a href="#privacy" onclick="document.querySelector('.auth-screen').scrollTo({top:document.getElementById('privacySection').offsetTop,behavior:'smooth'});return false;" style="color:#B8860B;text-decoration:none;white-space:nowrap">Privacy Policy</a>
+          <a href="#terms" onclick="document.getElementById('termsOverlay').style.display='flex';return false;" style="color:#B8860B;text-decoration:none;white-space:nowrap">Terms of Use</a>
+        </div>
       </div>
 
     </div>
@@ -799,6 +855,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
      MAIN APP
 ══════════════════════════════════════════════════ -->
 <div class="app-screen" id="appScreen">
+
+<div id="toastContainer"></div>
 
 <!-- Pull-to-refresh indicator -->
 <div id="ptrIndicator" style="position:fixed;top:0;left:0;right:0;height:52px;display:flex;align-items:center;justify-content:center;gap:8px;transform:translateY(-52px);transition:transform .25s cubic-bezier(.32,.72,0,1);z-index:90;background:var(--bg2);border-bottom:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.06);pointer-events:none">
@@ -1263,6 +1321,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="pnl-row total"><div class="pnl-key">Unrealised G/L</div><div class="pnl-val hi" id="pnlGain">—</div></div>
       </div>
 
+      <div id="addItemMsg" class="msg"></div>
       <button class="btn-primary" onclick="addItem()">Save to Coffer</button>
     </div>
   </div>
@@ -1409,6 +1468,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="field-label-row"><label>Notes</label><span class="field-hint">optional</span></div>
         <input type="text" id="editNotes" placeholder="Jeweller, occasion, cert. number…">
       </div>
+      <div id="editItemMsg" class="msg"></div>
       <button class="btn-primary" onclick="saveEditItem()">Save Changes</button>
     </div>
   </div>
@@ -1476,6 +1536,10 @@ async function api(method, path, body){
   if(body) opts.body=JSON.stringify(body);
   const res=await fetch(API_BASE+'/api'+path,opts);
   const data=await res.json().catch(()=>({}));
+  if(res.status===401 && path !== '/auth/login' && path !== '/auth/register'){
+    handleUnauthorised();
+    throw new Error('Session expired');
+  }
   if(!res.ok) throw new Error(data.error||'Request failed');
   return data;
 }
@@ -1613,9 +1677,11 @@ async function deleteAccount(){
   if(!confirm('Are you absolutely sure?'))return;
   try{
     await api('DELETE','/auth/account');
-    setToken(null);currentUser=null;items=[];priceAlerts=[];
+    localStorage.clear(); // wipe token + any cached data
+    currentUser=null;items=[];priceAlerts=[];
     document.getElementById('appScreen').classList.remove('active');
-    document.getElementById('authScreen').classList.remove('hidden');
+    const authEl = document.getElementById('authScreen');
+    authEl.classList.remove('hidden','fading');
     switchAuthTab('register',document.querySelectorAll('.auth-tab')[1]);
   }catch(e){alert('Error: '+e.message)}
 }
@@ -1724,7 +1790,11 @@ function setNavTab(tab,btn){
 // ══════════════════════════════════════════
 // PRICES
 // ══════════════════════════════════════════
+let _lastFetch = 0;
 async function fetchPrices(){
+  // Debounce: ignore calls within 10 seconds of last successful fetch
+  const now = Date.now();
+  if(now - _lastFetch < 10000) return;
   document.getElementById('lastUpdatedText').textContent='Refreshing live prices…';
   try{
     const data=await api('GET','/prices');
@@ -1736,12 +1806,18 @@ async function fetchPrices(){
       rates.EUR=data.rates.EUR||rates.EUR;
       rates.GBP=data.rates.GBP||rates.GBP;
     }
+    _lastFetch = Date.now();
   }catch(e){
-    console.warn('Price fetch failed, using cached values');
+    if(e.message !== 'Session expired'){
+      showToast('Unable to reach server — showing last known prices', 'warn', 5000);
+      document.getElementById('lastUpdatedText').textContent='Prices may be outdated — tap to retry';
+    }
+    updatePriceDisplay();updateAll();
+    return;
   }
   updatePriceDisplay();updateAll();
-  const now=new Date();
-  document.getElementById('lastUpdatedText').textContent=`Prices as of ${now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} — tap to refresh`;
+  const t=new Date();
+  document.getElementById('lastUpdatedText').textContent=`Prices as of ${t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} — tap to refresh`;
 }
 
 // ══════════════════════════════════════════
@@ -1857,7 +1933,10 @@ function setFilter(f,btn){activeFilter=f;document.querySelectorAll('.filter-btn'
 // ══════════════════════════════════════════
 // ADD ITEM
 // ══════════════════════════════════════════
+function haptic(ms=10){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} }
+
 function openAddModal(){
+  haptic();
   selectedMetal='gold';selectedType='jewellery';selectedGrade=GOLD_GRADES[1];receiptBase64=null;
   ['itemName','itemWeight','itemNotes','pricePaid'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('weightUnit').value='g';
@@ -1948,9 +2027,9 @@ async function addItem(){
   const paidRaw=parseFloat(document.getElementById('pricePaid').value)||0;
   const paidCurr=document.getElementById('pricePaidCurrency').value;
   const purchaseDate=document.getElementById('purchaseDate').value;
-  if(!name){alert('Please give this item a name.');return}
-  if(!weight||weight<=0){alert('Please enter the weight.');return}
-  if(!selectedGrade){alert('Please select a purity grade.');return}
+  if(!name){showMsg('addItemMsg','Please give this item a name.','error');return}
+  if(!weight||weight<=0||weight>100000){showMsg('addItemMsg','Please enter a valid weight greater than zero.','error');return}
+  if(!selectedGrade){showMsg('addItemMsg','Please select a purity grade.','error');return}
   const grams=toGrams(weight,unit);
   const payload={
     name,metal:selectedMetal,type:selectedType,gradeName:selectedGrade.name,
@@ -1993,8 +2072,8 @@ async function saveEditItem(){
   const paidRaw=parseFloat(document.getElementById('editPricePaid').value)||0;
   const paidCurr=document.getElementById('editPricePaidCurrency').value;
   const notes=document.getElementById('editNotes').value.trim();
-  if(!name){alert('Please enter a name.');return}
-  if(!weight||weight<=0){alert('Please enter a valid weight.');return}
+  if(!name){showMsg('editItemMsg','Please enter a name.','error');return}
+  if(!weight||weight<=0||weight>100000){showMsg('editItemMsg','Please enter a valid weight greater than zero.','error');return}
   const grams=toGrams(weight,unit);
   const item=items[viewingItem];
   const payload={
@@ -2051,6 +2130,7 @@ async function confirmSell(){
   if(!sR||sR<=0){alert('Please enter the price received.');return}
   if(!sD){alert('Please enter the date of sale.');return}
   const item=items[viewingItem];
+  if(!confirm(`Record sale of "${item.name}" for ${SYMBOLS[sC]||''}${sR}? This cannot be undone.`))return;
   const payload={
     ...item,
     sold:true,sellPrice:sR,sellCurrency:sC,
@@ -2376,13 +2456,6 @@ function fireNotification(a,spot){
   showToast('🔔 '+body);
 }
 
-function showToast(msg){
-  let t=document.getElementById('cofferToast');
-  if(!t){t=document.createElement('div');t.id='cofferToast';t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--gold-dim);color:var(--text);font-size:11px;padding:12px 16px;border-radius:12px;z-index:9000;max-width:320px;text-align:center;line-height:1.5;box-shadow:0 4px 24px rgba(0,0,0,.5);transition:opacity .3s';document.body.appendChild(t)}
-  t.textContent=msg;t.style.opacity='1';
-  clearTimeout(t._to);t._to=setTimeout(()=>{t.style.opacity='0'},4000);
-}
-
 // ══════════════════════════════════════════
 // PRICE DISPLAY
 // ══════════════════════════════════════════
@@ -2524,6 +2597,36 @@ function hideSplash(){
 })();
 
 // ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+function showToast(msg, type='info', duration=3500){
+  const c = document.getElementById('toastContainer');
+  if(!c) return;
+  const t = document.createElement('div');
+  t.className = 'toast' + (type !== 'info' ? ' ' + type : '');
+  t.textContent = msg;
+  c.appendChild(t);
+  requestAnimationFrame(() => { requestAnimationFrame(() => t.classList.add('show')); });
+  setTimeout(() => {
+    t.classList.remove('show');
+    setTimeout(() => t.remove(), 300);
+  }, duration);
+}
+
+// ══════════════════════════════════════════
+// SESSION TIMEOUT — catch 401s mid-session
+// ══════════════════════════════════════════
+function handleUnauthorised(){
+  setToken(null); currentUser=null; items=[]; priceAlerts=[];
+  document.getElementById('appScreen').classList.remove('active');
+  const authEl = document.getElementById('authScreen');
+  authEl.classList.remove('hidden','fading');
+  switchAuthTab('login', document.querySelectorAll('.auth-tab')[0]);
+  // Show message after screen swap
+  setTimeout(() => showMsg('loginMsg','Your session has expired. Please sign in again.','error'), 100);
+}
+
+// ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
 (async function init(){
@@ -2654,5 +2757,24 @@ async function doReset() {
 // Check for reset token on load
 window.addEventListener('DOMContentLoaded', checkResetToken);
 </script>
+<div id="termsOverlay" style="display:none;position:fixed;inset:0;background:rgba(245,240,232,.97);z-index:1000;align-items:flex-start;justify-content:center;overflow-y:auto;padding:32px 20px">
+  <div style="max-width:560px;width:100%;background:#fff;border:1px solid #DDD5C0;border-radius:16px;padding:28px 24px;box-shadow:0 4px 24px rgba(0,0,0,.08)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#8B6914;letter-spacing:.1em">Terms of Use</div>
+      <button onclick="document.getElementById('termsOverlay').style.display='none'" style="background:none;border:1px solid #DDD5C0;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;color:#888;display:flex;align-items:center;justify-content:center">×</button>
+    </div>
+    <div style="font-size:11px;color:#555;line-height:1.9;display:flex;flex-direction:column;gap:14px">
+      <p><strong style="color:#2C2410">1. Acceptance</strong><br>By using Coffer you agree to these terms. If you do not agree, please do not use the service.</p>
+      <p><strong style="color:#2C2410">2. Service description</strong><br>Coffer is a personal tracking tool that estimates the indicative market value of physical precious metals based on live spot prices. It is not a financial advisory, brokerage, or investment service.</p>
+      <p><strong style="color:#2C2410">3. Indicative values only</strong><br>All valuations shown are estimates based on global spot prices and may not reflect the price you would receive if you sold your holdings. Actual resale values depend on purity verification, local market conditions, buyer premiums, and applicable taxes. Nothing in Coffer constitutes financial advice.</p>
+      <p><strong style="color:#2C2410">4. Your data</strong><br>Your portfolio data is stored locally on your device. Your account credentials (name, email, password hash) are stored on our servers. We do not sell, share, or monetise your data. See our Privacy Policy for full details.</p>
+      <p><strong style="color:#2C2410">5. Account responsibility</strong><br>You are responsible for maintaining the security of your account credentials. Coffer is not liable for unauthorised access resulting from compromised credentials.</p>
+      <p><strong style="color:#2C2410">6. Availability</strong><br>We make no guarantee of uninterrupted service. Price data depends on third-party market feeds and may occasionally be unavailable or delayed.</p>
+      <p><strong style="color:#2C2410">7. Governing law</strong><br>These terms are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of courts in Mumbai, Maharashtra.</p>
+      <p style="color:#999;font-size:10px">Last updated: January 2025 · contact@coffer.app</p>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
