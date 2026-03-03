@@ -511,177 +511,29 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .empty-alerts .ea-icon{font-size:34px;margin-bottom:10px}
 .empty-alerts .ea-text{font-size:11px;color:var(--text-dim);line-height:1.7}
 
-/* ═══════════════════════════════════════
-   MOBILE OPTIMISATIONS  (max-width: 600px)
-═══════════════════════════════════════ */
-@media (max-width: 600px) {
-
-  /* ── Auth screen ── */
-  .auth-screen { overflow-y: auto; }
-
-  .auth-top {
-    flex-direction: column;
-    gap: 0;
-    padding: 20px 16px 0;
-  }
-
-  /* Login box full-width */
-  .auth-box {
-    width: 100%;
-    border-radius: 14px;
-    padding: 20px 18px;
-    box-shadow: 0 2px 12px rgba(0,0,0,.07);
-  }
-
-  .auth-wordmark { font-size: 24px; }
-  .auth-tagline  { font-size: 8px; margin-bottom: 14px; }
-
-  .auth-tab { font-size: 9px; padding: 10px 4px; }
-
-  .af input, .af select {
-    font-size: 16px; /* prevents iOS zoom */
-    padding: 12px 12px;
-  }
-
-  .af-row { grid-template-columns: 1fr 1fr; gap: 8px; }
-
-  .btn-auth { padding: 15px; font-size: 12px; }
-
-  /* Hero — stack below login box, reduced */
-  .auth-hero {
-    padding: 20px 0 16px;
-    min-width: unset;
-  }
-
-  .auth-rule { margin-bottom: 14px; }
-
-  .auth-headline {
-    font-size: 28px;
-    white-space: normal;
-    margin-bottom: 12px;
-  }
-
-  .auth-desc { font-size: 12px; line-height: 1.75; margin-bottom: 14px; }
-
-  .free-badge { font-size: 8px; }
-
-  /* Why physical — single column */
-  .physical-case { padding: 20px 16px 18px; }
-  .physical-pillars-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .physical-pillar { padding: 14px 12px; }
-  .pillar-icon { font-size: 22px; }
-  .pillar-title { font-size: 11px; }
-  .pillar-desc { font-size: 9px; }
-
-  /* About + Founder — single column */
-  .auth-about {
-    grid-template-columns: 1fr;
-    padding: 20px 16px 24px;
-  }
-  .about-divider { display: none; }
-  .about-item { padding: 12px 0; border-bottom: 1px solid #EDE8DC; }
-  .about-item:last-child { border-bottom: none; }
-
-  /* ── Main app header ── */
-  .header { padding: 10px 12px; gap: 8px; }
-  .logo { font-size: 19px; }
-  .spot-strip { gap: 8px; }
-  .spot-item .price { font-size: 11px; }
-
-  /* Nav tabs — larger tap targets */
-  .nav-tab { font-size: 12px; padding: 14px 2px; }
-
-  /* Currency bar */
-  .currency-bar { padding: 8px 12px; gap: 5px; }
-  .currency-btn { padding: 7px 11px; font-size: 10px; }
-
-  /* Summary card */
-  .summary-card { margin: 10px 10px; padding: 18px 16px; }
-  .summary-value { font-size: 40px; }
-  .summary-split { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-  .split-val { font-size: 16px; }
-
-  /* Holdings tabs */
-  .htabs { margin: 0 10px 8px; }
-  .htab { font-size: 12px; padding: 10px 4px; }
-
-  .filter-bar { padding: 0 10px 8px; }
-
-  /* Item cards */
-  .inventory-list { padding: 0 10px; gap: 8px; }
-  .item-card { padding: 14px 14px; }
-  .item-name { font-size: 18px; }
-  .item-value { font-size: 14px; }
-
-  /* FAB */
-  .fab { width: 54px; height: 54px; font-size: 26px; }
-  .fab-wrap { bottom: 20px; right: 14px; }
-
-  /* Modals — full screen on mobile */
-  .modal { border-radius: 20px 20px 0 0; max-height: 96vh; }
-  .modal-body { padding: 16px; gap: 14px; }
-  .modal-header { padding: 14px 16px 12px; }
-  .modal-title { font-size: 22px; }
-
-  /* Form fields in modals */
-  .field input, .field select {
-    font-size: 16px; /* prevents iOS zoom */
-  }
-
-  /* Grade / type grids */
-  .grade-grid { grid-template-columns: repeat(3,1fr); gap: 5px; }
-  .type-grid  { grid-template-columns: repeat(3,1fr); gap: 5px; }
-  .grade-btn  { padding: 10px 4px; }
-  .type-btn   { padding: 10px 4px; }
-
-  /* Detail modal */
-  .detail-actions { padding: 12px 14px 4px; gap: 8px; }
-  .detail-action-btn { padding: 12px 6px; font-size: 9px; }
-
-  /* Chart panel */
-  .chart-header { padding: 12px 12px 0; }
-  .chart-headline { font-size: 30px; }
-  .chart-title-row { flex-direction: column; gap: 10px; align-items: flex-start; }
-  .chart-export-btn { align-self: flex-start; }
-  .chart-range-tabs { margin-bottom: 12px; }
-  .range-tab { font-size: 8px; padding: 8px 2px; }
-  .chart-view { padding: 0 12px 12px; }
-  .donut-wrap { width: 180px; height: 180px; }
-  .export-btns { grid-template-columns: 1fr 1fr; gap: 6px; }
-
-  /* Alerts panel */
-  .alerts-header { padding: 16px 14px 10px; }
-  .alerts-title { font-size: 28px; }
-  .spot-quick { padding: 10px 12px; gap: 8px; }
-  .sq-price { font-size: 20px; }
-  .alert-form-card { margin: 0 12px 12px; padding: 14px; }
-  .alerts-list { padding: 0 12px; }
-
-  /* Profile panel */
-  .profile-stats { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-  .stat-num { font-size: 26px; }
-  .stat-lbl { font-size: 9px; }
-  .profile-section { padding: 16px; }
-
-  /* About / founder section in auth */
-  .auth-about-two-col { grid-template-columns: 1fr !important; gap: 28px !important; }
-
-  /* Value preview */
-  .vp-amt { font-size: 26px; }
-
-  /* About + Privacy inline-style sections */
-  .mobile-pad { padding: 24px 16px 28px !important; }
-  .mobile-pad-footer { padding: 24px 16px 28px !important; }
-  .footer-flex { flex-direction: column !important; gap: 6px !important; }
+/* ── Pull-to-refresh ── */
+.ptr-indicator{
+  position:fixed;top:0;left:0;right:0;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  height:52px;pointer-events:none;
+  transform:translateY(-52px);
+  transition:transform .25s cubic-bezier(.32,.72,0,1);
+  z-index:90;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
 }
-
-/* Slightly wider phones (601–768) */
-@media (min-width: 601px) and (max-width: 768px) {
-  .auth-top { padding: 24px 20px; }
-  .auth-box { width: 100%; max-width: 340px; }
-  .auth-headline { font-size: 36px; white-space: normal; }
-  .physical-pillars-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+.ptr-indicator.ptr-visible{transform:translateY(0)}
+.ptr-spinner{
+  width:16px;height:16px;
+  border:2px solid var(--border);
+  border-top-color:var(--brand);
+  border-radius:50%;
+  flex-shrink:0;
 }
+.ptr-spinner.ptr-spinning{animation:ptr-spin .65s linear infinite}
+@keyframes ptr-spin{to{transform:rotate(360deg)}}
+.ptr-label{font-size:10px;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase}
 </style>
 </head>
 <body>
@@ -855,21 +707,21 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
   <!-- Full-width about strip -->
   <!-- About + Founder -->
-  <div class="mobile-pad" style="background:#fff;border-top:1px solid #DDD5C0;padding:40px 28px 44px">
+  <div style="background:#fff;border-top:1px solid #DDD5C0;padding:40px 28px 44px">
     <div style="max-width:860px;margin:0 auto">
 
       <!-- Section label -->
       <div style="font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'DM Mono',monospace;margin-bottom:28px">About the Project</div>
 
       <!-- Two col: project story + founder -->
-      <div class="auth-about-two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start">
 
         <div>
           <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#2C2410;line-height:1.25;margin-bottom:16px">Gold has always been India's most trusted store of wealth. But nobody had built a clean way to know what it's actually worth.</div>
           <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">Indian families hold an estimated 25,000 tonnes of physical gold — the largest private gold reserve in the world. Yet the tools to track it barely existed. Spreadsheets, rough mental estimates, or simply not knowing at all.</div>
           <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">The cruellest part: the only reliable way to find out what your gold was worth was to sell it. Visit a jeweller, accept their price, and only then discover the number — by giving up the very thing you wanted to hold.</div>
           <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">Coffer was built to end that. It's a private digital ledger for anyone who owns physical gold or silver — jewellery, coins, bars, raw metal — and wants to know what their holdings are worth right now, in real money, without surrendering their metal or their data.</div>
-          <div style="font-size:12px;color:#555;line-height:1.9">Prices are sourced from global spot markets and aligned to MCX rates for Indian users, updated every five minutes. Your data never leaves your device.</div>
+          <div style="font-size:12px;color:#555;line-height:1.9">Prices are sourced from global spot markets and aligned to MCX rates for Indian users, updated every five minutes. Your account credentials are stored securely on our servers — your holdings, values, and portfolio history never leave your device.</div>
         </div>
 
         <div>
@@ -891,12 +743,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   </div>
 
   <!-- Privacy Notice -->
-  <div class="mobile-pad" style="background:#F5F0E8;border-top:1px solid #DDD5C0;padding:36px 28px 40px">
+  <div style="background:#F5F0E8;border-top:1px solid #DDD5C0;padding:36px 28px 40px">
     <div style="max-width:860px;margin:0 auto">
 
       <div style="font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'DM Mono',monospace;margin-bottom:24px">Privacy &amp; Data</div>
 
-      <div class="auth-about-two-col" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
 
         <div>
           <div style="font-size:11px;color:#2C2410;font-weight:500;letter-spacing:.04em;margin-bottom:8px">What we collect</div>
@@ -905,7 +757,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
         <div>
           <div style="font-size:11px;color:#2C2410;font-weight:500;letter-spacing:.04em;margin-bottom:8px">Where it lives</div>
-          <div style="font-size:11px;color:#666;line-height:1.85">Your holdings data is stored on your device in your browser's local storage. Nothing about your portfolio — its contents, values, or history — is ever transmitted to any server or third party.</div>
+          <div style="font-size:11px;color:#666;line-height:1.85">Your holdings data is stored on your device in your browser's local storage. Only your account credentials (name, email, password) are held on our servers — nothing about your portfolio, its contents, values, or history is ever transmitted to any server or third party.</div>
         </div>
 
         <div>
@@ -915,7 +767,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
       </div>
 
-      <div class="footer-flex" style="margin-top:28px;padding-top:24px;border-top:1px solid #DDD5C0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <div style="margin-top:28px;padding-top:24px;border-top:1px solid #DDD5C0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
         <div style="font-size:10px;color:#999;line-height:1.7">© 2025 Coffer · Built by Satyam Nagwekar · Mumbai, India</div>
         <div style="font-size:10px;color:#999;line-height:1.7">Values shown are indicative only and do not constitute financial advice.</div>
       </div>
@@ -929,6 +781,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
      MAIN APP
 ══════════════════════════════════════════════════ -->
 <div class="app-screen" id="appScreen">
+
+<!-- Pull-to-refresh indicator -->
+<div class="ptr-indicator" id="ptrIndicator">
+  <div class="ptr-spinner" id="ptrSpinner"></div>
+  <span class="ptr-label" id="ptrLabel">Pull to refresh prices</span>
+</div>
 
   <div class="header">
     <div class="header-left">
@@ -1237,7 +1095,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         </div>
         <div class="profile-row">
           <div class="profile-key">Storage</div>
-          <div class="profile-val muted" style="font-size:11px">Browser local storage</div>
+          <div class="profile-val muted" style="font-size:11px">Holdings: browser only · Account: encrypted server</div>
         </div>
         <div class="profile-row">
           <div class="profile-key">Data Location</div>
@@ -2549,6 +2407,85 @@ function updatePriceDisplay(){
 // ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
+// ══════════════════════════════════════════
+// PULL-TO-REFRESH
+// ══════════════════════════════════════════
+(function initPTR(){
+  const THRESHOLD = 72;   // px drag needed to trigger
+  const MAX_PULL  = 90;   // max visual drag
+  let startY = 0, currentY = 0, pulling = false, triggered = false;
+
+  const indicator = document.getElementById('ptrIndicator');
+  const spinner   = document.getElementById('ptrSpinner');
+  const label     = document.getElementById('ptrLabel');
+
+  function canPull(){
+    // Only active on vault panel, app visible, page scrolled to top
+    const app = document.getElementById('appScreen');
+    if(!app || !app.classList.contains('active')) return false;
+    const vault = document.getElementById('panelVault');
+    if(!vault || !vault.classList.contains('active')) return false;
+    return window.scrollY <= 0;
+  }
+
+  document.addEventListener('touchstart', e => {
+    if(!canPull()) return;
+    startY = e.touches[0].clientY;
+    pulling = true;
+    triggered = false;
+  }, {passive:true});
+
+  document.addEventListener('touchmove', e => {
+    if(!pulling) return;
+    currentY = e.touches[0].clientY;
+    const delta = Math.min(currentY - startY, MAX_PULL);
+    if(delta <= 0){ pulling = false; return; }
+
+    const progress = Math.min(delta / THRESHOLD, 1);
+    // Nudge the indicator into view proportionally
+    indicator.style.transition = 'none';
+    indicator.style.transform = `translateY(${-52 + 52 * progress}px)`;
+
+    if(delta >= THRESHOLD && !triggered){
+      label.textContent = 'Release to refresh';
+      spinner.style.borderTopColor = 'var(--brand-light)';
+    } else if(delta < THRESHOLD){
+      label.textContent = 'Pull to refresh prices';
+      spinner.style.borderTopColor = 'var(--brand)';
+    }
+  }, {passive:true});
+
+  document.addEventListener('touchend', async () => {
+    if(!pulling) return;
+    pulling = false;
+    const delta = currentY - startY;
+
+    if(delta >= THRESHOLD){
+      // Show spinner and refresh
+      indicator.style.transition = '';
+      indicator.classList.add('ptr-visible');
+      spinner.classList.add('ptr-spinning');
+      label.textContent = 'Refreshing…';
+
+      await fetchPrices();
+
+      label.textContent = 'Updated ✓';
+      spinner.classList.remove('ptr-spinning');
+      spinner.style.borderTopColor = 'var(--green)';
+
+      setTimeout(() => {
+        indicator.classList.remove('ptr-visible');
+        indicator.style.transform = '';
+        spinner.style.borderTopColor = '';
+      }, 900);
+    } else {
+      // Snap back
+      indicator.style.transition = '';
+      indicator.style.transform = '';
+    }
+  }, {passive:true});
+})();
+
 (async function init(){
   updatePriceDisplay();
   const token=localStorage.getItem('coffer_token');
