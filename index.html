@@ -890,7 +890,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="price" id="silverSpot"><span class="loading-dot"></span></div>
       </div>
       <div style="display:flex;align-items:flex-end;padding-bottom:1px">
-        <span style="font-size:10px;color:var(--text-dim);letter-spacing:.06em;opacity:.7" title="Prices are indicative spot rates and may differ from local jeweller or exchange prices">indicative</span>
+        <span style="font-size:10px;color:var(--text-dim);letter-spacing:.04em;opacity:.7">est.</span>
       </div>
     </div>
     <div id="inrDutyNote" style="display:none;font-size:11px;color:var(--text-dim);text-align:right;padding:2px 16px 4px;letter-spacing:.04em;opacity:0.7">incl. 15% import duty + 3% GST</div>
@@ -917,6 +917,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
     <div class="last-updated" id="lastUpdated" onclick="fetchPrices()">
       <span>↻</span> <span id="lastUpdatedText">Fetching live prices…</span>
+      <span style="margin-left:auto;font-size:10px;color:var(--text-dim);opacity:.6;letter-spacing:.04em">spot est. · may differ from jeweller prices</span>
     </div>
 
     <div class="summary-card">
@@ -1016,7 +1017,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
     <div class="app-footer">
       <p>COFFER is a free personal ledger for estimating precious metal value at live spot prices.<br>
-      Values are indicative only — not financial advice. Data stored locally on your device.</p>
+      Values are indicative only — not financial advice. Holdings stored on this device · account on encrypted server.</p>
     </div>
 
   </div><!-- /panelVault -->
@@ -1746,7 +1747,7 @@ function refreshProfile(){
   if(active>0){
     const tot=items.filter(i=>!i.sold).reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0);
     const v=tot*rates[currency];
-    portVal=SYMBOLS[currency]+(v>=10000?(v/1000).toFixed(0)+'k':v.toFixed(0));
+    portVal=(SYMBOLS[currency]||currency+' ')+(v>=10000?(v/1000).toFixed(0)+'k':v.toFixed(0));
   }
   document.getElementById('statItems').textContent=active;
   document.getElementById('statSold').textContent=sold;
@@ -1921,8 +1922,13 @@ function renderList(){
         </div>
       </div>`;
     } else {
-      const m = activeHTab==='sold' ? 'No sold items yet.' : 'Tap + to add a holding.';
-      list.innerHTML=`<div class="empty-state"><div class="icon">✦</div><div class="title">Nothing here</div><div class="sub">${m}</div></div>`;
+      if(activeHTab==='sold'){
+        list.innerHTML=`<div class="empty-state"><div class="icon">🏷</div><div class="title">No sold items yet</div><div class="sub">When you record a sale, it will appear here with your realised gain or loss.</div></div>`;
+      } else {
+        const metalName = activeHTab==='gold'?'gold':activeHTab==='silver'?'silver':'';
+        const sub = metalName ? `No active ${metalName} holdings. Tap + to add one.` : 'No holdings match this filter.';
+        list.innerHTML=`<div class="empty-state"><div class="icon">✦</div><div class="title">Nothing here</div><div class="sub">${sub}</div></div>`;
+      }
     }
     return;
   }
@@ -2122,7 +2128,15 @@ function openSellModal(idx){
   viewingItem=idx;const item=items[idx];
   closeModal('detailModal');
   document.getElementById('sellItemName').textContent=item.name;
-  document.getElementById('sellDate').value=new Date().toISOString().slice(0,10);
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById('sellDate').value=today;
+  // Prevent selecting a date before the item was purchased
+  if(item.purchaseDate){
+    document.getElementById('sellDate').min=item.purchaseDate;
+  } else {
+    document.getElementById('sellDate').removeAttribute('min');
+  }
+  document.getElementById('sellDate').max=today;
   document.getElementById('sellPrice').value='';
   document.getElementById('sellCurrency').value=currency!=='USD'?currency:'USD';
   document.getElementById('sellNotes').value='';
@@ -2154,6 +2168,11 @@ async function confirmSell(){
   if(!sR||sR<=0){alert('Please enter the price received.');return}
   if(!sD){alert('Please enter the date of sale.');return}
   const item=items[viewingItem];
+  if(item.purchaseDate && sD < item.purchaseDate){
+    alert(`Sale date cannot be before the purchase date (${item.purchaseDate}).`);return;
+  }
+  const today=new Date().toISOString().slice(0,10);
+  if(sD > today){alert('Sale date cannot be in the future.');return}
   if(!confirm(`Record sale of "${item.name}" for ${SYMBOLS[sC]||''}${sR}? This cannot be undone.`))return;
   const payload={
     ...item,
