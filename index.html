@@ -1148,7 +1148,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         </div>
         <button class="btn-add-alert" onclick="addAlert()">+ Set Alert</button>
         <div class="alert-permission-note" id="alertPermNote">
-          ⚠ Browser notifications are <strong id="notifStatus">not enabled</strong>. <span class="perm-link" onclick="requestNotifPermission()">Enable now →</span>
+          📧 Email alert will be sent to <strong id="alertEmailDisplay"></strong> when triggered.<br>
+          <span id="browserNotifNote">Also get browser alerts: <strong id="notifStatus">not enabled</strong>. <span class="perm-link" onclick="requestNotifPermission()">Enable →</span></span>
         </div>
       </div>
 
@@ -2444,7 +2445,12 @@ function refreshAlertsPanel(){
 }
 
 function updateNotifStatus(){
+  // Show user's email in the notice
+  const emailEl=document.getElementById('alertEmailDisplay');
+  if(emailEl && currentUser) emailEl.textContent=currentUser.email;
+
   const el=document.getElementById('notifStatus');
+  if(!el) return;
   if(!('Notification' in window)){el.textContent='not supported';return}
   if(Notification.permission==='granted'){el.textContent='enabled ✓';el.style.color='var(--green)';document.querySelector('.perm-link').style.display='none'}
   else if(Notification.permission==='denied'){el.textContent='blocked by browser';document.querySelector('.perm-link').style.display='none'}
@@ -2488,7 +2494,10 @@ async function addAlert(){
     : priceRaw;
 
   try{
-    const a=await api('POST','/alerts',{metal,dir,price:priceUSD,priceDisplay:priceRaw,priceCurrency,note});
+    const a=await api('POST','/alerts',{
+      metal,dir,price:priceUSD,priceDisplay:priceRaw,priceCurrency,note,
+      notifyEmail: currentUser ? currentUser.email : null
+    });
     priceAlerts.unshift(a);
     document.getElementById('alertPrice').value='';
     document.getElementById('alertNote').value='';
