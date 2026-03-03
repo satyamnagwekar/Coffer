@@ -841,7 +841,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div style="font-size:11px;color:#999;line-height:1.7">© 2025 Coffer · Built by Satyam Nagwekar · Mumbai, India</div>
         <div style="font-size:11px;color:#999;line-height:1.7;display:flex;gap:16px;flex-wrap:wrap">
           <span>Values shown are indicative only and do not constitute financial advice.</span>
-          <a href="#privacy" onclick="document.querySelector('.auth-screen').scrollTo({top:document.getElementById('privacySection').offsetTop,behavior:'smooth'});return false;" style="color:#B8860B;text-decoration:none;white-space:nowrap">Privacy Policy</a>
+          <a href="#privacy" onclick="document.getElementById('privacyOverlay').style.display='flex';return false;" style="color:#B8860B;text-decoration:none;white-space:nowrap">Privacy Policy</a>
           <a href="#terms" onclick="document.getElementById('termsOverlay').style.display='flex';return false;" style="color:#B8860B;text-decoration:none;white-space:nowrap">Terms of Use</a>
         </div>
       </div>
@@ -2757,6 +2757,24 @@ async function doReset() {
 // Check for reset token on load
 window.addEventListener('DOMContentLoaded', checkResetToken);
 </script>
+<div id="privacyOverlay" style="display:none;position:fixed;inset:0;background:rgba(245,240,232,.97);z-index:1000;align-items:flex-start;justify-content:center;overflow-y:auto;padding:32px 20px">
+  <div style="max-width:560px;width:100%;background:#fff;border:1px solid #DDD5C0;border-radius:16px;padding:28px 24px;box-shadow:0 4px 24px rgba(0,0,0,.08)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#8B6914;letter-spacing:.1em">Privacy Policy</div>
+      <button onclick="document.getElementById('privacyOverlay').style.display='none'" style="background:none;border:1px solid #DDD5C0;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;color:#888;display:flex;align-items:center;justify-content:center">×</button>
+    </div>
+    <div style="font-size:11px;color:#555;line-height:1.9;display:flex;flex-direction:column;gap:14px">
+      <p><strong style="color:#2C2410">What we collect</strong><br>Coffer stores only what you choose to enter: your name, email, and the holding details you add. We do not collect behavioural data, track usage patterns, or build profiles.</p>
+      <p><strong style="color:#2C2410">Where it lives</strong><br>Your holdings data is stored on your device in your browser's local storage. Only your account credentials (name, email, password hash) are held on our servers — nothing about your portfolio, its contents, values, or history is ever transmitted to any server or third party.</p>
+      <p><strong style="color:#2C2410">No ads, ever</strong><br>Coffer is free to use and carries no advertising. Your financial data will never be sold, shared, or used to target you. The product exists to serve you — not to monetise your information.</p>
+      <p><strong style="color:#2C2410">Third parties</strong><br>We use a third-party market data feed solely to retrieve live gold and silver spot prices. No personal data is transmitted to this service. No other third-party services receive your data.</p>
+      <p><strong style="color:#2C2410">Data deletion</strong><br>You can delete your account and all associated data at any time from the Profile tab. Holdings stored in your browser are erased when you clear your browser data or uninstall the app.</p>
+      <p><strong style="color:#2C2410">Contact</strong><br>Questions about your data? Write to us at privacy@coffer.app</p>
+      <p style="color:#999;font-size:10px">Last updated: January 2025 · Coffer, Mumbai, India</p>
+    </div>
+  </div>
+</div>
+
 <div id="termsOverlay" style="display:none;position:fixed;inset:0;background:rgba(245,240,232,.97);z-index:1000;align-items:flex-start;justify-content:center;overflow-y:auto;padding:32px 20px">
   <div style="max-width:560px;width:100%;background:#fff;border:1px solid #DDD5C0;border-radius:16px;padding:28px 24px;box-shadow:0 4px 24px rgba(0,0,0,.08)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
@@ -2771,10 +2789,4 @@ window.addEventListener('DOMContentLoaded', checkResetToken);
       <p><strong style="color:#2C2410">5. Account responsibility</strong><br>You are responsible for maintaining the security of your account credentials. Coffer is not liable for unauthorised access resulting from compromised credentials.</p>
       <p><strong style="color:#2C2410">6. Availability</strong><br>We make no guarantee of uninterrupted service. Price data depends on third-party market feeds and may occasionally be unavailable or delayed.</p>
       <p><strong style="color:#2C2410">7. Governing law</strong><br>These terms are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of courts in Mumbai, Maharashtra.</p>
-      <p style="color:#999;font-size:10px">Last updated: January 2025 · contact@coffer.app</p>
-    </div>
-  </div>
-</div>
-
-</body>
-</html>
+      <p style="color:#999;font-size:10px">Last updated: January 2025 · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfe
