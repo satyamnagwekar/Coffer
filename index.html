@@ -8,7 +8,7 @@
   <script
     src="https://browser.sentry-cdn.com/7.99.0/bundle.min.js"
     crossorigin="anonymous"
-    onload="if(window.SENTRY_DSN){Sentry.init({dsn:window.SENTRY_DSN,release:'coffer@1.0.0',environment:'production',tracesSampleRate:0.2,beforeSend(event){if(event.exception){var e=event.exception.values?.[0];if(e&&(e.type==='NetworkError'||e.value?.includes('fetch')))return null;}return event;}})}">
+    onload="if(window.SENTRY_DSN){Sentry.init({dsn:window.SENTRY_DSN,release:'myaurum@1.0.0',environment:'production',tracesSampleRate:0.2,beforeSend(event){if(event.exception){var e=event.exception.values?.[0];if(e&&(e.type==='NetworkError'||e.value?.includes('fetch')))return null;}return event;}})}">
   </script>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -17,15 +17,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Coffer">
-<meta name="application-name" content="Coffer">
+<meta name="apple-mobile-web-app-title" content="MyAurum">
+<meta name="application-name" content="MyAurum">
 <meta name="theme-color" content="#F5F0E8">
 <meta name="description" content="A private digital ledger for tracking the live market value of physical gold and silver.">
 <!-- PWA manifest (inline so no separate file needed) -->
-<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Coffer%20%E2%80%94%20Precious%20Metals%22%2C%22short_name%22%3A%22Coffer%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F5F0E8%22%2C%22theme_color%22%3A%22%23F5F0E8%22%2C%22orientation%22%3A%22portrait%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20192%20192'%3E%3Crect%20width%3D'192'%20height%3D'192'%20rx%3D'36'%20fill%3D'%23F5F0E8'%2F%3E%3Ctext%20x%3D'96'%20y%3D'130'%20font-family%3D'Georgia%2Cserif'%20font-size%3D'80'%20font-weight%3D'300'%20fill%3D'%238B6914'%20text-anchor%3D'middle'%20letter-spacing%3D'4'%3EC%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22MyAurum%20%E2%80%94%20Precious%20Metals%22%2C%22short_name%22%3A%22MyAurum%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F5F0E8%22%2C%22theme_color%22%3A%22%23F5F0E8%22%2C%22orientation%22%3A%22portrait%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20192%20192'%3E%3Crect%20width%3D'192'%20height%3D'192'%20rx%3D'36'%20fill%3D'%23F5F0E8'%2F%3E%3Ctext%20x%3D'96'%20y%3D'130'%20font-family%3D'Georgia%2Cserif'%20font-size%3D'80'%20font-weight%3D'300'%20fill%3D'%238B6914'%20text-anchor%3D'middle'%20letter-spacing%3D'4'%3EC%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 <!-- Apple touch icon -->
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='34' fill='%23F5F0E8'/><text x='90' y='122' font-family='Georgia,serif' font-size='76' font-weight='300' fill='%238B6914' text-anchor='middle' letter-spacing='4'>C</text></svg>">
-<title>Coffer — Precious Metals Tracker</title>
+<title>MyAurum — Precious Metals Tracker</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%23F5F0E8'/><text x='32' y='44' font-family='Georgia,serif' font-size='22' font-weight='300' fill='%238B6914' text-anchor='middle' letter-spacing='2'>C</text></svg>"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -320,7 +320,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .modal-close{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--bg3);color:var(--text-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .modal-body{padding:20px;display:flex;flex-direction:column;gap:16px}
 
-/* Coffer form fields */
+/* MyAurum form fields */
 .field{display:flex;flex-direction:column;gap:7px}
 .field-label-row{display:flex;align-items:center;justify-content:space-between}
 .field label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-mid);font-weight:500}
@@ -622,7 +622,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 <!-- Loading splash — shown while token check runs -->
 <div id="appLoadingSplash">
-  <div class="splash-wordmark">COFFER</div>
+  <div class="splash-wordmark">AURUM</div>
   <div class="splash-ring"></div>
   <div class="splash-sub">Loading…</div>
 </div>
@@ -634,7 +634,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
       <div class="auth-box">
       <div style="margin-bottom:4px">
-        <div class="auth-wordmark">COFFER</div>
+        <div class="auth-wordmark">AURUM</div>
       </div>
       <div class="auth-tagline">Precious Metals Ledger</div>
 
@@ -662,7 +662,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
             </div>
           </div>
 
-          <button class="btn-auth" onclick="doLogin()">Open My Coffer →</button>
+          <button class="btn-auth" onclick="doLogin()">Open MyAurum →</button>
 
           <div style="text-align:center;margin-top:-4px">
             <span style="font-size:11px;color:#AAA">No account? </span>
@@ -735,7 +735,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
             </div>
           </div>
 
-          <button class="btn-auth" onclick="doRegister()">Create My Coffer →</button>
+          <button class="btn-auth" onclick="doRegister()">Create MyAurum →</button>
           <div style="text-align:center;margin-top:6px;font-size:11px;color:#AAA;line-height:1.5">A verification email will be sent to confirm your address.</div>
 
           <div style="text-align:center;margin-top:-4px">
@@ -809,7 +809,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#2C2410;line-height:1.25;margin-bottom:16px">Gold has always been India's most trusted store of wealth. But nobody had built a clean way to know what it's actually worth.</div>
           <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">Indian families hold an estimated 25,000 tonnes of physical gold — the largest private gold reserve in the world. Yet the tools to track it barely existed. Spreadsheets, rough mental estimates, or simply not knowing at all.</div>
           <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">The cruellest part: the only reliable way to find out what your gold was worth was to sell it. Visit a jeweller, accept their price, and only then discover the number — by giving up the very thing you wanted to hold.</div>
-          <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">Coffer was built to end that. It's a private digital ledger for anyone who owns physical gold or silver — jewellery, coins, bars, raw metal — and wants to know what their holdings are worth right now, in real money, without surrendering their metal or their data.</div>
+          <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">MyAurum was built to end that. It's a private digital ledger for anyone who owns physical gold or silver — jewellery, coins, bars, raw metal — and wants to know what their holdings are worth right now, in real money, without surrendering their metal or their data.</div>
           <div style="font-size:12px;color:#555;line-height:1.9">Prices are sourced from global spot markets and aligned to MCX rates for Indian users, updated every five minutes. Your data never leaves your device.</div>
         </div>
 
@@ -819,12 +819,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
             <div style="width:52px;height:52px;border-radius:50%;background:rgba(139,105,20,.12);border:1.5px solid rgba(139,105,20,.35);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:22px;color:#8B6914;flex-shrink:0">S</div>
             <div>
               <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#2C2410;font-weight:400;letter-spacing:.04em">Satyam Nagwekar</div>
-              <div style="font-size:11px;color:#999;letter-spacing:.08em;margin-top:2px">Founder, Coffer</div>
+              <div style="font-size:11px;color:#999;letter-spacing:.08em;margin-top:2px">Founder, MyAurum</div>
             </div>
           </div>
           <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">Satyam has spent his career in financial journalism, content, and marketing — writing about markets, money, and the economic forces that shape everyday life in India. He watched his own family accumulate gold over decades the way most Indian families do: at weddings, on festivals, as quiet insurance against uncertainty.</div>
           <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">The frustration was specific: the only way to find out what that gold was actually worth was to take it to a jeweller and sell it. There was no middle ground — no way to simply know the number without giving up the metal. That felt wrong.</div>
-          <div style="font-size:12px;color:#555;line-height:1.9">Coffer is the tool he wished had existed. Built for the families who hold physical metal not as a trade, but as a legacy — and who deserve to know its value without being forced to part with it.</div>
+          <div style="font-size:12px;color:#555;line-height:1.9">MyAurum is the tool he wished had existed. Built for the families who hold physical metal not as a trade, but as a legacy — and who deserve to know its value without being forced to part with it.</div>
         </div>
 
       </div>
@@ -841,7 +841,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
         <div>
           <div style="font-size:11px;color:#2C2410;font-weight:500;letter-spacing:.04em;margin-bottom:8px">What we collect</div>
-          <div style="font-size:11px;color:#666;line-height:1.85">Coffer stores only what you choose to enter: your name, email, and the holding details you add. We do not collect behavioural data, track usage patterns, or build profiles.</div>
+          <div style="font-size:11px;color:#666;line-height:1.85">MyAurum stores only what you choose to enter: your name, email, and the holding details you add. We do not collect behavioural data, track usage patterns, or build profiles.</div>
         </div>
 
         <div>
@@ -851,13 +851,13 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
         <div>
           <div style="font-size:11px;color:#2C2410;font-weight:500;letter-spacing:.04em;margin-bottom:8px">No ads, ever</div>
-          <div style="font-size:11px;color:#666;line-height:1.85">Coffer is free to use and carries no advertising. Your financial data will never be sold, shared, or used to target you. The product exists to serve you — not to monetise your information.</div>
+          <div style="font-size:11px;color:#666;line-height:1.85">MyAurum is free to use and carries no advertising. Your financial data will never be sold, shared, or used to target you. The product exists to serve you — not to monetise your information.</div>
         </div>
 
       </div>
 
       <div style="margin-top:28px;padding-top:24px;border-top:1px solid #DDD5C0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-        <div style="font-size:11px;color:#999;line-height:1.7">© 2025 Coffer · Built by Satyam Nagwekar · Mumbai, India</div>
+        <div style="font-size:11px;color:#999;line-height:1.7">© 2025 MyAurum · Built by Satyam Nagwekar · Mumbai, India</div>
         <div style="font-size:11px;color:#999;line-height:1.7;display:flex;gap:16px;flex-wrap:wrap">
           <span>Values shown are indicative only and do not constitute financial advice.</span>
           <a href="#privacy" onclick="document.getElementById('privacyOverlay').style.display='flex';return false;" style="color:#B8860B;text-decoration:none;white-space:nowrap">Privacy Policy</a>
@@ -900,7 +900,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   <div class="header">
     <div class="header-left">
       <div class="logo">
-  <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:.22em;color:#8B6914">COFFER</span>
+  <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:.22em;color:#8B6914">AURUM</span>
 </div>
       <div class="user-pill" onclick="setNavTab('profile',document.getElementById('navProfile'))">
         <div class="user-avatar" id="headerAvatar">?</div>
@@ -925,13 +925,13 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
   <!-- Nav -->
   <div class="nav-tabs">
-    <button class="nav-tab active" id="navCoffer" onclick="setNavTab('vault',this)">🏛 Coffer</button>
+    <button class="nav-tab active" id="navMyAurum" onclick="setNavTab('vault',this)">🏛 MyAurum</button>
     <button class="nav-tab" id="navChart" onclick="setNavTab('chart',this)">📊 Chart</button>
     <button class="nav-tab" id="navAlerts" onclick="setNavTab('alerts',this)">🔔 Alerts</button>
     <button class="nav-tab" id="navProfile" onclick="setNavTab('profile',this)">👤 Profile</button>
   </div>
 
-  <!-- ── COFFER PANEL ── -->
+  <!-- ── AURUM PANEL ── -->
   <div class="content-panel active" id="panelVault">
 
     <div class="currency-bar">
@@ -1007,7 +1007,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     <div class="inventory-list pb" id="inventoryList">
       <div class="empty-state" id="emptyOnboarding">
         <div style="font-size:48px;margin-bottom:8px">🏛</div>
-        <div class="title" id="onboardingGreeting">Welcome to your Coffer</div>
+        <div class="title" id="onboardingGreeting">Welcome to your Aurum</div>
         <div class="sub" style="margin-bottom:24px">Your vault is empty. Start by adding a holding — anything physical: jewellery, coins, bars, or raw metal.</div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:320px;margin:0 auto 24px;text-align:left">
@@ -1043,7 +1043,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     </div>
 
     <div class="app-footer">
-      <p>COFFER is a free personal ledger for estimating precious metal value at live spot prices.<br>
+      <p>AURUM is a free personal ledger for estimating precious metal value at live spot prices.<br>
       Values are indicative only — not financial advice. Holdings stored on this device · account on encrypted server.</p>
     </div>
 
@@ -1057,7 +1057,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div style="font-size:48px">📊</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:var(--text)">Nothing to chart yet</div>
         <div style="font-size:12px;color:var(--text-dim);line-height:1.7;max-width:260px">Add your first holding to see composition breakdowns, performance, and price history.</div>
-        <div class="empty-cta" onclick="setNavTab('vault',document.getElementById('navCoffer'));openAddModal()" style="margin-top:8px">+ Add First Holding</div>
+        <div class="empty-cta" onclick="setNavTab('vault',document.getElementById('navMyAurum'));openAddModal()" style="margin-top:8px">+ Add First Holding</div>
       </div>
 
       <div id="chartContent">
@@ -1111,7 +1111,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <!-- Export section -->
       <div class="export-section">
         <div class="export-title">Export Your Data</div>
-        <div class="export-desc">Download a complete record of your coffer holdings for your own records or tax purposes.</div>
+        <div class="export-desc">Download a complete record of your MyAurum holdings for your own records or tax purposes.</div>
         <div class="export-btns">
           <button class="btn-export gold-export" onclick="exportCSV()">⬇ CSV Spreadsheet</button>
           <button class="btn-export silver-export" onclick="exportJSON()">⬇ JSON Backup</button>
@@ -1248,7 +1248,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
       <div class="profile-section" style="border-bottom:none">
         <div class="profile-section-title" style="color:var(--red-dim)">Danger Zone</div>
-        <div class="field-note" style="margin-bottom:12px">Deleting your account will permanently erase all your coffer data and cannot be undone.</div>
+        <div class="field-note" style="margin-bottom:12px">Deleting your account will permanently erase all your MyAurum data and cannot be undone.</div>
         <button class="btn-danger-full" onclick="deleteAccount()">Delete My Account &amp; All Data</button>
       </div>
 
@@ -1371,7 +1371,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       </div>
 
       <div id="addItemMsg" class="msg"></div>
-      <button class="btn-primary" onclick="addItem()">Save to Coffer</button>
+      <button class="btn-primary" onclick="addItem()">Save to Aurum</button>
     </div>
   </div>
 </div>
@@ -1576,8 +1576,8 @@ const GRADE_NOTES={
 // ══════════════════════════════════════════
 const API_BASE = window.location.origin;
 
-let authToken = localStorage.getItem('coffer_token') || null;
-function setToken(t){authToken=t;if(t)localStorage.setItem('coffer_token',t);else localStorage.removeItem('coffer_token')}
+let authToken = localStorage.getItem('myaurum_token') || null;
+function setToken(t){authToken=t;if(t)localStorage.setItem('myaurum_token',t);else localStorage.removeItem('myaurum_token')}
 
 async function api(method, path, body){
   const opts={method,headers:{'Content-Type':'application/json'}};
@@ -1660,12 +1660,12 @@ async function doRegister(){
   btn.disabled=true;btn.textContent='Creating…';
   try{
     const data=await api('POST','/auth/register',{email,password:pw,firstName:first,lastName:last,age,country});
-    btn.disabled=false;btn.textContent='Create My Coffer →';
+    btn.disabled=false;btn.textContent='Create MyAurum →';
     showMsg('registerMsg','Account created! Check your email to verify your address, then sign in.','success');
     setTimeout(()=>switchAuthTab('login',document.querySelectorAll('.auth-tab')[0]),2000);
   }catch(e){
     showMsg('registerMsg',e.message,'error');
-    btn.disabled=false;btn.textContent='Create My Coffer →';
+    btn.disabled=false;btn.textContent='Create MyAurum →';
   }
 }
 
@@ -1683,7 +1683,7 @@ async function doLogin(){
     loginUser(data.user);
   }catch(e){
     showMsg('loginMsg',e.message,'error');
-    btn.disabled=false;btn.textContent='Open My Coffer →';
+    btn.disabled=false;btn.textContent='Open MyAurum →';
   }
 }
 
@@ -1705,7 +1705,7 @@ async function loginUser(user){
   }catch(e){priceAlerts=[];}
   updatePriceDisplay();
   updateAll();
-  setNavTab('vault',document.getElementById('navCoffer'));
+  setNavTab('vault',document.getElementById('navMyAurum'));
   fetchPrices();
   // Auto-refresh prices every 5 minutes while session is active
   if(window._priceInterval) clearInterval(window._priceInterval);
@@ -1718,7 +1718,7 @@ async function loginUser(user){
 }
 
 async function doLogout(){
-  if(!confirm('Sign out of your coffer?'))return;
+  if(!confirm('Sign out of MyAurum?'))return;
   if(window._priceInterval) clearInterval(window._priceInterval);
   setToken(null);
   currentUser=null;items=[];priceAlerts=[];
@@ -1731,7 +1731,7 @@ async function doLogout(){
 }
 
 async function deleteAccount(){
-  if(!confirm('Delete your account and ALL coffer data permanently? This cannot be undone.'))return;
+  if(!confirm('Delete your account and ALL MyAurum data permanently? This cannot be undone.'))return;
   if(!confirm('Are you absolutely sure?'))return;
   if(window._priceInterval) clearInterval(window._priceInterval);
   try{
@@ -2285,12 +2285,12 @@ function openDetail(idx){
     <div class="detail-section"><div class="detail-section-title">Current Valuation</div>${valRows.map(([k,v])=>`<div class="detail-row"><div class="detail-key">${k}</div><div class="detail-val">${v}</div></div>`).join('')}</div>
     ${soldHTML}
     <div class="detail-actions">${editBtn}${actionBtn}</div>
-    <button class="btn-danger" onclick="deleteItem(${idx})">Remove from Coffer</button>`;
+    <button class="btn-danger" onclick="deleteItem(${idx})">Remove from Aurum</button>`;
   document.getElementById('detailModal').classList.add('open');
 }
 
 async function deleteItem(idx){
-  if(!confirm('Remove "'+items[idx].name+'" from your coffer?'))return;
+  if(!confirm('Remove "'+items[idx].name+'" from MyAurum?'))return;
   const item=items[idx];
   try{
     await api('DELETE','/items/'+item.id);
@@ -2486,13 +2486,13 @@ function exportCSV(){
   const csv=[header.join(','),...rows].join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download=`coffer-export-${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  a.download=`myaurum-export-${new Date().toISOString().slice(0,10)}.csv`;a.click();
 }
 function exportJSON(){
   if(!items.length){alert('No items to export.');return}
   const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),items},null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download=`coffer-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();
+  a.download=`myaurum-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();
 }
 
 // ══════════════════════════════════════════
@@ -2545,7 +2545,7 @@ async function requestNotifPermission(){
   if(!('Notification' in window)){alert('Your browser does not support notifications.');return}
   const p=await Notification.requestPermission();
   updateNotifStatus();
-  if(p==='granted'){new Notification('COFFER Alerts Active',{body:'You will now be notified when your price targets are hit.'})}
+  if(p==='granted'){new Notification('AURUM Alerts Active',{body:'You will now be notified when your price targets are hit.'})}
 }
 
 function updateAlertCurrencyUI(){
@@ -2649,7 +2649,7 @@ async function checkAlerts(){
 }
 
 function fireNotification(a,spot){
-  const title=`COFFER Alert — ${a.metal==='gold'?'Gold':'Silver'} ${a.dir==='above'?'↑':'↓'}`;
+  const title=`AURUM Alert — ${a.metal==='gold'?'Gold':'Silver'} ${a.dir==='above'?'↑':'↓'}`;
   const INDIA_FACTOR=(10/31.1035)*1.15*1.03;
   let spotStr,targetStr;
   if(a.priceCurrency==='INR'){
@@ -2661,7 +2661,7 @@ function fireNotification(a,spot){
     targetStr='$'+(a.priceDisplay||a.price)+'/oz';
   }
   const body=`${a.metal==='gold'?'Gold':'Silver'} hit ${spotStr} — your target was ${a.dir==='above'?'above':'below'} ${targetStr}${a.note?' ('+a.note+')':''}`;
-  if('Notification' in window&&Notification.permission==='granted'){new Notification(title,{body,tag:'coffer-alert-'+a.id})}
+  if('Notification' in window&&Notification.permission==='granted'){new Notification(title,{body,tag:'myaurum-alert-'+a.id})}
   showToast('🔔 '+body);
 }
 
@@ -2841,7 +2841,7 @@ function handleUnauthorised(){
 // ══════════════════════════════════════════
 (async function init(){
   updatePriceDisplay();
-  const token=localStorage.getItem('coffer_token');
+  const token=localStorage.getItem('myaurum_token');
   if(token){
     try{
       const data=await api('GET','/auth/me');
@@ -2862,7 +2862,7 @@ function handleUnauthorised(){
 ══════════════════════════════════════════════════ -->
 <div id="forgotOverlay" style="display:none;position:fixed;inset:0;background:rgba(245,240,232,0.97);z-index:1000;align-items:center;justify-content:center">
   <div style="background:#fff;border:1px solid #DDD5C0;border-radius:14px;padding:28px 24px;width:300px;box-shadow:0 4px 24px rgba(0,0,0,.1)">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#B8860B;letter-spacing:.2em;margin-bottom:4px">COFFER</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#B8860B;letter-spacing:.2em;margin-bottom:4px">AURUM</div>
     <div style="font-size:11px;color:#999;letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px">Reset Password</div>
     <div id="forgotMsg"></div>
     <div class="af" style="margin-bottom:14px">
@@ -2878,7 +2878,7 @@ function handleUnauthorised(){
 
 <div id="resetOverlay" style="display:none;position:fixed;inset:0;background:rgba(245,240,232,0.97);z-index:1000;align-items:center;justify-content:center">
   <div style="background:#fff;border:1px solid #DDD5C0;border-radius:14px;padding:28px 24px;width:300px;box-shadow:0 4px 24px rgba(0,0,0,.1)">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#B8860B;letter-spacing:.2em;margin-bottom:4px">COFFER</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#B8860B;letter-spacing:.2em;margin-bottom:4px">AURUM</div>
     <div style="font-size:11px;color:#999;letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px">Set New Password</div>
     <div id="resetMsg"></div>
     <div class="af" style="margin-bottom:12px">
@@ -3005,7 +3005,7 @@ async function initWebPush(){
     const { key } = await api('GET','/push/vapid-public-key');
     if(!key)return;
     // Register a minimal inline service worker
-    const swCode=`self.addEventListener('push',e=>{const d=e.data?e.data.json():{};e.waitUntil(self.registration.showNotification(d.title||'COFFER Alert',{body:d.body||'',icon:'/favicon.ico',badge:'/favicon.ico',tag:'coffer-alert',data:{url:d.url||'/'}}))});self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(clients.openWindow(e.notification.data.url||'/'))});`;
+    const swCode=`self.addEventListener('push',e=>{const d=e.data?e.data.json():{};e.waitUntil(self.registration.showNotification(d.title||'AURUM Alert',{body:d.body||'',icon:'/favicon.ico',badge:'/favicon.ico',tag:'myaurum-alert',data:{url:d.url||'/'}}))});self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(clients.openWindow(e.notification.data.url||'/'))});`;
     const swBlob=new Blob([swCode],{type:'application/javascript'});
     const swUrl=URL.createObjectURL(swBlob);
     const reg=await navigator.serviceWorker.register(swUrl);
@@ -3060,13 +3060,13 @@ window.onerror = (msg, src, line, col, err) => {
       <button onclick="document.getElementById('privacyOverlay').style.display='none'" style="background:none;border:1px solid #DDD5C0;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;color:#888;display:flex;align-items:center;justify-content:center">×</button>
     </div>
     <div style="font-size:11px;color:#555;line-height:1.9;display:flex;flex-direction:column;gap:14px">
-      <p><strong style="color:#2C2410">What we collect</strong><br>Coffer stores only what you choose to enter: your name, email, and the holding details you add. We do not collect behavioural data, track usage patterns, or build profiles.</p>
+      <p><strong style="color:#2C2410">What we collect</strong><br>MyAurum stores only what you choose to enter: your name, email, and the holding details you add. We do not collect behavioural data, track usage patterns, or build profiles.</p>
       <p><strong style="color:#2C2410">Where it lives</strong><br>Your holdings data is stored on your device in your browser's local storage. Only your account credentials (name, email, password hash) are held on our servers — nothing about your portfolio, its contents, values, or history is ever transmitted to any server or third party.</p>
-      <p><strong style="color:#2C2410">No ads, ever</strong><br>Coffer is free to use and carries no advertising. Your financial data will never be sold, shared, or used to target you. The product exists to serve you — not to monetise your information.</p>
+      <p><strong style="color:#2C2410">No ads, ever</strong><br>MyAurum is free to use and carries no advertising. Your financial data will never be sold, shared, or used to target you. The product exists to serve you — not to monetise your information.</p>
       <p><strong style="color:#2C2410">Third parties</strong><br>We use a third-party market data feed solely to retrieve live gold and silver spot prices. No personal data is transmitted to this service. No other third-party services receive your data.</p>
       <p><strong style="color:#2C2410">Data deletion</strong><br>You can delete your account and all associated data at any time from the Profile tab. Holdings stored in your browser are erased when you clear your browser data or uninstall the app.</p>
       <p><strong style="color:#2C2410">Contact</strong><br>Questions about your data? Write to us at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="08787a617e696b71486b676e6e6d7a26697878">[email&#160;protected]</a></p>
-      <p style="color:#999;font-size:10px">Last updated: January 2025 · Coffer, Mumbai, India</p>
+      <p style="color:#999;font-size:10px">Last updated: January 2025 · MyAurum, Mumbai, India</p>
     </div>
   </div>
 </div>
@@ -3078,11 +3078,11 @@ window.onerror = (msg, src, line, col, err) => {
       <button onclick="document.getElementById('termsOverlay').style.display='none'" style="background:none;border:1px solid #DDD5C0;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;color:#888;display:flex;align-items:center;justify-content:center">×</button>
     </div>
     <div style="font-size:11px;color:#555;line-height:1.9;display:flex;flex-direction:column;gap:14px">
-      <p><strong style="color:#2C2410">1. Acceptance</strong><br>By using Coffer you agree to these terms. If you do not agree, please do not use the service.</p>
-      <p><strong style="color:#2C2410">2. Service description</strong><br>Coffer is a personal tracking tool that estimates the indicative market value of physical precious metals based on live spot prices. It is not a financial advisory, brokerage, or investment service.</p>
-      <p><strong style="color:#2C2410">3. Indicative values only</strong><br>All valuations shown are estimates based on global spot prices and may not reflect the price you would receive if you sold your holdings. Actual resale values depend on purity verification, local market conditions, buyer premiums, and applicable taxes. Nothing in Coffer constitutes financial advice.</p>
+      <p><strong style="color:#2C2410">1. Acceptance</strong><br>By using MyAurum you agree to these terms. If you do not agree, please do not use the service.</p>
+      <p><strong style="color:#2C2410">2. Service description</strong><br>MyAurum is a personal tracking tool that estimates the indicative market value of physical precious metals based on live spot prices. It is not a financial advisory, brokerage, or investment service.</p>
+      <p><strong style="color:#2C2410">3. Indicative values only</strong><br>All valuations shown are estimates based on global spot prices and may not reflect the price you would receive if you sold your holdings. Actual resale values depend on purity verification, local market conditions, buyer premiums, and applicable taxes. Nothing in MyAurum constitutes financial advice.</p>
       <p><strong style="color:#2C2410">4. Your data</strong><br>Your portfolio data is stored locally on your device. Your account credentials (name, email, password hash) are stored on our servers. We do not sell, share, or monetise your data. See our Privacy Policy for full details.</p>
-      <p><strong style="color:#2C2410">5. Account responsibility</strong><br>You are responsible for maintaining the security of your account credentials. Coffer is not liable for unauthorised access resulting from compromised credentials.</p>
+      <p><strong style="color:#2C2410">5. Account responsibility</strong><br>You are responsible for maintaining the security of your account credentials. MyAurum is not liable for unauthorised access resulting from compromised credentials.</p>
       <p><strong style="color:#2C2410">6. Availability</strong><br>We make no guarantee of uninterrupted service. Price data depends on third-party market feeds and may occasionally be unavailable or delayed.</p>
       <p><strong style="color:#2C2410">7. Governing law</strong><br>These terms are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of courts in Mumbai, Maharashtra.</p>
       <p style="col
