@@ -21,12 +21,12 @@ let   webpush;
 try { webpush = require('web-push'); } catch(e) { console.warn('[webpush] web-push not installed — push disabled'); }
 
 const PORT        = process.env.PORT || 3000;
-const JWT_SECRET  = process.env.JWT_SECRET || 'coffer-change-this-secret-in-production';
+const JWT_SECRET  = process.env.JWT_SECRET || 'aurum-change-this-secret-in-production';
 const RESEND_KEY  = process.env.RESEND_API_KEY || 're_fRNcgdah_DpCTSZadCkssrXNJmSMpzdq5';
-const APP_URL     = process.env.APP_URL || 'https://mycoffer.up.railway.app';
+const APP_URL     = process.env.APP_URL || 'https://myaurum.app';
 const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || '';
 const VAPID_PRIVATE= process.env.VAPID_PRIVATE_KEY || '';
-const VAPID_EMAIL  = process.env.VAPID_EMAIL || 'mailto:admin@coffer.app';
+const VAPID_EMAIL  = process.env.VAPID_EMAIL || 'mailto:admin@myaurum.app';
 
 console.log('[config] DATABASE_URL:', process.env.DATABASE_URL ? process.env.DATABASE_URL.slice(0, 40) + '...' : 'NOT SET');
 
@@ -291,16 +291,16 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
       const verifyUrl = `${APP_URL}/?verify=${verifyToken}`;
       await sendEmail({
         to: u.email,
-        subject: 'Verify your Coffer email address',
+        subject: 'Verify your MyAurum email address',
         html: `<div style="font-family:monospace;max-width:480px;margin:0 auto;padding:32px;background:#F5F0E8;border-radius:12px">
-          <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:4px">COFFER</div>
+          <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:4px">AURUM</div>
           <div style="font-size:10px;color:#999;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:24px">Precious Metals Ledger</div>
           <p style="color:#2C2410;font-size:14px;line-height:1.8">Hi ${u.first_name},</p>
-          <p style="color:#555;font-size:13px;line-height:1.8">Welcome to Coffer. Please verify your email address to activate your account.</p>
+          <p style="color:#555;font-size:13px;line-height:1.8">Welcome to MyAurum. Please verify your email address to activate your account.</p>
           <div style="text-align:center;margin:28px 0">
             <a href="${verifyUrl}" style="background:linear-gradient(135deg,#B8860B,#D4A017);color:#fff;padding:14px 28px;border-radius:9px;text-decoration:none;font-size:12px;letter-spacing:0.1em;font-weight:500">Verify My Email →</a>
           </div>
-          <p style="color:#AAA;font-size:10px;line-height:1.7">This link expires in 24 hours. If you didn't create a Coffer account, ignore this email.</p>
+          <p style="color:#AAA;font-size:10px;line-height:1.7">This link expires in 24 hours. If you didn't create a MyAurum account, ignore this email.</p>
         </div>`,
       });
     } catch(e) { console.warn('[verify] Could not send verification email:', e.message); }
@@ -362,7 +362,7 @@ app.delete('/api/auth/account', requireAuth, async (req, res) => {
 async function sendEmail({ to, subject, html, text }) {
   return new Promise((resolve, reject) => {
     const payload = JSON.stringify({
-      from: process.env.RESEND_FROM || 'COFFER Alerts <alerts@coffer.app>',
+      from: process.env.RESEND_FROM || 'AURUM Alerts <alerts@myaurum.app>',
       to: Array.isArray(to) ? to : [to],
       subject,
       html,
@@ -421,7 +421,7 @@ function buildAlertEmail(alert, spotUSD) {
     ? `<p style="font-size:13px;color:#888;font-style:italic;margin:0 0 20px;padding:12px 16px;background:#F5F0E8;border-radius:8px;border-left:3px solid #D4A017">"${alert.note}"</p>`
     : '';
 
-  const subject = `${emoji} ${metal} has ${dirWord} your target — COFFER Alert`;
+  const subject = `${emoji} ${metal} has ${dirWord} your target — AURUM Alert`;
 
   const html = `<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -430,7 +430,7 @@ function buildAlertEmail(alert, spotUSD) {
 <tr><td align="center">
 <table role="presentation" width="100%" style="max-width:520px">
   <tr><td style="background:#1A1508;padding:24px 32px;text-align:center;border-radius:16px 16px 0 0">
-    <p style="margin:0;font-family:Georgia,serif;font-size:30px;font-weight:300;letter-spacing:.24em;color:#F0B429">COFFER</p>
+    <p style="margin:0;font-family:Georgia,serif;font-size:30px;font-weight:300;letter-spacing:.24em;color:#F0B429">AURUM</p>
     <p style="margin:5px 0 0;font-size:10px;color:#907030;letter-spacing:.22em;text-transform:uppercase">Price Alert</p>
   </td></tr>
   <tr><td style="background:#FDFAF5;padding:28px 32px 8px;text-align:center;border-left:1px solid #DDD5C0;border-right:1px solid #DDD5C0">
@@ -451,13 +451,13 @@ function buildAlertEmail(alert, spotUSD) {
       </tr>
     </table>
     ${noteRow}
-    <a href="${APP_URL}" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#D4A017);color:#0c0a06;text-decoration:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:15px 32px;border-radius:8px;font-weight:600">Open My Coffer &rarr;</a>
+    <a href="${APP_URL}" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#D4A017);color:#0c0a06;text-decoration:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:15px 32px;border-radius:8px;font-weight:600">Open My Aurum &rarr;</a>
   </td></tr>
   <tr><td style="background:#F0EBE0;padding:18px 32px;border:1px solid #DDD5C0;border-top:none;border-radius:0 0 16px 16px;text-align:center">
     <p style="margin:0;font-size:10px;color:#BBB;line-height:1.85">
       This alert is now marked as fired and will not trigger again.<br>
       Prices are indicative spot rates — actual buyback values vary by dealer.<br>
-      <a href="${APP_URL}" style="color:#B8860B;text-decoration:none">Manage alerts in COFFER</a>
+      <a href="${APP_URL}" style="color:#B8860B;text-decoration:none">Manage alerts in AURUM</a>
     </p>
   </td></tr>
 </table>
@@ -466,7 +466,7 @@ function buildAlertEmail(alert, spotUSD) {
 </body></html>`;
 
   const textLines = [
-    'COFFER Price Alert',
+    'AURUM Price Alert',
     '------------------',
     `${metal} has ${dirWord} your target.`,
     '',
@@ -475,7 +475,7 @@ function buildAlertEmail(alert, spotUSD) {
     alert.note ? `Note        : "${alert.note}"` : null,
     '',
     'This alert is now marked as fired and will not trigger again.',
-    `Open your Coffer: ${APP_URL}`,
+    `Open your Aurum: ${APP_URL}`,
   ].filter(l => l !== null).join('\n');
 
   return { subject, html, text: textLines };
@@ -530,7 +530,7 @@ async function checkAndFireAlerts() {
       try {
         const subs = await q('SELECT * FROM push_subscriptions WHERE user_id=$1', [alert.user_id]);
         const pushPayload = JSON.stringify({
-          title: `COFFER Alert — ${alert.metal === 'gold' ? 'Gold' : 'Silver'} ${alert.direction === 'above' ? '↑' : '↓'}`,
+          title: `AURUM Alert — ${alert.metal === 'gold' ? 'Gold' : 'Silver'} ${alert.direction === 'above' ? '↑' : '↓'}`,
           body: text.split('\n').slice(2, 3).join(''),
           url: APP_URL,
         });
@@ -571,10 +571,10 @@ app.post('/api/auth/forgot-password', forgotLimiter, async (req, res) => {
     const resetUrl = `${APP_URL}/?reset=${token}`;
     await sendEmail({
       to: user.email,
-      subject: 'Reset your Coffer password',
+      subject: 'Reset your MyAurum password',
       html: `
         <div style="font-family:monospace;max-width:480px;margin:0 auto;padding:32px;background:#F5F0E8;border-radius:12px">
-          <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:4px">COFFER</div>
+          <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:4px">AURUM</div>
           <div style="font-size:10px;color:#999;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:24px">Precious Metals Ledger</div>
           <p style="color:#2C2410;font-size:14px;line-height:1.8">Hi ${user.first_name},</p>
           <p style="color:#555;font-size:13px;line-height:1.8">We received a request to reset your password. Click the button below — the link expires in 1 hour.</p>
@@ -733,10 +733,10 @@ app.post('/api/auth/resend-verification', authLimiter, requireAuth, async (req, 
     const verifyUrl = `${APP_URL}/?verify=${token}`;
     await sendEmail({
       to: u.email,
-      subject: 'Verify your Coffer email address',
+      subject: 'Verify your MyAurum email address',
       html: `<div style="font-family:monospace;max-width:480px;margin:0 auto;padding:32px;background:#F5F0E8;border-radius:12px">
-        <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:20px">COFFER</div>
-        <p style="color:#555;font-size:13px;line-height:1.8">Click below to verify your email address for your Coffer account.</p>
+        <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:20px">AURUM</div>
+        <p style="color:#555;font-size:13px;line-height:1.8">Click below to verify your email address for your MyAurum account.</p>
         <div style="text-align:center;margin:28px 0">
           <a href="${verifyUrl}" style="background:linear-gradient(135deg,#B8860B,#D4A017);color:#fff;padding:14px 28px;border-radius:9px;text-decoration:none;font-size:12px;font-weight:500">Verify My Email →</a>
         </div>
@@ -807,7 +807,7 @@ app.use((err, req, res, next) => {
 app.get('*', (req, res) => {
   const indexPath = path.join(__dirname, 'index.html');
   if (fs.existsSync(indexPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(indexPath); }
-  else res.status(200).send('<h2>Coffer backend running ✓</h2>');
+  else res.status(200).send('<h2>Aurum backend running ✓</h2>');
 });
 
 app.get('/health', (req, res) => res.json({ ok:true, uptime:process.uptime() }));
@@ -828,6 +828,6 @@ initDB()
       } catch(e) { console.error('[cleanup] Token cleanup failed:', e.message); }
     });
     refreshPrices().catch(console.error);
-    app.listen(PORT, () => console.log(`\n🏛  Coffer running on port ${PORT} (PostgreSQL)\n`));
+    app.listen(PORT, () => console.log(`\n🏛  Aurum running on port ${PORT} (PostgreSQL)\n`));
   })
   .catch(err => { console.error('[fatal] DB init failed:', err); process.exit(1); });
