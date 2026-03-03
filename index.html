@@ -7,7 +7,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Coffer">
+<meta name="application-name" content="Coffer">
 <meta name="theme-color" content="#F5F0E8">
+<meta name="description" content="A private digital ledger for tracking the live market value of physical gold and silver.">
+<!-- PWA manifest (inline so no separate file needed) -->
+<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Coffer%20%E2%80%94%20Precious%20Metals%22%2C%22short_name%22%3A%22Coffer%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F5F0E8%22%2C%22theme_color%22%3A%22%23F5F0E8%22%2C%22orientation%22%3A%22portrait%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20192%20192'%3E%3Crect%20width%3D'192'%20height%3D'192'%20rx%3D'36'%20fill%3D'%23F5F0E8'%2F%3E%3Ctext%20x%3D'96'%20y%3D'130'%20font-family%3D'Georgia%2Cserif'%20font-size%3D'80'%20font-weight%3D'300'%20fill%3D'%238B6914'%20text-anchor%3D'middle'%20letter-spacing%3D'4'%3EC%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+<!-- Apple touch icon -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='34' fill='%23F5F0E8'/><text x='90' y='122' font-family='Georgia,serif' font-size='76' font-weight='300' fill='%238B6914' text-anchor='middle' letter-spacing='4'>C</text></svg>">
 <title>Coffer — Precious Metals Tracker</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%23F5F0E8'/><text x='32' y='44' font-family='Georgia,serif' font-size='22' font-weight='300' fill='%238B6914' text-anchor='middle' letter-spacing='2'>C</text></svg>"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,8 +51,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* ═══════════════════════════════════════
    AUTH SCREENS
 ═══════════════════════════════════════ */
-.auth-screen{position:fixed;inset:0;background:#F5F0E8;z-index:800;overflow-y:auto;display:flex;flex-direction:column}
+.auth-screen{position:fixed;inset:0;background:#F5F0E8;z-index:800;overflow-y:auto;display:flex;flex-direction:column;transition:opacity .3s ease}
 .auth-screen.hidden{display:none}
+.auth-screen.fading{opacity:0;pointer-events:none}
 
 /* Top section: login box left + tagline right */
 .auth-top{display:flex;gap:32px;padding:32px 28px 24px;align-items:stretch;flex-wrap:wrap}
@@ -88,7 +97,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .auth-rule{display:flex;align-items:center;gap:10px;margin-bottom:20px}
 .auth-rule-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,#DDD5C0,transparent)}
 .auth-rule-icon{font-size:12px;color:#C8A84B}
-.auth-headline{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;line-height:1.15;color:#2C2410;margin-bottom:16px;white-space:nowrap}
+.auth-headline{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;line-height:1.15;color:#2C2410;margin-bottom:16px}
 .auth-headline em{color:#B8860B;font-style:italic}
 .auth-desc{font-size:13px;color:#555;line-height:1.9;margin-bottom:20px}
 
@@ -116,20 +125,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 /* Success/error messages */
 .msg-success{color:#2E7D32;background:#E8F5E9;border:1px solid #A5D6A7;border-radius:8px;padding:8px 12px;font-size:10px}
-.msg-error{
-  color:#B03030;background:#FFF0F0;border:1px solid #F0AAAA;
-  border-radius:8px;padding:10px 13px;font-size:11px;font-weight:500;
-  display:flex;align-items:flex-start;gap:8px;line-height:1.5;
-}
-.msg-error::before{content:'⚠';font-size:13px;flex-shrink:0;margin-top:1px}
-@keyframes shake{
-  0%,100%{transform:translateX(0)}
-  20%{transform:translateX(-6px)}
-  40%{transform:translateX(6px)}
-  60%{transform:translateX(-4px)}
-  80%{transform:translateX(4px)}
-}
-.msg-shake{animation:shake .35s ease}
+.msg-error{color:#C62828;background:#FFEBEE;border:1px solid #EF9A9A;border-radius:8px;padding:8px 12px;font-size:10px}
 
 /* Strength meter */
 .strength-bar{height:3px;border-radius:2px;background:var(--border);overflow:hidden;margin-top:4px}
@@ -170,8 +166,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* ═══════════════════════════════════════
    MAIN APP
 ═══════════════════════════════════════ */
-.app-screen{display:none}
+.app-screen{display:none;animation:appFadeIn .35s ease}
 .app-screen.active{display:block}
+@keyframes appFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 .header{position:sticky;top:0;z-index:100;background:rgba(253,251,247,.97);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .header-left{display:flex;align-items:center;gap:10px}
@@ -524,6 +521,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .empty-alerts .ea-icon{font-size:34px;margin-bottom:10px}
 .empty-alerts .ea-text{font-size:11px;color:var(--text-dim);line-height:1.7}
 
+/* iOS keyboard — ensure focused inputs scroll into view inside modals */
+.modal{scroll-behavior:smooth}
+
 /* ── Auth loading splash ── */
 #appLoadingSplash{
   position:fixed;inset:0;background:var(--bg);
@@ -550,15 +550,14 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 </head>
 <body>
 
-<!-- App loading splash — shown while token is verified, hidden before auth or app appears -->
+<!-- Loading splash — shown while token check runs -->
 <div id="appLoadingSplash">
   <div class="splash-wordmark">COFFER</div>
   <div class="splash-ring"></div>
   <div class="splash-sub">Loading…</div>
 </div>
 
-<!-- ══════════════════════════════════════════════════
-     AUTH SCREEN
+<!-- AUTH SCREEN -->
 ══════════════════════════════════════════════════ -->
 <div class="auth-screen" id="authScreen">
   <div class="auth-top">
@@ -801,6 +800,17 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 ══════════════════════════════════════════════════ -->
 <div class="app-screen" id="appScreen">
 
+<!-- Pull-to-refresh indicator -->
+<div id="ptrIndicator" style="position:fixed;top:0;left:0;right:0;height:52px;display:flex;align-items:center;justify-content:center;gap:8px;transform:translateY(-52px);transition:transform .25s cubic-bezier(.32,.72,0,1);z-index:90;background:var(--bg2);border-bottom:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.06);pointer-events:none">
+  <div id="ptrSpinner" style="width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--brand);border-radius:50%;flex-shrink:0"></div>
+  <span id="ptrLabel" style="font-size:10px;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase">Pull to refresh prices</span>
+</div>
+<style>
+.ptr-visible{transform:translateY(0) !important}
+@keyframes ptr-spin{to{transform:rotate(360deg)}}
+.ptr-spinning{animation:ptr-spin .65s linear infinite}
+</style>
+
   <div class="header">
     <div class="header-left">
       <div class="logo">
@@ -819,6 +829,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <div class="spot-item silver">
         <div class="metal" id="silverSpotLabel">SILVER /oz</div>
         <div class="price" id="silverSpot"><span class="loading-dot"></span></div>
+      </div>
+      <div style="display:flex;align-items:flex-end;padding-bottom:1px">
+        <span style="font-size:7px;color:var(--text-dim);letter-spacing:.06em;opacity:.7" title="Prices are indicative spot rates and may differ from local jeweller or exchange prices">indicative</span>
       </div>
     </div>
     <div id="inrDutyNote" style="display:none;font-size:8px;color:var(--text-dim);text-align:right;padding:2px 16px 4px;letter-spacing:.04em;opacity:0.7">incl. 15% import duty + 3% GST</div>
@@ -1107,12 +1120,16 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div class="profile-val muted">••••••••</div>
         </div>
         <div class="profile-row">
-          <div class="profile-key">Storage</div>
-          <div class="profile-val muted" style="font-size:11px">Browser local storage</div>
+          <div class="profile-key">Holdings storage</div>
+          <div class="profile-val muted" style="font-size:11px">This device only</div>
         </div>
         <div class="profile-row">
-          <div class="profile-key">Data Location</div>
-          <div class="profile-val muted" style="font-size:11px">This device only</div>
+          <div class="profile-key">Account data</div>
+          <div class="profile-val muted" style="font-size:11px">Encrypted on server</div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-key">Data sharing</div>
+          <div class="profile-val muted" style="font-size:11px;color:var(--green)">None — ever</div>
         </div>
       </div>
 
@@ -1448,12 +1465,7 @@ const GRADE_NOTES={
 // ══════════════════════════════════════════
 // API CONFIG
 // ══════════════════════════════════════════
-// Resolves correctly in both local dev and production.
-// If your dev API runs on a different port, set COFFER_API below.
-const API_BASE = (function(){
-  var COFFER_API = ''; // override e.g. 'http://localhost:3001' for local dev
-  return COFFER_API || window.location.origin;
-})();
+const API_BASE = window.location.origin;
 
 let authToken = localStorage.getItem('coffer_token') || null;
 function setToken(t){authToken=t;if(t)localStorage.setItem('coffer_token',t);else localStorage.removeItem('coffer_token')}
@@ -1491,14 +1503,6 @@ function showMsg(id,text,type){
   if(!el)return;
   el.textContent=text;
   el.className='msg-'+type;
-  if(type==='error'){
-    // Shake and scroll into view so it's always visible on mobile
-    el.classList.remove('msg-shake');
-    void el.offsetWidth; // force reflow to restart animation
-    el.classList.add('msg-shake');
-    setTimeout(()=>el.classList.remove('msg-shake'),400);
-    el.scrollIntoView({behavior:'smooth',block:'nearest'});
-  }
 }
 
 function togglePw(inputId, btn){
@@ -1572,7 +1576,10 @@ async function doLogin(){
 
 async function loginUser(user){
   currentUser=user;
-  document.getElementById('authScreen').classList.add('hidden');
+  // Fade auth screen out before hiding
+  const authEl = document.getElementById('authScreen');
+  authEl.classList.add('fading');
+  setTimeout(() => authEl.classList.add('hidden'), 300);
   document.getElementById('appScreen').classList.add('active');
   refreshHeader();
   refreshProfile();
@@ -1594,7 +1601,8 @@ async function doLogout(){
   setToken(null);
   currentUser=null;items=[];priceAlerts=[];
   document.getElementById('appScreen').classList.remove('active');
-  document.getElementById('authScreen').classList.remove('hidden');
+  const authEl = document.getElementById('authScreen');
+  authEl.classList.remove('hidden','fading');
   document.getElementById('loginEmail').value='';
   document.getElementById('loginPassword').value='';
   switchAuthTab('login',document.querySelectorAll('.auth-tab')[0]);
@@ -2431,7 +2439,18 @@ function updatePriceDisplay(){
 }
 
 // ══════════════════════════════════════════
-// INIT
+// iOS KEYBOARD — scroll focused input into view inside modals
+// ══════════════════════════════════════════
+document.addEventListener('focusin', function(e){
+  const inp = e.target;
+  if(!['INPUT','SELECT','TEXTAREA'].includes(inp.tagName)) return;
+  const modal = inp.closest('.modal');
+  if(!modal) return;
+  setTimeout(() => inp.scrollIntoView({behavior:'smooth', block:'center'}), 320);
+});
+
+// ══════════════════════════════════════════
+// LOADING SPLASH
 // ══════════════════════════════════════════
 function hideSplash(){
   const s = document.getElementById('appLoadingSplash');
@@ -2440,6 +2459,73 @@ function hideSplash(){
   setTimeout(() => s.classList.add('hidden'), 380);
 }
 
+// ══════════════════════════════════════════
+// PULL-TO-REFRESH
+// ══════════════════════════════════════════
+(function initPTR(){
+  const THRESHOLD = 72;
+  const MAX_PULL  = 90;
+  let startY = 0, currentY = 0, pulling = false;
+
+  const indicator = document.getElementById('ptrIndicator');
+  const spinner   = document.getElementById('ptrSpinner');
+  const label     = document.getElementById('ptrLabel');
+  if(!indicator) return;
+
+  function canPull(){
+    const app = document.getElementById('appScreen');
+    if(!app || !app.classList.contains('active')) return false;
+    const vault = document.getElementById('panelVault');
+    if(!vault || !vault.classList.contains('active')) return false;
+    return window.scrollY <= 0;
+  }
+
+  document.addEventListener('touchstart', e => {
+    if(!canPull()) return;
+    startY = e.touches[0].clientY;
+    pulling = true;
+  }, {passive:true});
+
+  document.addEventListener('touchmove', e => {
+    if(!pulling) return;
+    currentY = e.touches[0].clientY;
+    const delta = Math.min(currentY - startY, MAX_PULL);
+    if(delta <= 0){ pulling = false; return; }
+    const progress = Math.min(delta / THRESHOLD, 1);
+    indicator.style.transition = 'none';
+    indicator.style.transform = `translateY(${-52 + 52 * progress}px)`;
+    label.textContent = delta >= THRESHOLD ? 'Release to refresh' : 'Pull to refresh prices';
+    spinner.style.borderTopColor = delta >= THRESHOLD ? 'var(--brand-light)' : 'var(--brand)';
+  }, {passive:true});
+
+  document.addEventListener('touchend', async () => {
+    if(!pulling) return;
+    pulling = false;
+    const delta = currentY - startY;
+    if(delta >= THRESHOLD){
+      indicator.style.transition = '';
+      indicator.classList.add('ptr-visible');
+      spinner.classList.add('ptr-spinning');
+      label.textContent = 'Refreshing…';
+      await fetchPrices();
+      label.textContent = 'Updated ✓';
+      spinner.classList.remove('ptr-spinning');
+      spinner.style.borderTopColor = 'var(--green)';
+      setTimeout(() => {
+        indicator.classList.remove('ptr-visible');
+        indicator.style.transform = '';
+        spinner.style.borderTopColor = '';
+      }, 900);
+    } else {
+      indicator.style.transition = '';
+      indicator.style.transform = '';
+    }
+  }, {passive:true});
+})();
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
 (async function init(){
   updatePriceDisplay();
   const token=localStorage.getItem('coffer_token');
@@ -2451,7 +2537,6 @@ function hideSplash(){
       hideSplash();
       return;
     }catch(e){
-      // Token invalid or expired — fall through to auth screen
       setToken(null);
     }
   }
