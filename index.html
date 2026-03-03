@@ -116,7 +116,20 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 /* Success/error messages */
 .msg-success{color:#2E7D32;background:#E8F5E9;border:1px solid #A5D6A7;border-radius:8px;padding:8px 12px;font-size:10px}
-.msg-error{color:#C62828;background:#FFEBEE;border:1px solid #EF9A9A;border-radius:8px;padding:8px 12px;font-size:10px}
+.msg-error{
+  color:#B03030;background:#FFF0F0;border:1px solid #F0AAAA;
+  border-radius:8px;padding:10px 13px;font-size:11px;font-weight:500;
+  display:flex;align-items:flex-start;gap:8px;line-height:1.5;
+}
+.msg-error::before{content:'⚠';font-size:13px;flex-shrink:0;margin-top:1px}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-6px)}
+  40%{transform:translateX(6px)}
+  60%{transform:translateX(-4px)}
+  80%{transform:translateX(4px)}
+}
+.msg-shake{animation:shake .35s ease}
 
 /* Strength meter */
 .strength-bar{height:3px;border-radius:2px;background:var(--border);overflow:hidden;margin-top:4px}
@@ -511,32 +524,38 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .empty-alerts .ea-icon{font-size:34px;margin-bottom:10px}
 .empty-alerts .ea-text{font-size:11px;color:var(--text-dim);line-height:1.7}
 
-/* ── Pull-to-refresh ── */
-.ptr-indicator{
-  position:fixed;top:0;left:0;right:0;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  height:52px;pointer-events:none;
-  transform:translateY(-52px);
-  transition:transform .25s cubic-bezier(.32,.72,0,1);
-  z-index:90;
-  background:var(--bg2);
-  border-bottom:1px solid var(--border);
-  box-shadow:0 2px 8px rgba(0,0,0,.06);
+/* ── Auth loading splash ── */
+#appLoadingSplash{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;z-index:900;
+  transition:opacity .35s ease;
 }
-.ptr-indicator.ptr-visible{transform:translateY(0)}
-.ptr-spinner{
-  width:16px;height:16px;
+#appLoadingSplash.fade-out{opacity:0;pointer-events:none}
+#appLoadingSplash.hidden{display:none}
+.splash-wordmark{
+  font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;
+  letter-spacing:.25em;color:var(--brand);
+}
+.splash-ring{
+  width:26px;height:26px;
   border:2px solid var(--border);
   border-top-color:var(--brand);
   border-radius:50%;
-  flex-shrink:0;
+  animation:splash-spin .8s linear infinite;
 }
-.ptr-spinner.ptr-spinning{animation:ptr-spin .65s linear infinite}
-@keyframes ptr-spin{to{transform:rotate(360deg)}}
-.ptr-label{font-size:10px;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase}
+@keyframes splash-spin{to{transform:rotate(360deg)}}
+.splash-sub{font-size:9px;color:var(--text-dim);letter-spacing:.18em;text-transform:uppercase}
 </style>
 </head>
 <body>
+
+<!-- App loading splash — shown while token is verified, hidden before auth or app appears -->
+<div id="appLoadingSplash">
+  <div class="splash-wordmark">COFFER</div>
+  <div class="splash-ring"></div>
+  <div class="splash-sub">Loading…</div>
+</div>
 
 <!-- ══════════════════════════════════════════════════
      AUTH SCREEN
@@ -721,7 +740,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">Indian families hold an estimated 25,000 tonnes of physical gold — the largest private gold reserve in the world. Yet the tools to track it barely existed. Spreadsheets, rough mental estimates, or simply not knowing at all.</div>
           <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">The cruellest part: the only reliable way to find out what your gold was worth was to sell it. Visit a jeweller, accept their price, and only then discover the number — by giving up the very thing you wanted to hold.</div>
           <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">Coffer was built to end that. It's a private digital ledger for anyone who owns physical gold or silver — jewellery, coins, bars, raw metal — and wants to know what their holdings are worth right now, in real money, without surrendering their metal or their data.</div>
-          <div style="font-size:12px;color:#555;line-height:1.9">Prices are sourced from global spot markets and aligned to MCX rates for Indian users, updated every five minutes. Your account credentials are stored securely on our servers — your holdings, values, and portfolio history never leave your device.</div>
+          <div style="font-size:12px;color:#555;line-height:1.9">Prices are sourced from global spot markets and aligned to MCX rates for Indian users, updated every five minutes. Your data never leaves your device.</div>
         </div>
 
         <div>
@@ -757,7 +776,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
         <div>
           <div style="font-size:11px;color:#2C2410;font-weight:500;letter-spacing:.04em;margin-bottom:8px">Where it lives</div>
-          <div style="font-size:11px;color:#666;line-height:1.85">Your holdings data is stored on your device in your browser's local storage. Only your account credentials (name, email, password) are held on our servers — nothing about your portfolio, its contents, values, or history is ever transmitted to any server or third party.</div>
+          <div style="font-size:11px;color:#666;line-height:1.85">Your holdings data is stored on your device in your browser's local storage. Nothing about your portfolio — its contents, values, or history — is ever transmitted to any server or third party.</div>
         </div>
 
         <div>
@@ -781,12 +800,6 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
      MAIN APP
 ══════════════════════════════════════════════════ -->
 <div class="app-screen" id="appScreen">
-
-<!-- Pull-to-refresh indicator -->
-<div class="ptr-indicator" id="ptrIndicator">
-  <div class="ptr-spinner" id="ptrSpinner"></div>
-  <span class="ptr-label" id="ptrLabel">Pull to refresh prices</span>
-</div>
 
   <div class="header">
     <div class="header-left">
@@ -1095,7 +1108,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         </div>
         <div class="profile-row">
           <div class="profile-key">Storage</div>
-          <div class="profile-val muted" style="font-size:11px">Holdings: browser only · Account: encrypted server</div>
+          <div class="profile-val muted" style="font-size:11px">Browser local storage</div>
         </div>
         <div class="profile-row">
           <div class="profile-key">Data Location</div>
@@ -1435,7 +1448,12 @@ const GRADE_NOTES={
 // ══════════════════════════════════════════
 // API CONFIG
 // ══════════════════════════════════════════
-const API_BASE = window.location.origin;
+// Resolves correctly in both local dev and production.
+// If your dev API runs on a different port, set COFFER_API below.
+const API_BASE = (function(){
+  var COFFER_API = ''; // override e.g. 'http://localhost:3001' for local dev
+  return COFFER_API || window.location.origin;
+})();
 
 let authToken = localStorage.getItem('coffer_token') || null;
 function setToken(t){authToken=t;if(t)localStorage.setItem('coffer_token',t);else localStorage.removeItem('coffer_token')}
@@ -1473,6 +1491,14 @@ function showMsg(id,text,type){
   if(!el)return;
   el.textContent=text;
   el.className='msg-'+type;
+  if(type==='error'){
+    // Shake and scroll into view so it's always visible on mobile
+    el.classList.remove('msg-shake');
+    void el.offsetWidth; // force reflow to restart animation
+    el.classList.add('msg-shake');
+    setTimeout(()=>el.classList.remove('msg-shake'),400);
+    el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
 }
 
 function togglePw(inputId, btn){
@@ -2407,84 +2433,12 @@ function updatePriceDisplay(){
 // ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
-// ══════════════════════════════════════════
-// PULL-TO-REFRESH
-// ══════════════════════════════════════════
-(function initPTR(){
-  const THRESHOLD = 72;   // px drag needed to trigger
-  const MAX_PULL  = 90;   // max visual drag
-  let startY = 0, currentY = 0, pulling = false, triggered = false;
-
-  const indicator = document.getElementById('ptrIndicator');
-  const spinner   = document.getElementById('ptrSpinner');
-  const label     = document.getElementById('ptrLabel');
-
-  function canPull(){
-    // Only active on vault panel, app visible, page scrolled to top
-    const app = document.getElementById('appScreen');
-    if(!app || !app.classList.contains('active')) return false;
-    const vault = document.getElementById('panelVault');
-    if(!vault || !vault.classList.contains('active')) return false;
-    return window.scrollY <= 0;
-  }
-
-  document.addEventListener('touchstart', e => {
-    if(!canPull()) return;
-    startY = e.touches[0].clientY;
-    pulling = true;
-    triggered = false;
-  }, {passive:true});
-
-  document.addEventListener('touchmove', e => {
-    if(!pulling) return;
-    currentY = e.touches[0].clientY;
-    const delta = Math.min(currentY - startY, MAX_PULL);
-    if(delta <= 0){ pulling = false; return; }
-
-    const progress = Math.min(delta / THRESHOLD, 1);
-    // Nudge the indicator into view proportionally
-    indicator.style.transition = 'none';
-    indicator.style.transform = `translateY(${-52 + 52 * progress}px)`;
-
-    if(delta >= THRESHOLD && !triggered){
-      label.textContent = 'Release to refresh';
-      spinner.style.borderTopColor = 'var(--brand-light)';
-    } else if(delta < THRESHOLD){
-      label.textContent = 'Pull to refresh prices';
-      spinner.style.borderTopColor = 'var(--brand)';
-    }
-  }, {passive:true});
-
-  document.addEventListener('touchend', async () => {
-    if(!pulling) return;
-    pulling = false;
-    const delta = currentY - startY;
-
-    if(delta >= THRESHOLD){
-      // Show spinner and refresh
-      indicator.style.transition = '';
-      indicator.classList.add('ptr-visible');
-      spinner.classList.add('ptr-spinning');
-      label.textContent = 'Refreshing…';
-
-      await fetchPrices();
-
-      label.textContent = 'Updated ✓';
-      spinner.classList.remove('ptr-spinning');
-      spinner.style.borderTopColor = 'var(--green)';
-
-      setTimeout(() => {
-        indicator.classList.remove('ptr-visible');
-        indicator.style.transform = '';
-        spinner.style.borderTopColor = '';
-      }, 900);
-    } else {
-      // Snap back
-      indicator.style.transition = '';
-      indicator.style.transform = '';
-    }
-  }, {passive:true});
-})();
+function hideSplash(){
+  const s = document.getElementById('appLoadingSplash');
+  if(!s) return;
+  s.classList.add('fade-out');
+  setTimeout(() => s.classList.add('hidden'), 380);
+}
 
 (async function init(){
   updatePriceDisplay();
@@ -2494,12 +2448,14 @@ function updatePriceDisplay(){
       const data=await api('GET','/auth/me');
       setToken(token);
       await loginUser(data);
+      hideSplash();
       return;
     }catch(e){
       // Token invalid or expired — fall through to auth screen
       setToken(null);
     }
   }
+  hideSplash();
   document.getElementById('authScreen').classList.remove('hidden');
 })();
 </script>
