@@ -22,7 +22,7 @@
 <meta name="theme-color" content="#F5F0E8">
 <meta name="description" content="A private digital ledger for tracking the live market value of physical gold and silver.">
 <!-- PWA manifest (inline so no separate file needed) -->
-<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22MyAurum%20%E2%80%94%20Precious%20Metals%22%2C%22short_name%22%3A%22MyAurum%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F5F0E8%22%2C%22theme_color%22%3A%22%23F5F0E8%22%2C%22orientation%22%3A%22portrait%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20192%20192'%3E%3Crect%20width%3D'192'%20height%3D'192'%20rx%3D'36'%20fill%3D'%23F5F0E8'%2F%3E%3Ctext%20x%3D'96'%20y%3D'130'%20font-family%3D'Georgia%2Cserif'%20font-size%3D'80'%20font-weight%3D'300'%20fill%3D'%238B6914'%20text-anchor%3D'middle'%20letter-spacing%3D'4'%3EC%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22MyAurum%20%E2%80%94%20Precious%20Metals%22%2C%22short_name%22%3A%22MyAurum%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F5F0E8%22%2C%22theme_color%22%3A%22%23F5F0E8%22%2C%22orientation%22%3A%22portrait%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20192%20192'%3E%3Crect%20width%3D'192'%20height%3D'192'%20rx%3D'36'%20fill%3D'%23F5F0E8'%2F%3E%3Ctext%20x%3D'96'%20y%3D'130'%20font-family%3D'Georgia%2Cserif'%20font-size%3D'80'%20font-weight%3D'300'%20fill%3D'%238B6914'%20text-anchor%3D'middle'%20letter-spacing%3D'4'%3EA%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 <!-- Apple touch icon -->
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='34' fill='%23F5F0E8'/><text x='90' y='122' font-family='Georgia,serif' font-size='76' font-weight='300' fill='%238B6914' text-anchor='middle' letter-spacing='4'>C</text></svg>">
 <title>MyAurum — Precious Metals Tracker</title>
@@ -622,7 +622,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 <!-- Loading splash — shown while token check runs -->
 <div id="appLoadingSplash">
-  <div class="splash-wordmark">AURUM</div>
+  <div class="splash-wordmark">MYAURUM</div>
   <div class="splash-ring"></div>
   <div class="splash-sub">Loading…</div>
 </div>
@@ -634,7 +634,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
       <div class="auth-box">
       <div style="margin-bottom:4px">
-        <div class="auth-wordmark">AURUM</div>
+        <div class="auth-wordmark">MYAURUM</div>
       </div>
       <div class="auth-tagline">Precious Metals Ledger</div>
 
@@ -900,7 +900,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   <div class="header">
     <div class="header-left">
       <div class="logo">
-  <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:.22em;color:#8B6914">AURUM</span>
+  <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:.22em;color:#8B6914">MYAURUM</span>
 </div>
       <div class="user-pill" onclick="setNavTab('profile',document.getElementById('navProfile'))">
         <div class="user-avatar" id="headerAvatar">?</div>
@@ -931,7 +931,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     <button class="nav-tab" id="navProfile" onclick="setNavTab('profile',this)">👤 Profile</button>
   </div>
 
-  <!-- ── AURUM PANEL ── -->
+  <!-- ── MYAURUM PANEL ── -->
   <div class="content-panel active" id="panelVault">
 
     <div class="currency-bar">
@@ -1043,7 +1043,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     </div>
 
     <div class="app-footer">
-      <p>AURUM is a free personal ledger for estimating precious metal value at live spot prices.<br>
+      <p>MyAurum is a free personal ledger for estimating precious metal value at live spot prices.<br>
       Values are indicative only — not financial advice. Holdings stored on this device · account on encrypted server.</p>
     </div>
 
@@ -2545,7 +2545,7 @@ async function requestNotifPermission(){
   if(!('Notification' in window)){alert('Your browser does not support notifications.');return}
   const p=await Notification.requestPermission();
   updateNotifStatus();
-  if(p==='granted'){new Notification('AURUM Alerts Active',{body:'You will now be notified when your price targets are hit.'})}
+  if(p==='granted'){new Notification('MyAurum Alerts Active',{body:'You will now be notified when your price targets are hit.'})}
 }
 
 function updateAlertCurrencyUI(){
@@ -2649,7 +2649,7 @@ async function checkAlerts(){
 }
 
 function fireNotification(a,spot){
-  const title=`AURUM Alert — ${a.metal==='gold'?'Gold':'Silver'} ${a.dir==='above'?'↑':'↓'}`;
+  const title=`MyAurum Alert — ${a.metal==='gold'?'Gold':'Silver'} ${a.dir==='above'?'↑':'↓'}`;
   const INDIA_FACTOR=(10/31.1035)*1.15*1.03;
   let spotStr,targetStr;
   if(a.priceCurrency==='INR'){
@@ -2862,7 +2862,7 @@ function handleUnauthorised(){
 ══════════════════════════════════════════════════ -->
 <div id="forgotOverlay" style="display:none;position:fixed;inset:0;background:rgba(245,240,232,0.97);z-index:1000;align-items:center;justify-content:center">
   <div style="background:#fff;border:1px solid #DDD5C0;border-radius:14px;padding:28px 24px;width:300px;box-shadow:0 4px 24px rgba(0,0,0,.1)">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#B8860B;letter-spacing:.2em;margin-bottom:4px">AURUM</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#B8860B;letter-spacing:.2em;margin-bottom:4px">MyAurum</div>
     <div style="font-size:11px;color:#999;letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px">Reset Password</div>
     <div id="forgotMsg"></div>
     <div class="af" style="margin-bottom:14px">
@@ -2878,7 +2878,7 @@ function handleUnauthorised(){
 
 <div id="resetOverlay" style="display:none;position:fixed;inset:0;background:rgba(245,240,232,0.97);z-index:1000;align-items:center;justify-content:center">
   <div style="background:#fff;border:1px solid #DDD5C0;border-radius:14px;padding:28px 24px;width:300px;box-shadow:0 4px 24px rgba(0,0,0,.1)">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#B8860B;letter-spacing:.2em;margin-bottom:4px">AURUM</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#B8860B;letter-spacing:.2em;margin-bottom:4px">MyAurum</div>
     <div style="font-size:11px;color:#999;letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px">Set New Password</div>
     <div id="resetMsg"></div>
     <div class="af" style="margin-bottom:12px">
@@ -3005,7 +3005,7 @@ async function initWebPush(){
     const { key } = await api('GET','/push/vapid-public-key');
     if(!key)return;
     // Register a minimal inline service worker
-    const swCode=`self.addEventListener('push',e=>{const d=e.data?e.data.json():{};e.waitUntil(self.registration.showNotification(d.title||'AURUM Alert',{body:d.body||'',icon:'/favicon.ico',badge:'/favicon.ico',tag:'myaurum-alert',data:{url:d.url||'/'}}))});self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(clients.openWindow(e.notification.data.url||'/'))});`;
+    const swCode=`self.addEventListener('push',e=>{const d=e.data?e.data.json():{};e.waitUntil(self.registration.showNotification(d.title||'MyAurum Alert',{body:d.body||'',icon:'/favicon.ico',badge:'/favicon.ico',tag:'myaurum-alert',data:{url:d.url||'/'}}))});self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(clients.openWindow(e.notification.data.url||'/'))});`;
     const swBlob=new Blob([swCode],{type:'application/javascript'});
     const swUrl=URL.createObjectURL(swBlob);
     const reg=await navigator.serviceWorker.register(swUrl);
