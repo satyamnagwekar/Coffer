@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231A1508'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='18' font-weight='300' fill='%23F0B429' text-anchor='middle' letter-spacing='0'%3EM%3C/text%3E%3C/svg%3E">
   <!-- Sentry error monitoring -->
   <script>
     window.SENTRY_DSN = ''; // Set this to your Sentry DSN, e.g. https://xxx@oyyy.ingest.sentry.io/zzz
@@ -1712,7 +1713,6 @@ async function loginUser(user){
   window._priceInterval = setInterval(fetchPrices, 5 * 60 * 1000);
   // Post-login: email verify banner + web push
   setTimeout(()=>{
-    if(currentUser && !currentUser.emailVerified) showEmailVerifyBanner();
     initWebPush();
   }, 800);
 }
@@ -2564,6 +2564,8 @@ function updateAlertCurrencyUI(){
 }
 
 async function addAlert(){
+  // Show verify banner if email not verified
+  if(currentUser && !currentUser.emailVerified) showEmailVerifyBanner();
   const metal=document.getElementById('alertMetal').value;
   const dir=document.getElementById('alertDir').value;
   const priceRaw=parseFloat(document.getElementById('alertPrice').value);
