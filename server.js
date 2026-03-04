@@ -283,29 +283,33 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
       [email.toLowerCase().trim(), hash, firstName.trim(), lastName.trim(), age||null, country||null]);
     const u = r.rows[0];
     const token = jwt.sign({ userId:u.id, email:u.email }, JWT_SECRET, { expiresIn:'30d' });
-    // Send email verification
-    try {
-      const crypto = require('crypto');
-      const verifyToken = crypto.randomBytes(32).toString('hex');
-      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-      await q('INSERT INTO email_verify_tokens (user_id, token, expires_at) VALUES ($1,$2,$3)', [u.id, verifyToken, expires]);
-      const verifyUrl = `${APP_URL}/?verify=${verifyToken}`;
-      await sendEmail({
-        to: u.email,
-        subject: 'Verify your MyAurum email address',
-        html: `<div style="font-family:monospace;max-width:480px;margin:0 auto;padding:32px;background:#F5F0E8;border-radius:12px">
-          <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:4px">MYAURUM</div>
-          <div style="font-size:10px;color:#999;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:24px">Precious Metals Ledger</div>
-          <p style="color:#2C2410;font-size:14px;line-height:1.8">Hi ${u.first_name},</p>
-          <p style="color:#555;font-size:13px;line-height:1.8">Welcome to MyAurum. Please verify your email address to activate your account.</p>
-          <div style="text-align:center;margin:28px 0">
-            <a href="${verifyUrl}" style="background:linear-gradient(135deg,#B8860B,#D4A017);color:#fff;padding:14px 28px;border-radius:9px;text-decoration:none;font-size:12px;letter-spacing:0.1em;font-weight:500">Verify My Email →</a>
-          </div>
-          <p style="color:#AAA;font-size:10px;line-height:1.7">This link expires in 24 hours. If you didn't create a MyAurum account, ignore this email.</p>
-        </div>`,
-      });
-    } catch(e) { console.warn('[verify] Could not send verification email:', e.message); }
+    // Respond immediately — don't block on email
     res.json({ token, user:{ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:false } });
+    // Send verification email in background
+    setImmediate(async () => {
+      try {
+        const crypto = require('crypto');
+        const verifyToken = crypto.randomBytes(32).toString('hex');
+        const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        await q('INSERT INTO email_verify_tokens (user_id, token, expires_at) VALUES ($1,$2,$3)', [u.id, verifyToken, expires]);
+        const verifyUrl = `${APP_URL}/?verify=${verifyToken}`;
+        await sendEmail({
+          to: u.email,
+          subject: 'Verify your MyAurum email address',
+          html: `<div style="font-family:monospace;max-width:480px;margin:0 auto;padding:32px;background:#F5F0E8;border-radius:12px">
+            <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:4px">MYAURUM</div>
+            <div style="font-size:10px;color:#999;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:24px">Precious Metals Ledger</div>
+            <p style="color:#2C2410;font-size:14px;line-height:1.8">Hi ${u.first_name},</p>
+            <p style="color:#555;font-size:13px;line-height:1.8">Welcome to MyAurum. Please verify your email address to activate your account.</p>
+            <div style="text-align:center;margin:28px 0">
+              <a href="${verifyUrl}" style="background:linear-gradient(135deg,#B8860B,#D4A017);color:#fff;padding:14px 28px;border-radius:9px;text-decoration:none;font-size:12px;letter-spacing:0.1em;font-weight:500">Verify My Email →</a>
+            </div>
+            <p style="color:#AAA;font-size:10px;line-height:1.7">This link expires in 24 hours. If you didn't create a MyAurum account, ignore this email.</p>
+          </div>`,
+        });
+        console.log('[verify] Email sent to:', u.email);
+      } catch(e) { console.warn('[verify] Could not send verification email:', e.message); }
+    });
   } catch(e) { console.error(e); res.status(500).json({ error:'Server error' }); }
 });
 
@@ -374,6 +378,7 @@ async function sendEmail({ to, subject, html, text }) {
       hostname: 'api.resend.com',
       path: '/emails',
       method: 'POST',
+      timeout: 8000,
       headers: {
         'Authorization': `Bearer ${RESEND_KEY}`,
         'Content-Type': 'application/json',
@@ -382,9 +387,10 @@ async function sendEmail({ to, subject, html, text }) {
     }, res => {
       let data = '';
       res.on('data', chunk => data += chunk);
-      res.on('end', () => { console.log('[email] Resend status:', res.statusCode); resolve(data); });
+      res.on('end', () => { console.log('[email] Resend status:', res.statusCode, data); resolve(data); });
     });
     req.on('error', e => { console.error('[email] Request error:', e.message); reject(e); });
+    req.on('timeout', () => { req.destroy(); reject(new Error('Email request timed out')); });
     req.write(payload);
     req.end();
   });
