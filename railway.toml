@@ -5,3 +5,5 @@ builder = "nixpacks"
 startCommand = "node server.js"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
+[env]
+DATABASE_URL = "postgresql://postgres:cSANKPNApcPSSBMfqJkyeLAhUWrgcOwd@turntable.proxy.rlwy.net:36567/railway"
