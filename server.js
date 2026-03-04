@@ -24,8 +24,8 @@ const PORT        = process.env.PORT || 3000;
 const JWT_SECRET  = process.env.JWT_SECRET || 'aurum-change-this-secret-in-production';
 const RESEND_KEY  = process.env.RESEND_API_KEY || '';
 const APP_URL     = process.env.APP_URL || 'https://myaurum.app';
-const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || '';
-const VAPID_PRIVATE= process.env.VAPID_PRIVATE_KEY || '';
+const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || 'BObbou1l2U7fZqh1RsXxp3_gUNibmR1MXgQpGYSj9pXgkzZCzfMUfuNp9uPdm4jeJpuYPvJzb4yKoJE_uuox0Ls';
+const VAPID_PRIVATE= process.env.VAPID_PRIVATE_KEY || 'eW-amR4xbefXF4BUBWTfLO6sg3SmKSPWllRUt4Uaqjs';
 const VAPID_EMAIL  = process.env.VAPID_EMAIL || 'mailto:admin@myaurum.app';
 
 console.log('[config] DATABASE_URL:', process.env.DATABASE_URL ? process.env.DATABASE_URL.slice(0, 40) + '...' : 'NOT SET');
