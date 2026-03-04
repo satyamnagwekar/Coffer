@@ -293,7 +293,7 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
         to: u.email,
         subject: 'Verify your MyAurum email address',
         html: `<div style="font-family:monospace;max-width:480px;margin:0 auto;padding:32px;background:#F5F0E8;border-radius:12px">
-          <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:4px">AURUM</div>
+          <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:4px">MYAURUM</div>
           <div style="font-size:10px;color:#999;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:24px">Precious Metals Ledger</div>
           <p style="color:#2C2410;font-size:14px;line-height:1.8">Hi ${u.first_name},</p>
           <p style="color:#555;font-size:13px;line-height:1.8">Welcome to MyAurum. Please verify your email address to activate your account.</p>
@@ -362,7 +362,7 @@ app.delete('/api/auth/account', requireAuth, async (req, res) => {
 async function sendEmail({ to, subject, html, text }) {
   return new Promise((resolve, reject) => {
     const payload = JSON.stringify({
-      from: process.env.RESEND_FROM || 'AURUM Alerts <alerts@myaurum.app>',
+      from: process.env.RESEND_FROM || 'MYAURUM Alerts <alerts@myaurum.app>',
       to: Array.isArray(to) ? to : [to],
       subject,
       html,
@@ -421,7 +421,7 @@ function buildAlertEmail(alert, spotUSD) {
     ? `<p style="font-size:13px;color:#888;font-style:italic;margin:0 0 20px;padding:12px 16px;background:#F5F0E8;border-radius:8px;border-left:3px solid #D4A017">"${alert.note}"</p>`
     : '';
 
-  const subject = `${emoji} ${metal} has ${dirWord} your target — AURUM Alert`;
+  const subject = `${emoji} ${metal} has ${dirWord} your target — MyAurum Alert`;
 
   const html = `<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -430,7 +430,7 @@ function buildAlertEmail(alert, spotUSD) {
 <tr><td align="center">
 <table role="presentation" width="100%" style="max-width:520px">
   <tr><td style="background:#1A1508;padding:24px 32px;text-align:center;border-radius:16px 16px 0 0">
-    <p style="margin:0;font-family:Georgia,serif;font-size:30px;font-weight:300;letter-spacing:.24em;color:#F0B429">AURUM</p>
+    <p style="margin:0;font-family:Georgia,serif;font-size:30px;font-weight:300;letter-spacing:.24em;color:#F0B429">MYAURUM</p>
     <p style="margin:5px 0 0;font-size:10px;color:#907030;letter-spacing:.22em;text-transform:uppercase">Price Alert</p>
   </td></tr>
   <tr><td style="background:#FDFAF5;padding:28px 32px 8px;text-align:center;border-left:1px solid #DDD5C0;border-right:1px solid #DDD5C0">
@@ -457,7 +457,7 @@ function buildAlertEmail(alert, spotUSD) {
     <p style="margin:0;font-size:10px;color:#BBB;line-height:1.85">
       This alert is now marked as fired and will not trigger again.<br>
       Prices are indicative spot rates — actual buyback values vary by dealer.<br>
-      <a href="${APP_URL}" style="color:#B8860B;text-decoration:none">Manage alerts in AURUM</a>
+      <a href="${APP_URL}" style="color:#B8860B;text-decoration:none">Manage alerts in MyAurum</a>
     </p>
   </td></tr>
 </table>
@@ -466,7 +466,7 @@ function buildAlertEmail(alert, spotUSD) {
 </body></html>`;
 
   const textLines = [
-    'AURUM Price Alert',
+    'MyAurum Price Alert',
     '------------------',
     `${metal} has ${dirWord} your target.`,
     '',
@@ -475,7 +475,7 @@ function buildAlertEmail(alert, spotUSD) {
     alert.note ? `Note        : "${alert.note}"` : null,
     '',
     'This alert is now marked as fired and will not trigger again.',
-    `Open your Aurum: ${APP_URL}`,
+    `Open MyAurum: ${APP_URL}`,
   ].filter(l => l !== null).join('\n');
 
   return { subject, html, text: textLines };
@@ -530,7 +530,7 @@ async function checkAndFireAlerts() {
       try {
         const subs = await q('SELECT * FROM push_subscriptions WHERE user_id=$1', [alert.user_id]);
         const pushPayload = JSON.stringify({
-          title: `AURUM Alert — ${alert.metal === 'gold' ? 'Gold' : 'Silver'} ${alert.direction === 'above' ? '↑' : '↓'}`,
+          title: `MyAurum Alert — ${alert.metal === 'gold' ? 'Gold' : 'Silver'} ${alert.direction === 'above' ? '↑' : '↓'}`,
           body: text.split('\n').slice(2, 3).join(''),
           url: APP_URL,
         });
@@ -574,7 +574,7 @@ app.post('/api/auth/forgot-password', forgotLimiter, async (req, res) => {
       subject: 'Reset your MyAurum password',
       html: `
         <div style="font-family:monospace;max-width:480px;margin:0 auto;padding:32px;background:#F5F0E8;border-radius:12px">
-          <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:4px">AURUM</div>
+          <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:4px">MYAURUM</div>
           <div style="font-size:10px;color:#999;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:24px">Precious Metals Ledger</div>
           <p style="color:#2C2410;font-size:14px;line-height:1.8">Hi ${user.first_name},</p>
           <p style="color:#555;font-size:13px;line-height:1.8">We received a request to reset your password. Click the button below — the link expires in 1 hour.</p>
@@ -735,7 +735,7 @@ app.post('/api/auth/resend-verification', authLimiter, requireAuth, async (req, 
       to: u.email,
       subject: 'Verify your MyAurum email address',
       html: `<div style="font-family:monospace;max-width:480px;margin:0 auto;padding:32px;background:#F5F0E8;border-radius:12px">
-        <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:20px">AURUM</div>
+        <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:20px">MYAURUM</div>
         <p style="color:#555;font-size:13px;line-height:1.8">Click below to verify your email address for your MyAurum account.</p>
         <div style="text-align:center;margin:28px 0">
           <a href="${verifyUrl}" style="background:linear-gradient(135deg,#B8860B,#D4A017);color:#fff;padding:14px 28px;border-radius:9px;text-decoration:none;font-size:12px;font-weight:500">Verify My Email →</a>
@@ -807,7 +807,7 @@ app.use((err, req, res, next) => {
 app.get('*', (req, res) => {
   const indexPath = path.join(__dirname, 'index.html');
   if (fs.existsSync(indexPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(indexPath); }
-  else res.status(200).send('<h2>Aurum backend running ✓</h2>');
+  else res.status(200).send('<h2>MyAurum backend running ✓</h2>');
 });
 
 app.get('/health', (req, res) => res.json({ ok:true, uptime:process.uptime() }));
@@ -828,6 +828,6 @@ initDB()
       } catch(e) { console.error('[cleanup] Token cleanup failed:', e.message); }
     });
     refreshPrices().catch(console.error);
-    app.listen(PORT, () => console.log(`\n🏛  Aurum running on port ${PORT} (PostgreSQL)\n`));
+    app.listen(PORT, () => console.log(`\n🏛  MyAurum running on port ${PORT} (PostgreSQL)\n`));
   })
   .catch(err => { console.error('[fatal] DB init failed:', err); process.exit(1); });
