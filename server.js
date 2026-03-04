@@ -243,6 +243,7 @@ const forgotLimiter = rateLimit({
 });
 
 const app = express();
+app.set('trust proxy', 1); // Trust Railway's proxy for rate limiting
 app.use(cors({ origin:'*', methods:['GET','POST','PUT','PATCH','DELETE','OPTIONS'], allowedHeaders:['Content-Type','Authorization'] }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
