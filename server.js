@@ -30,12 +30,8 @@ const VAPID_EMAIL  = process.env.VAPID_EMAIL || 'mailto:admin@myaurum.app';
 
 console.log('[config] DATABASE_URL:', process.env.DATABASE_URL ? process.env.DATABASE_URL.slice(0, 40) + '...' : 'NOT SET');
 
-if (!process.env.DATABASE_URL) {
-  console.error('[fatal] DATABASE_URL env var is not set');
-  process.exit(1);
-}
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:cSANKPNApcPSSBMfqJkyeLAhUWrgcOwd@turntable.proxy.rlwy.net:36567/railway',
   ssl: { rejectUnauthorized: false },
 });
 
@@ -834,7 +830,4 @@ initDB()
     refreshPrices().catch(console.error);
     app.listen(PORT, () => console.log(`\n🏛  Aurum running on port ${PORT} (PostgreSQL)\n`));
   })
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:cSANKPNApcPSSBMfqJkyeLAhUWrgcOwd@turntable.proxy.rlwy.net:36567/railway',
-  ssl: { rejectUnauthorized: false },
-});
+  .catch(err => { console.error('[fatal] DB init failed:', err); process.exit(1); });
