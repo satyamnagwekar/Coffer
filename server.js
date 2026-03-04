@@ -834,4 +834,7 @@ initDB()
     refreshPrices().catch(console.error);
     app.listen(PORT, () => console.log(`\n🏛  Aurum running on port ${PORT} (PostgreSQL)\n`));
   })
-  .catch(err => { console.error('[fatal] DB init failed:', err); process.exit(1); });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:cSANKPNApcPSSBMfqJkyeLAhUWrgcOwd@turntable.proxy.rlwy.net:36567/railway',
+  ssl: { rejectUnauthorized: false },
+});
