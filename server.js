@@ -22,7 +22,7 @@ try { webpush = require('web-push'); } catch(e) { console.warn('[webpush] web-pu
 
 const PORT        = process.env.PORT || 3000;
 const JWT_SECRET  = process.env.JWT_SECRET || 'aurum-change-this-secret-in-production';
-const RESEND_KEY  = process.env.RESEND_API_KEY || '';
+const RESEND_KEY  = process.env.RESEND_API_KEY || process.env.MY_RESEND_KEY || '';
 const APP_URL     = process.env.APP_URL || 'https://myaurum.app';
 const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || 'BObbou1l2U7fZqh1RsXxp3_gUNibmR1MXgQpGYSj9pXgkzZCzfMUfuNp9uPdm4jeJpuYPvJzb4yKoJE_uuox0Ls';
 const VAPID_PRIVATE= process.env.VAPID_PRIVATE_KEY || 'eW-amR4xbefXF4BUBWTfLO6sg3SmKSPWllRUt4Uaqjs';
