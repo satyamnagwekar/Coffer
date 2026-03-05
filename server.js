@@ -168,20 +168,32 @@ async function refreshPrices() {
   let { gold, silver, usd_inr, usd_aed, usd_eur, usd_gbp } = priceCache;
   let pricesFetched = false;
 
+  // Primary: gold-api.com — free, no key, no rate limit
   try {
-    const data = await fetchJSON('https://api.metals.live/v1/spot');
-    if (Array.isArray(data)) {
-      data.forEach(item => { if (item.gold) gold = item.gold; if (item.silver) silver = item.silver; });
-      if (gold > 1000) { pricesFetched = true; console.log(`[prices] metals.live — Gold: $${gold}`); }
-    }
-  } catch(e) { console.warn('[prices] metals.live failed:', e.message); }
+    const [gData, sData] = await Promise.all([
+      fetchJSON('https://api.gold-api.com/price/XAU'),
+      fetchJSON('https://api.gold-api.com/price/XAG'),
+    ]);
+    if (gData?.price > 1000) { gold = gData.price; pricesFetched = true; console.log(`[prices] gold-api.com Gold: $${gold}`); }
+    if (sData?.price > 0) { silver = sData.price; console.log(`[prices] gold-api.com Silver: $${silver}`); }
+  } catch(e) { console.warn('[prices] gold-api.com failed:', e.message); }
+
+  if (!pricesFetched) {
+    try {
+      const data = await fetchJSON('https://api.metals.live/v1/spot');
+      if (Array.isArray(data)) {
+        data.forEach(item => { if (item.gold) gold = item.gold; if (item.silver) silver = item.silver; });
+        if (gold > 1000) { pricesFetched = true; console.log(`[prices] metals.live Gold: $${gold}`); }
+      }
+    } catch(e) { console.warn('[prices] metals.live failed:', e.message); }
+  }
 
   if (!pricesFetched) {
     try {
       const data = await fetchJSON('https://data-asg.goldprice.org/dbXRates/USD');
       if (data?.items?.[0]) {
         gold = data.items[0].xauPrice; silver = data.items[0].xagPrice;
-        if (gold > 1000) { pricesFetched = true; console.log(`[prices] goldprice.org — Gold: $${gold}`); }
+        if (gold > 1000) { pricesFetched = true; console.log(`[prices] goldprice.org Gold: $${gold}`); }
       }
     } catch(e) { console.warn('[prices] goldprice.org failed:', e.message); }
   }
@@ -192,7 +204,7 @@ async function refreshPrices() {
       if (d1?.rates?.USD) gold = d1.rates.USD;
       const d2 = await fetchJSON('https://api.frankfurter.app/latest?from=XAG&to=USD');
       if (d2?.rates?.USD) silver = d2.rates.USD;
-      if (gold > 1000) { pricesFetched = true; console.log(`[prices] frankfurter — Gold: $${gold}`); }
+      if (gold > 1000) { pricesFetched = true; console.log(`[prices] frankfurter Gold: $${gold}`); }
     } catch(e) { console.warn('[prices] frankfurter failed:', e.message); }
   }
 
