@@ -367,7 +367,7 @@ app.delete('/api/auth/account', requireAuth, async (req, res) => {
 async function sendEmail({ to, subject, html, text }) {
   return new Promise((resolve, reject) => {
     const payload = JSON.stringify({
-      from: process.env.RESEND_FROM || 'MYAURUM Alerts <alerts@myaurum.app>',
+      from: process.env.RESEND_FROM || 'MYAURUM Alerts <alerts@mail.myaurum.app>',
       to: Array.isArray(to) ? to : [to],
       subject,
       html,
