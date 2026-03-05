@@ -1728,7 +1728,10 @@ async function loginUser(user){
   }catch(e){priceAlerts=[];}
   updatePriceDisplay();
   updateAll();
-  setNavTab('vault',document.getElementById('navMyAurum'));
+  // Restore last active tab
+  const savedTab = sessionStorage.getItem('myaurum_tab') || 'vault';
+  const tabBtnMap = {vault:'navMyAurum',chart:'navChart',alerts:'navAlerts',profile:'navProfile'};
+  setNavTab(savedTab, document.getElementById(tabBtnMap[savedTab]||'navMyAurum'));
   fetchPrices();
   // Auto-refresh prices every 5 minutes while session is active
   if(window._priceInterval) clearInterval(window._priceInterval);
@@ -1867,6 +1870,7 @@ function setNavTab(tab,btn){
   document.querySelectorAll('.content-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
   document.getElementById('fabWrap').style.display=tab==='vault'?'flex':'none';
+  sessionStorage.setItem('myaurum_tab', tab);
   if(tab==='profile')refreshProfile();
   if(tab==='chart'){updateChartPanel();renderHistoryChart()}
   if(tab==='alerts'){refreshAlertsPanel()}
