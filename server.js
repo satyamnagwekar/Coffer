@@ -524,7 +524,7 @@ async function checkAndFireAlerts() {
 
   for (const alert of alerts) {
     const spot = alert.metal === 'gold' ? priceCache.gold : priceCache.silver;
-    const hit  = alert.direction === 'above' ? spot >= alert.price : spot <= alert.price;
+    const hit  = (alert.direction||alert.dir) === 'above' ? spot >= alert.price : spot <= alert.price;
     if (!hit) continue;
 
     // Mark fired first — prevents double-send if email throws
@@ -536,8 +536,9 @@ async function checkAndFireAlerts() {
     }
 
     const emailAddr = alert.notify_email || alert.user_email;
+    console.log(`[alerts] Alert ${alert.id} fired spot:${spot} target:${alert.price} dir:${alert.direction||alert.dir} email:${emailAddr}`);
     if (!emailAddr) {
-      console.log(`[alerts] Alert ${alert.id} fired (no email address)`);
+      console.log(`[alerts] Alert ${alert.id} skipped (no email address)`);
       continue;
     }
 
