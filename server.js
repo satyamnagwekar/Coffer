@@ -22,7 +22,7 @@ try { webpush = require('web-push'); } catch(e) { console.warn('[webpush] web-pu
 
 const PORT        = process.env.PORT || 3000;
 const JWT_SECRET  = process.env.JWT_SECRET || 'aurum-change-this-secret-in-production';
-const RESEND_KEY  = process.env.RESEND_API_KEY || process.env.MY_RESEND_KEY || '';
+const RESEND_KEY  = process.env.RESEND_API_KEY || process.env.MY_RESEND_KEY || 're_C6LyyCaZ_DWMmyNgHbcSdSAFpKxtoAyhR';
 const APP_URL     = process.env.APP_URL || 'https://myaurum.app';
 const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || 'BObbou1l2U7fZqh1RsXxp3_gUNibmR1MXgQpGYSj9pXgkzZCzfMUfuNp9uPdm4jeJpuYPvJzb4yKoJE_uuox0Ls';
 const VAPID_PRIVATE= process.env.VAPID_PRIVATE_KEY || 'eW-amR4xbefXF4BUBWTfLO6sg3SmKSPWllRUt4Uaqjs';
@@ -307,8 +307,8 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
             <p style="color:#AAA;font-size:10px;line-height:1.7">This link expires in 24 hours. If you didn't create a MyAurum account, ignore this email.</p>
           </div>`,
         });
-        console.log('[verify] Email sent to:', u.email);
-      } catch(e) { console.warn('[verify] Could not send verification email:', e.message); }
+        console.log('[verify] Email sent successfully to:', u.email);
+      } catch(e) { console.error('[verify] Could not send verification email:', e.message); }
     });
   } catch(e) { console.error(e); res.status(500).json({ error:'Server error' }); }
 });
@@ -387,7 +387,11 @@ async function sendEmail({ to, subject, html, text }) {
     }, res => {
       let data = '';
       res.on('data', chunk => data += chunk);
-      res.on('end', () => { console.log('[email] Resend status:', res.statusCode, data); resolve(data); });
+      res.on('end', () => {
+        console.log('[email] Resend status:', res.statusCode, data);
+        if (res.statusCode >= 200 && res.statusCode < 300) resolve(data);
+        else reject(new Error(`Resend error ${res.statusCode}: ${data}`));
+      });
     });
     req.on('error', e => { console.error('[email] Request error:', e.message); reject(e); });
     req.on('timeout', () => { req.destroy(); reject(new Error('Email request timed out')); });
