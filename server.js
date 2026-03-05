@@ -423,7 +423,7 @@ function buildAlertEmail(alert, spotUSD) {
   const isGold  = alert.metal === 'gold';
   const metal   = isGold ? 'Gold' : 'Silver';
   const emoji   = isGold ? '🥇' : '🥈';
-  const above   = alert.direction === 'above';
+  const above   = (alert.direction||alert.dir) === 'above';
   const dirWord = above ? 'risen above' : 'fallen below';
   const dirArrow= above ? '↑' : '↓';
   const accent  = above ? '#2ECC8A' : '#E05C5C';
