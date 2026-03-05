@@ -1612,10 +1612,11 @@ function clearMsgs(){
   });
 }
 
-function showMsg(id,text,type){
+function showMsg(id,text,type,isHtml=false){
   const el=document.getElementById(id);
   if(!el)return;
-  el.textContent=text;
+  if(isHtml) el.innerHTML=text;
+  else el.textContent=text;
   el.className='msg-'+type;
 }
 
@@ -1702,7 +1703,7 @@ async function doLogin(){
   }catch(e){
     btn.disabled=false;btn.textContent='Open MyAurum →';
     if(e.message==='email_not_verified'){
-      showMsg('loginMsg','Please verify your email before signing in. <a href="#" onclick="resendVerifyFromLogin(event,\'' + email + '\')">Resend verification email →</a>','error');
+      showMsg('loginMsg','Please verify your email before signing in. <a href="#" onclick="resendVerifyFromLogin(event,\''+email+'\')" style="color:#B8860B">Resend verification email →</a>','error',true);
     } else {
       showMsg('loginMsg',e.message,'error');
     }
