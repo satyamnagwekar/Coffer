@@ -1646,7 +1646,7 @@ async function resendVerifyFromLogin(e, email){
   e.preventDefault();
   try{
     // Use forgot-password flow to get a user context, then resend verify
-    const r = await fetch(API+'/auth/resend-verification-by-email', {
+    const r = await fetch(API_BASE+'/api/auth/resend-verification-by-email', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({email})
