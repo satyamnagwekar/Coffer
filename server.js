@@ -715,8 +715,28 @@ app.post('/api/alerts', requireAuth, async (req, res) => {
 });
 
 app.patch('/api/alerts/:id/fired', requireAuth, async (req, res) => {
-  try { await q('UPDATE alerts SET fired=TRUE WHERE id=$1 AND user_id=$2', [req.params.id, req.user.userId]); res.json({ ok:true }); }
-  catch(e) { res.status(500).json({ error:'Server error' }); }
+  try {
+    const r = await q(
+      'UPDATE alerts SET fired=TRUE WHERE id=$1 AND user_id=$2 AND fired=FALSE RETURNING *',
+      [req.params.id, req.user.userId]
+    );
+    res.json({ ok:true });
+    // Send email in background if alert was newly fired
+    if (r.rowCount > 0) {
+      setImmediate(async () => {
+        try {
+          const alert = r.rows[0];
+          const userR = await q('SELECT email FROM users WHERE id=$1', [alert.user_id]);
+          const emailAddr = alert.notify_email || (userR.rows[0] && userR.rows[0].email);
+          if (!emailAddr) return;
+          const spot = alert.metal === 'gold' ? priceCache.gold : priceCache.silver;
+          const { subject, html, text } = buildAlertEmail(alert, spot);
+          await sendEmail({ to: emailAddr, subject, html, text });
+          console.log(`[alerts] Client-fired alert ${alert.id} -> email sent to ${emailAddr}`);
+        } catch(e) { console.error(`[alerts] Email failed for client-fired alert ${req.params.id}:`, e.message); }
+      });
+    }
+  } catch(e) { res.status(500).json({ error:'Server error' }); }
 });
 
 app.delete('/api/alerts/:id', requireAuth, async (req, res) => {
