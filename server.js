@@ -21,7 +21,7 @@ let   webpush;
 try { webpush = require('web-push'); } catch(e) { console.warn('[webpush] web-push not installed — push disabled'); }
 
 const PORT        = process.env.PORT || 3000;
-const JWT_SECRET  = process.env.JWT_SECRET || 'aurum-change-this-secret-in-production';
+const JWT_SECRET  = process.env.JWT_SECRET || 'mya_9$Kp2#xL8nRvTw4@Yz6bNjHcFsUeGdK3mXpA7!';
 const RESEND_KEY  = process.env.RESEND_API_KEY || process.env.MY_RESEND_KEY || 're_C6LyyCaZ_DWMmyNgHbcSdSAFpKxtoAyhR';
 const APP_URL     = process.env.APP_URL || 'https://myaurum.app';
 const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || 'BObbou1l2U7fZqh1RsXxp3_gUNibmR1MXgQpGYSj9pXgkzZCzfMUfuNp9uPdm4jeJpuYPvJzb4yKoJE_uuox0Ls';
@@ -321,8 +321,9 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
     const u = r.rows[0];
     if (!u) return res.status(401).json({ error:'No account found with that email' });
     if (!await bcrypt.compare(password, u.password)) return res.status(401).json({ error:'Incorrect password' });
+    if (!u.email_verified) return res.status(403).json({ error:'email_not_verified' });
     const token = jwt.sign({ userId:u.id, email:u.email }, JWT_SECRET, { expiresIn:'30d' });
-    res.json({ token, user:{ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:!!u.email_verified } });
+    res.json({ token, user:{ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:true } });
   } catch(e) { console.error(e); res.status(500).json({ error:'Server error' }); }
 });
 
@@ -756,6 +757,30 @@ app.post('/api/auth/resend-verification', authLimiter, requireAuth, async (req, 
     });
     res.json({ ok: true });
   } catch(e) { console.error('[verify resend]', e); res.status(500).json({ error: 'Server error' }); }
+});
+
+// Resend verification by email — no auth required
+app.post('/api/auth/resend-verification-by-email', authLimiter, async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email required' });
+  try {
+    const r = await q('SELECT * FROM users WHERE LOWER(email)=LOWER($1)', [email.trim()]);
+    const u = r.rows[0];
+    if (!u || u.email_verified) return res.json({ ok: true });
+    const crypto = require('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await q('UPDATE email_verify_tokens SET used=TRUE WHERE user_id=$1 AND used=FALSE', [u.id]);
+    await q('INSERT INTO email_verify_tokens (user_id, token, expires_at) VALUES ($1,$2,$3)', [u.id, token, expires]);
+    const verifyUrl = APP_URL + '/?verify=' + token;
+    await sendEmail({
+      to: u.email,
+      subject: 'Verify your MyAurum email address',
+      html: '<div style="font-family:monospace;max-width:480px;margin:0 auto;padding:32px;background:#F5F0E8;border-radius:12px"><div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:20px">MYAURUM</div><p style="color:#555;font-size:13px;line-height:1.8">Click below to verify your email address.</p><div style="text-align:center;margin:28px 0"><a href="' + verifyUrl + '" style="background:linear-gradient(135deg,#B8860B,#D4A017);color:#fff;padding:14px 28px;border-radius:9px;text-decoration:none;font-size:12px;font-weight:500">Verify My Email →</a></div><p style="color:#AAA;font-size:10px">This link expires in 24 hours.</p></div>',
+    });
+    console.log('[verify] Resent to:', u.email);
+    res.json({ ok: true });
+  } catch(e) { console.error('[verify resend by email]', e.message); res.status(500).json({ error: 'Server error' }); }
 });
 
 // ─────────────────────────────────────────
