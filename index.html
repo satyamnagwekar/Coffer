@@ -1641,6 +1641,23 @@ function checkStrength(pw){
   fill.style.width=l.w;fill.style.background=l.bg;lbl.textContent=l.t;
 }
 
+async function resendVerifyFromLogin(e, email){
+  e.preventDefault();
+  try{
+    // Use forgot-password flow to get a user context, then resend verify
+    const r = await fetch(API+'/auth/resend-verification-by-email', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email})
+    });
+    const data = await r.json();
+    if(!r.ok) throw new Error(data.error||'Failed');
+    showMsg('loginMsg','Verification email sent — check your inbox.','success');
+  }catch(e2){
+    showMsg('loginMsg','Could not resend: '+e2.message,'error');
+  }
+}
+
 async function doRegister(){
   const first=document.getElementById('regFirstName').value.trim();
   const last=document.getElementById('regLastName').value.trim();
@@ -1662,8 +1679,8 @@ async function doRegister(){
   try{
     const data=await api('POST','/auth/register',{email,password:pw,firstName:first,lastName:last,age,country});
     btn.disabled=false;btn.textContent='Create MyAurum →';
-    showMsg('registerMsg','Account created! Check your email to verify your address, then sign in.','success');
-    setTimeout(()=>switchAuthTab('login',document.querySelectorAll('.auth-tab')[0]),2000);
+    showMsg('registerMsg','Welcome! A verification email is on its way — check your inbox and click the link to activate your account.','success');
+    setTimeout(()=>switchAuthTab('login',document.querySelectorAll('.auth-tab')[0]),6000);
   }catch(e){
     showMsg('registerMsg',e.message,'error');
     btn.disabled=false;btn.textContent='Create MyAurum →';
@@ -1683,8 +1700,12 @@ async function doLogin(){
     setToken(data.token);
     loginUser(data.user);
   }catch(e){
-    showMsg('loginMsg',e.message,'error');
     btn.disabled=false;btn.textContent='Open MyAurum →';
+    if(e.message==='email_not_verified'){
+      showMsg('loginMsg','Please verify your email before signing in. <a href="#" onclick="resendVerifyFromLogin(event,\'' + email + '\')">Resend verification email →</a>','error');
+    } else {
+      showMsg('loginMsg',e.message,'error');
+    }
   }
 }
 
