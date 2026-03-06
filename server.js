@@ -22,6 +22,8 @@ try { webpush = require('web-push'); } catch(e) { console.warn('[webpush] web-pu
 
 const PORT        = process.env.PORT || 3000;
 const JWT_SECRET  = process.env.JWT_SECRET || 'mya_9$Kp2#xL8nRvTw4@Yz6bNjHcFsUeGdK3mXpA7!';
+const GOOGLE_CLIENT_ID     = process.env.GOOGLE_CLIENT_ID     || '826792551094-s9dg885quvbfd04ocaohnkp1ar8jvm5h.apps.googleusercontent.com';
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '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';
 const RESEND_KEY  = process.env.RESEND_API_KEY || process.env.MY_RESEND_KEY || 're_C6LyyCaZ_DWMmyNgHbcSdSAFpKxtoAyhR';
 const APP_URL     = process.env.APP_URL || 'https://myaurum.app';
 const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || 'BObbou1l2U7fZqh1RsXxp3_gUNibmR1MXgQpGYSj9pXgkzZCzfMUfuNp9uPdm4jeJpuYPvJzb4yKoJE_uuox0Ls';
@@ -814,6 +816,74 @@ app.post('/api/auth/resend-verification-by-email', authLimiter, async (req, res)
     console.log('[verify] Resent to:', u.email);
     res.json({ ok: true });
   } catch(e) { console.error('[verify resend by email]', e.message); res.status(500).json({ error: 'Server error' }); }
+});
+
+// ─────────────────────────────────────────
+//  GOOGLE OAUTH
+// ─────────────────────────────────────────
+
+// Verify Google ID token by calling Google's tokeninfo endpoint
+async function verifyGoogleToken(idToken) {
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: 'oauth2.googleapis.com',
+      path: '/tokeninfo?id_token=' + idToken,
+      method: 'GET',
+      timeout: 8000,
+    }, res => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const payload = JSON.parse(data);
+          if (payload.error) return reject(new Error(payload.error));
+          if (payload.aud !== GOOGLE_CLIENT_ID) return reject(new Error('Token audience mismatch'));
+          resolve(payload);
+        } catch(e) { reject(e); }
+      });
+    });
+    req.on('error', reject);
+    req.on('timeout', () => { req.destroy(); reject(new Error('Google token verification timed out')); });
+    req.end();
+  });
+}
+
+app.post('/api/auth/google', authLimiter, async (req, res) => {
+  const { credential } = req.body;
+  if (!credential) return res.status(400).json({ error: 'Missing Google credential' });
+  try {
+    const payload = await verifyGoogleToken(credential);
+    const { email, given_name, family_name, name, sub: googleId } = payload;
+    if (!email) return res.status(400).json({ error: 'No email in Google token' });
+
+    // Check if user exists
+    let r = await q('SELECT * FROM users WHERE LOWER(email)=LOWER($1)', [email.toLowerCase()]);
+    let u = r.rows[0];
+
+    if (!u) {
+      // Create new user — Google-verified so email is pre-verified
+      const firstName = given_name || name?.split(' ')[0] || 'User';
+      const lastName  = family_name || name?.split(' ').slice(1).join(' ') || '';
+      const fakeHash  = await bcrypt.hash(googleId + JWT_SECRET, 10); // unusable password
+      const ins = await q(
+        'INSERT INTO users (email, password, first_name, last_name, email_verified) VALUES ($1,$2,$3,$4,TRUE) RETURNING *',
+        [email.toLowerCase(), fakeHash, firstName, lastName]
+      );
+      u = ins.rows[0];
+      console.log('[google] New user created:', email);
+    } else if (!u.email_verified) {
+      // Mark existing unverified user as verified since Google confirmed the email
+      await q('UPDATE users SET email_verified=TRUE WHERE id=$1', [u.id]);
+      u.email_verified = true;
+      console.log('[google] Existing user verified via Google:', email);
+    }
+
+    const token = jwt.sign({ userId: u.id, email: u.email }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, user: { id: u.id, email: u.email, firstName: u.first_name, lastName: u.last_name, age: u.age, country: u.country, joinedAt: u.created_at, emailVerified: true } });
+  } catch(e) {
+    console.error('[google] Auth error:', e.message);
+    res.status(401).json({ error: 'Google sign-in failed: ' + e.message });
+  }
 });
 
 // ─────────────────────────────────────────
