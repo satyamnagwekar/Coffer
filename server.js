@@ -943,6 +943,12 @@ app.use((err, req, res, next) => {
 });
 
 // FRONTEND
+app.get('/terms', (req, res) => {
+  const termsPath = path.join(__dirname, 'terms.html');
+  if (fs.existsSync(termsPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(termsPath); }
+  else res.status(404).send('Terms not found');
+});
+
 app.get('*', (req, res) => {
   const indexPath = path.join(__dirname, 'index.html');
   if (fs.existsSync(indexPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(indexPath); }
