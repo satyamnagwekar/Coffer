@@ -781,7 +781,66 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         A private digital ledger for tracking the live market value of physical gold and silver — jewellery, hallmarked coins, investment bars, and raw metal. Prices update from global spot markets in real time.<br><br>
         Built for families who hold physical gold as a long-term store of wealth. Know exactly what your holdings are worth today, in your currency, with full gain and loss history. No fees, no ads, no data sharing — ever.
       </div>
-      <div class="free-badge"><span class="dot"></span>Free to use · No data sharing</div>
+
+      <!-- Mock portfolio preview card -->
+      <div style="background:#fff;border:1px solid #E8E0D0;border-radius:14px;padding:18px 20px;margin-bottom:22px;box-shadow:0 2px 16px rgba(44,36,16,.06)">
+        <div style="margin-bottom:12px">
+          <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#B8860B;font-family:'DM Mono',monospace;">A typical portfolio, at a glance</div>
+          <div style="font-size:10px;color:#BBB;font-family:'DM Mono',monospace;margin-top:3px;font-style:italic">Sample data for illustration only. Not representative of actual returns.</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px">
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;color:#1A1508;line-height:1">&#8377;14,82,340</div>
+            <div style="font-size:11px;color:#888;margin-top:3px;font-family:'DM Mono',monospace">Total portfolio value</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:13px;color:#4CAF50;font-family:'DM Mono',monospace;font-weight:500">+&#8377;2,14,880</div>
+            <div style="font-size:10px;color:#AAA;margin-top:2px">+16.9% gain</div>
+          </div>
+        </div>
+        <!-- Holdings rows -->
+        <div style="border-top:1px solid #F0EBE0;padding-top:12px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:8px;height:8px;border-radius:50%;background:#B8860B;flex-shrink:0"></div>
+              <span style="font-size:12px;color:#444">Gold jewellery — 85g (22k)</span>
+            </div>
+            <span style="font-size:12px;color:#333;font-family:'DM Mono',monospace">&#8377;7,94,200</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:8px;height:8px;border-radius:50%;background:#C8A84B;flex-shrink:0"></div>
+              <span style="font-size:12px;color:#444">Gold coins — 50g (24k)</span>
+            </div>
+            <span style="font-size:12px;color:#333;font-family:'DM Mono',monospace">&#8377;4,94,800</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:8px;height:8px;border-radius:50%;background:#AAA;flex-shrink:0"></div>
+              <span style="font-size:12px;color:#444">Silver articles — 1.2kg</span>
+            </div>
+            <span style="font-size:12px;color:#333;font-family:'DM Mono',monospace">&#8377;1,93,340</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature pills -->
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">
+        <div style="background:#F5F0E8;border:1px solid #DDD5C0;border-radius:20px;padding:6px 14px;font-size:11px;color:#666;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px">
+          <span style="color:#4CAF50">●</span> Live gold &amp; silver prices
+        </div>
+        <div style="background:#F5F0E8;border:1px solid #DDD5C0;border-radius:20px;padding:6px 14px;font-size:11px;color:#666;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px">
+          <span style="color:#B8860B">●</span> Price alerts by email
+        </div>
+        <div style="background:#F5F0E8;border:1px solid #DDD5C0;border-radius:20px;padding:6px 14px;font-size:11px;color:#666;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px">
+          <span style="color:#5B8DEF">●</span> Full gain &amp; loss history
+        </div>
+        <div style="background:#F5F0E8;border:1px solid #DDD5C0;border-radius:20px;padding:6px 14px;font-size:11px;color:#666;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px">
+          <span style="color:#888">●</span> No KYC. No broker. No ads.
+        </div>
+      </div>
+
+      <div class="free-badge"><span class="dot"></span>Free to use · No data sharing · Ever</div>
     </div><!-- /auth-hero -->
 
   </div><!-- /auth-top -->
