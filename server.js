@@ -943,6 +943,11 @@ app.use((err, req, res, next) => {
 });
 
 // FRONTEND
+app.get('/google3d8a4672088919f7.html', (req, res) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.send('google-site-verification: google3d8a4672088919f7.html');
+});
+
 app.get('/terms', (req, res) => {
   const termsPath = path.join(__dirname, 'terms.html');
   if (fs.existsSync(termsPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(termsPath); }
