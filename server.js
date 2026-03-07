@@ -948,6 +948,12 @@ app.get('/google3d8a4672088919f7.html', (req, res) => {
   res.send('google-site-verification: google3d8a4672088919f7.html');
 });
 
+app.get('/privacy', (req, res) => {
+  const p = path.join(__dirname, 'privacy.html');
+  if (fs.existsSync(p)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(p); }
+  else res.status(404).send('Not found');
+});
+
 app.get('/terms', (req, res) => {
   const termsPath = path.join(__dirname, 'terms.html');
   if (fs.existsSync(termsPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(termsPath); }
