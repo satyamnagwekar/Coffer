@@ -1201,9 +1201,13 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <div class="export-section">
         <div class="export-title">Export Your Data</div>
         <div class="export-desc">Download a complete record of your MyAurum holdings for your own records or tax purposes.</div>
-        <div class="export-btns">
-          <button class="btn-export gold-export" onclick="exportCSV()">⬇ CSV Spreadsheet</button>
-          <button class="btn-export silver-export" onclick="exportJSON()">⬇ JSON Backup</button>
+        <div class="export-btns" style="grid-template-columns:1fr 1fr 1fr">
+          <button class="btn-export gold-export" onclick="exportCSV()">⬇ CSV</button>
+          <button class="btn-export silver-export" onclick="exportJSON()">⬇ JSON</button>
+          <button class="btn-export" onclick="exportToGoogleSheets()" style="background:rgba(66,133,244,.08);border-color:rgba(66,133,244,.4);color:#4285F4;display:flex;align-items:center;justify-content:center;gap:5px">
+            <svg width="12" height="12" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.05 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.55-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            Sheets
+          </button>
         </div>
       </div>
       </div><!-- /chartContent -->
@@ -2638,6 +2642,72 @@ function exportJSON(){
   const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),items},null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download=`myaurum-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();
+}
+
+async function exportToGoogleSheets(){
+  if(!items.length){alert('No items to export.');return;}
+  try {
+    // Request Google OAuth token with Sheets scope
+    const tokenResponse = await new Promise((resolve, reject) => {
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: '826792551094-s9dg885quvbfd04ocaohnkp1ar8jvm5h.apps.googleusercontent.com',
+        scope: 'https://www.googleapis.com/auth/spreadsheets',
+        callback: (resp) => {
+          if (resp.error) return reject(new Error(resp.error));
+          resolve(resp);
+        },
+      });
+      client.requestAccessToken();
+    });
+
+    const accessToken = tokenResponse.access_token;
+    const date = new Date().toISOString().slice(0,10);
+    const title = `MyAurum Export ${date}`;
+
+    // Create a new spreadsheet
+    const createResp = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ properties: { title } })
+    });
+    const sheet = await createResp.json();
+    if (!sheet.spreadsheetId) throw new Error('Failed to create spreadsheet');
+    const ssId = sheet.spreadsheetId;
+
+    // Build rows
+    const headers = ['Name','Metal','Type','Purity','Weight (g)','Purchase Date','Price Paid','Currency','Price Paid USD','Notes','Sold','Sale Date','Sale Price','Sale Currency','Sale Price USD'];
+    const rows = items.map(it => [
+      it.name||'', it.metal||'', it.type||'', it.gradeName||'', it.grams?it.grams.toFixed(4):'',
+      it.purchaseDate||'', it.pricePaid||'', it.pricePaidCurrency||'', it.pricePaidUSD?it.pricePaidUSD.toFixed(2):'',
+      it.notes||'', it.sold?'Yes':'No', it.sellDate||'', it.sellPrice||'', it.sellCurrency||'', it.sellPriceUSD?it.sellPriceUSD.toFixed(2):''
+    ]);
+
+    // Write data
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${ssId}/values/Sheet1!A1?valueInputOption=RAW`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values: [headers, ...rows] })
+    });
+
+    // Bold header row
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${ssId}:batchUpdate`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requests: [{
+        repeatCell: {
+          range: { sheetId: 0, startRowIndex: 0, endRowIndex: 1 },
+          cell: { userEnteredFormat: { textFormat: { bold: true }, backgroundColor: { red: 0.98, green: 0.95, blue: 0.88 } } },
+          fields: 'userEnteredFormat(textFormat,backgroundColor)'
+        }
+      }]})
+    });
+
+    // Open the sheet
+    window.open(sheet.spreadsheetUrl, '_blank');
+  } catch(e) {
+    console.error('[sheets] Export error:', e);
+    alert('Google Sheets export failed: ' + e.message);
+  }
 }
 
 // ══════════════════════════════════════════
