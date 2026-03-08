@@ -859,9 +859,11 @@ app.post('/api/auth/google', authLimiter, async (req, res) => {
     // Check if user exists
     let r = await q('SELECT * FROM users WHERE LOWER(email)=LOWER($1)', [email.toLowerCase()]);
     let u = r.rows[0];
+    let isNewUser = false;
 
     if (!u) {
       // Create new user — Google-verified so email is pre-verified
+      isNewUser = true;
       const firstName = given_name || name?.split(' ')[0] || 'User';
       const lastName  = family_name || name?.split(' ').slice(1).join(' ') || '';
       const fakeHash  = await bcrypt.hash(googleId + JWT_SECRET, 10); // unusable password
@@ -879,7 +881,7 @@ app.post('/api/auth/google', authLimiter, async (req, res) => {
     }
 
     const token = jwt.sign({ userId: u.id, email: u.email }, JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id: u.id, email: u.email, firstName: u.first_name, lastName: u.last_name, age: u.age, country: u.country, joinedAt: u.created_at, emailVerified: true } });
+    res.json({ token, isNewUser, user: { id: u.id, email: u.email, firstName: u.first_name, lastName: u.last_name, age: u.age, country: u.country, joinedAt: u.created_at, emailVerified: true } });
   } catch(e) {
     console.error('[google] Auth error:', e.message);
     res.status(401).json({ error: 'Google sign-in failed: ' + e.message });
