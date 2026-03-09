@@ -101,6 +101,7 @@
     <span class="logo">MYAURUM <span>ADMIN</span></span>
   </div>
   <button class="refresh-btn" onclick="loadStats()">↻ Refresh</button>
+    <button class="refresh-btn" style="background:#888;margin-left:8px" onclick="logout()">Sign Out</button>
 </header>
 
 <main>
@@ -109,6 +110,11 @@
 </main>
 
 <script>
+function logout() {
+  // Replace current history entry with no ?p= param, then navigate away
+  window.location.replace('/');
+}
+
 async function loadStats() {
   const content = document.getElementById('content');
   const updatedAt = document.getElementById('updatedAt');
