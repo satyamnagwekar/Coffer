@@ -999,8 +999,12 @@ app.get('/debug-ip', (req, res) => {
 
 app.get(`/${ADMIN_SLUG}`, requireAdmin, (req, res) => {
   const adminPath = path.join(__dirname, 'admin.html');
-  if (fs.existsSync(adminPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(adminPath); }
-  else res.status(404).send('Not found');
+  if (fs.existsSync(adminPath)) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.sendFile(adminPath);
+  } else res.status(404).send('Not found');
 });
 
 app.get(`/api/${ADMIN_SLUG}/stats`, requireAdmin, async (req, res) => {
