@@ -991,6 +991,12 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+// TEMP: debug route — remove after testing
+app.get('/debug-ip', (req, res) => {
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+  res.send(`IP: ${ip} | ADMIN_IP: ${ADMIN_IP}`);
+});
+
 app.get(`/${ADMIN_SLUG}`, requireAdmin, (req, res) => {
   const adminPath = path.join(__dirname, 'admin.html');
   if (fs.existsSync(adminPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(adminPath); }
