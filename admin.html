@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <script>
+    // Gate: run before ANYTHING renders — no ?p= means instant redirect
+    var _p = new URLSearchParams(location.search).get('p');
+    if (!_p) { location.replace('/signed-out'); document.write(''); }
+  </script>
   <title>MyAurum · Admin</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
@@ -110,12 +115,6 @@
 </main>
 
 <script>
-// Immediately check for password — if missing, redirect to signed-out
-(function() {
-  const p = new URLSearchParams(window.location.search).get('p');
-  if (!p) { window.location.replace('/signed-out'); }
-})();
-
 function logout() {
   window.location.replace('/signed-out');
 }
@@ -125,7 +124,7 @@ async function loadStats() {
   const updatedAt = document.getElementById('updatedAt');
   try {
     // Get password from current URL query param
-    const p = new URLSearchParams(window.location.search).get('p') || '';
+    const p = _p || new URLSearchParams(window.location.search).get('p') || '';
     const res = await fetch(`/api/dash-4f8a2e91c3b7/stats?p=${encodeURIComponent(p)}`);
     if (!res.ok) throw new Error('Failed to load stats');
     const d = await res.json();
