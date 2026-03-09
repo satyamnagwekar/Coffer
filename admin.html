@@ -113,6 +113,16 @@
 </main>
 
 <script>
+// Disable bfcache restore — if page is loaded from bfcache without ?p=, redirect
+window.addEventListener('pageshow', function(e) {
+  var p = new URLSearchParams(location.search).get('p');
+  if (!p) { location.replace('/signed-out'); return; }
+  if (e.persisted) {
+    // Page restored from bfcache — force fresh load with password
+    location.replace(location.href);
+  }
+});
+
 function logout() {
   window.location.replace('/signed-out');
 }
