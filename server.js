@@ -1003,9 +1003,12 @@ app.get('/signed-out', (req, res) => {
 app.get(`/${ADMIN_SLUG}`, requireAdmin, (req, res) => {
   const adminPath = path.join(__dirname, 'admin.html');
   if (fs.existsSync(adminPath)) {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
+    res.setHeader('Expires', '-1');
+    res.setHeader('Surrogate-Control', 'no-store');
+    res.setHeader('CDN-Cache-Control', 'no-store');
+    res.setHeader('Cloudflare-CDN-Cache-Control', 'no-store');
     res.sendFile(adminPath);
   } else res.status(404).send('Not found');
 });
