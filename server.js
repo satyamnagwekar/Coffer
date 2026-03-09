@@ -141,6 +141,8 @@ async function initDB() {
   await q(`ALTER TABLE alerts ADD COLUMN IF NOT EXISTS price_currency TEXT DEFAULT 'USD'`);
   await q(`ALTER TABLE alerts ADD COLUMN IF NOT EXISTS notify_email   TEXT`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen TIMESTAMPTZ`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_method TEXT DEFAULT 'email'`);
 
   // Setup VAPID for web push if keys are configured
   if (webpush && VAPID_PUBLIC && VAPID_PRIVATE) {
@@ -336,6 +338,7 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
     if (!u) return res.status(401).json({ error:'No account found with that email' });
     if (!await bcrypt.compare(password, u.password)) return res.status(401).json({ error:'Incorrect password' });
     if (!u.email_verified) return res.status(403).json({ error:'email_not_verified' });
+    await q('UPDATE users SET last_seen=NOW(), auth_method=$2 WHERE id=$1', [u.id, 'email']);
     const token = jwt.sign({ userId:u.id, email:u.email }, JWT_SECRET, { expiresIn:'30d' });
     res.json({ token, user:{ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:true } });
   } catch(e) { console.error(e); res.status(500).json({ error:'Server error' }); }
@@ -346,6 +349,7 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
     const r = await q('SELECT * FROM users WHERE id=$1', [req.user.userId]);
     const u = r.rows[0];
     if (!u) return res.status(404).json({ error:'User not found' });
+    await q('UPDATE users SET last_seen=NOW() WHERE id=$1', [u.id]);
     res.json({ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:!!u.email_verified });
   } catch(e) { res.status(500).json({ error:'Server error' }); }
 });
@@ -881,6 +885,7 @@ app.post('/api/auth/google', authLimiter, async (req, res) => {
     }
 
     const token = jwt.sign({ userId: u.id, email: u.email }, JWT_SECRET, { expiresIn: '30d' });
+    await q('UPDATE users SET last_seen=NOW(), auth_method=$2 WHERE id=$1', [u.id, 'google']);
     res.json({ token, isNewUser, user: { id: u.id, email: u.email, firstName: u.first_name, lastName: u.last_name, age: u.age, country: u.country, joinedAt: u.created_at, emailVerified: true } });
   } catch(e) {
     console.error('[google] Auth error:', e.message);
@@ -960,6 +965,120 @@ app.get('/terms', (req, res) => {
   const termsPath = path.join(__dirname, 'terms.html');
   if (fs.existsSync(termsPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(termsPath); }
   else res.status(404).send('Terms not found');
+});
+
+app.get('/terms', (req, res) => {
+  const termsPath = path.join(__dirname, 'terms.html');
+  if (fs.existsSync(termsPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(termsPath); }
+  else res.status(404).send('Terms not found');
+});
+
+// ─────────────────────────────────────────
+//  ADMIN DASHBOARD
+// ─────────────────────────────────────────
+const ADMIN_PASS = process.env.ADMIN_PASS || 'myaurum_admin_2026';
+const ADMIN_IP   = process.env.ADMIN_IP   || '103.156.212.177';
+const ADMIN_SLUG = process.env.ADMIN_SLUG || 'dash-4f8a2e91c3b7';
+
+function requireAdmin(req, res, next) {
+  // Layer 1: IP whitelist — wrong IP gets a plain 404, looks like page doesn't exist
+  const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '';
+  if (ip !== ADMIN_IP) return res.status(404).send('Not found');
+
+  // Layer 2: HTTP Basic Auth
+  const auth = req.headers['authorization'] || '';
+  const pass = Buffer.from(auth.replace('Basic ', ''), 'base64').toString().split(':')[1];
+  if (pass === ADMIN_PASS) return next();
+  res.set('WWW-Authenticate', 'Basic realm="MyAurum"');
+  res.status(401).send('Unauthorized');
+}
+
+app.get(`/${ADMIN_SLUG}`, requireAdmin, (req, res) => {
+  const adminPath = path.join(__dirname, 'admin.html');
+  if (fs.existsSync(adminPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(adminPath); }
+  else res.status(404).send('Not found');
+});
+
+app.get(`/api/${ADMIN_SLUG}/stats`, requireAdmin, async (req, res) => {
+  try {
+    // Total users
+    const totalUsers = await q('SELECT COUNT(*) FROM users');
+
+    // Signups over time (last 30 days, by day)
+    const signupsByDay = await q(`
+      SELECT DATE(created_at) as day, COUNT(*) as count
+      FROM users
+      WHERE created_at > NOW() - INTERVAL '30 days'
+      GROUP BY DATE(created_at)
+      ORDER BY day ASC
+    `);
+
+    // Auth method breakdown
+    const authMethods = await q(`
+      SELECT COALESCE(auth_method,'email') as method, COUNT(*) as count
+      FROM users GROUP BY auth_method
+    `);
+
+    // Active users (seen in last 7 days)
+    const activeWeek = await q(`SELECT COUNT(*) FROM users WHERE last_seen > NOW() - INTERVAL '7 days'`);
+    const activeMonth = await q(`SELECT COUNT(*) FROM users WHERE last_seen > NOW() - INTERVAL '30 days'`);
+
+    // Drop-off: registered but never seen again (last_seen is null or = created_at within 1 min)
+    const dropoff = await q(`
+      SELECT COUNT(*) FROM users
+      WHERE last_seen IS NULL OR last_seen < created_at + INTERVAL '2 minutes'
+    `);
+
+    // Email verified vs not
+    const verified = await q(`
+      SELECT email_verified, COUNT(*) as count FROM users GROUP BY email_verified
+    `);
+
+    // Holdings breakdown (anonymised — no user IDs)
+    const holdingsByMetal = await q(`
+      SELECT metal, COUNT(*) as items, COUNT(DISTINCT user_id) as users,
+             ROUND(SUM(grams)::numeric, 1) as total_grams
+      FROM items WHERE sold=FALSE GROUP BY metal
+    `);
+
+    const holdingsByType = await q(`
+      SELECT type, COUNT(*) as items, COUNT(DISTINCT user_id) as users
+      FROM items WHERE sold=FALSE GROUP BY type
+    `);
+
+    // Avg items per active user
+    const avgItems = await q(`
+      SELECT ROUND(AVG(cnt)::numeric,1) as avg FROM (
+        SELECT user_id, COUNT(*) as cnt FROM items WHERE sold=FALSE GROUP BY user_id
+      ) sub
+    `);
+
+    // New signups this week vs last week
+    const thisWeek = await q(`SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '7 days'`);
+    const lastWeek = await q(`SELECT COUNT(*) FROM users WHERE created_at BETWEEN NOW() - INTERVAL '14 days' AND NOW() - INTERVAL '7 days'`);
+
+    // Users with alerts set
+    const withAlerts = await q(`SELECT COUNT(DISTINCT user_id) FROM alerts`);
+
+    res.json({
+      totalUsers: parseInt(totalUsers.rows[0].count),
+      signupsByDay: signupsByDay.rows,
+      authMethods: authMethods.rows,
+      activeWeek: parseInt(activeWeek.rows[0].count),
+      activeMonth: parseInt(activeMonth.rows[0].count),
+      dropoff: parseInt(dropoff.rows[0].count),
+      verified: verified.rows,
+      holdingsByMetal: holdingsByMetal.rows,
+      holdingsByType: holdingsByType.rows,
+      avgItemsPerUser: parseFloat(avgItems.rows[0].avg) || 0,
+      thisWeek: parseInt(thisWeek.rows[0].count),
+      lastWeek: parseInt(lastWeek.rows[0].count),
+      withAlerts: parseInt(withAlerts.rows[0].count),
+    });
+  } catch(e) {
+    console.error('[admin]', e.message);
+    res.status(500).json({ error: e.message });
+  }
 });
 
 app.get('*', (req, res) => {
