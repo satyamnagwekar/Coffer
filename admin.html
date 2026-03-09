@@ -113,7 +113,9 @@ async function loadStats() {
   const content = document.getElementById('content');
   const updatedAt = document.getElementById('updatedAt');
   try {
-    const res = await fetch('/api/dash-4f8a2e91c3b7/stats');
+    // Get password from current URL query param
+    const p = new URLSearchParams(window.location.search).get('p') || '';
+    const res = await fetch(`/api/dash-4f8a2e91c3b7/stats?p=${encodeURIComponent(p)}`);
     if (!res.ok) throw new Error('Failed to load stats');
     const d = await res.json();
     updatedAt.textContent = 'Last updated: ' + new Date().toLocaleString('en-IN', {timeZone:'Asia/Kolkata'}) + ' IST';
