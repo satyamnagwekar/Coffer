@@ -110,6 +110,12 @@
 </main>
 
 <script>
+// Immediately check for password — if missing, redirect to signed-out
+(function() {
+  const p = new URLSearchParams(window.location.search).get('p');
+  if (!p) { window.location.replace('/signed-out'); }
+})();
+
 function logout() {
   window.location.replace('/signed-out');
 }
