@@ -4,9 +4,15 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <script>
-    // Gate: run before ANYTHING renders — no ?p= means instant redirect
-    var _p = new URLSearchParams(location.search).get('p');
-    if (!_p) { location.replace('/signed-out'); document.write(''); }
+    // Hard gate — executes before body parses. No ?p= = instant wipe and redirect.
+    (function() {
+      var p = new URLSearchParams(location.search).get('p');
+      if (!p || p.length < 4) {
+        document.open(); document.write(''); document.close();
+        location.replace('/signed-out');
+      }
+      window._adminPass = p;
+    })();
   </script>
   <title>MyAurum · Admin</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -124,7 +130,7 @@ async function loadStats() {
   const updatedAt = document.getElementById('updatedAt');
   try {
     // Get password from current URL query param
-    const p = _p || new URLSearchParams(window.location.search).get('p') || '';
+    const p = window._adminPass || new URLSearchParams(window.location.search).get('p') || '';
     const res = await fetch(`/api/dash-4f8a2e91c3b7/stats?p=${encodeURIComponent(p)}`);
     if (!res.ok) throw new Error('Failed to load stats');
     const d = await res.json();
