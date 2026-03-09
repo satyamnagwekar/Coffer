@@ -981,14 +981,20 @@ const ADMIN_IP   = process.env.ADMIN_IP   || '103.156.212.177';
 const ADMIN_SLUG = process.env.ADMIN_SLUG || 'dash-4f8a2e91c3b7';
 
 function requireAdmin(req, res, next) {
-  // Layer 1: IP whitelist — wrong IP gets a plain 404, looks like page doesn't exist
+  // Layer 1: IP whitelist — wrong IP gets a plain 404
   const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '';
   if (ip !== ADMIN_IP) return res.status(404).send('Not found');
 
-  // Layer 2: HTTP Basic Auth
+  // Layer 2: password via query param ?p=... or Basic Auth
+  const queryPass = req.query.p;
+  if (queryPass && queryPass === ADMIN_PASS) return next();
+
   const auth = req.headers['authorization'] || '';
-  const pass = Buffer.from(auth.replace('Basic ', ''), 'base64').toString().split(':')[1];
-  if (pass === ADMIN_PASS) return next();
+  if (auth) {
+    const pass = Buffer.from(auth.replace('Basic ', ''), 'base64').toString().split(':')[1];
+    if (pass === ADMIN_PASS) return next();
+  }
+
   res.set('WWW-Authenticate', 'Basic realm="MyAurum"');
   res.status(401).send('Unauthorized');
 }
