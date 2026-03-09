@@ -991,6 +991,15 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+app.get('/signed-out', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Signed Out</title>
+  <style>body{font-family:Georgia,serif;background:#FAF7F2;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+  .box{text-align:center;color:#8B6914}.box h2{font-weight:300;letter-spacing:.15em;font-size:22px;margin-bottom:8px}
+  .box p{font-family:monospace;font-size:12px;color:#aaa;letter-spacing:.08em}</style></head>
+  <body><div class="box"><h2>MYAURUM</h2><p>You have been signed out.</p></div></body></html>`);
+});
+
 app.get(`/${ADMIN_SLUG}`, requireAdmin, (req, res) => {
   const adminPath = path.join(__dirname, 'admin.html');
   if (fs.existsSync(adminPath)) {
