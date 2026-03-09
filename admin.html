@@ -111,8 +111,7 @@
 
 <script>
 function logout() {
-  // Replace current history entry with no ?p= param, then navigate away
-  window.location.replace('/');
+  window.location.replace('/signed-out');
 }
 
 async function loadStats() {
