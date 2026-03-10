@@ -2099,6 +2099,7 @@ function renderList(){
   let f=[...items];
   if(activeHTab==='gold')f=f.filter(i=>i.metal==='gold'&&!i.sold);
   else if(activeHTab==='silver')f=f.filter(i=>i.metal==='silver'&&!i.sold);
+  else if(activeHTab==='platinum')f=f.filter(i=>i.metal==='platinum'&&!i.sold);
   else if(activeHTab==='sold')f=f.filter(i=>i.sold);
   else f=f.filter(i=>!i.sold);
   if(activeFilter!=='all')f=f.filter(i=>i.type===activeFilter);
@@ -2144,7 +2145,7 @@ function renderList(){
       if(activeHTab==='sold'){
         list.innerHTML=`<div class="empty-state"><div class="icon">🏷</div><div class="title">No sold items yet</div><div class="sub">When you record a sale, it will appear here with your realised gain or loss.</div></div>`;
       } else {
-        const metalName = activeHTab==='gold'?'gold':activeHTab==='silver'?'silver':'';
+        const metalName = activeHTab==='gold'?'gold':activeHTab==='silver'?'silver':activeHTab==='platinum'?'platinum':'';
         const sub = metalName ? `No active ${metalName} holdings. Tap + to add one.` : 'No holdings match this filter.';
         list.innerHTML=`<div class="empty-state"><div class="icon">✦</div><div class="title">Nothing here</div><div class="sub">${sub}</div></div>`;
       }
