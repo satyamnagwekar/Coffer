@@ -347,6 +347,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .metal-btn.selected.gold .m-name{color:var(--brand)}
 .metal-btn.selected.silver{border-color:var(--silver);background:rgba(200,216,232,.08)}
 .metal-btn.selected.silver .m-name{color:var(--silver-bright)}
+.metal-btn.selected.platinum{border-color:#9E9E9E;background:rgba(180,180,180,.1)}
+.metal-btn.selected.platinum .m-name{color:#757575}
 
 .type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .type-btn{padding:12px 6px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg3);color:var(--text-dim);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer;text-align:center;transition:all .2s}
@@ -1015,6 +1017,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="metal" id="silverSpotLabel">SILVER /oz</div>
         <div class="price" id="silverSpot"><span class="loading-dot"></span></div>
       </div>
+      <div class="spot-item" style="opacity:.8">
+        <div class="metal" id="platinumSpotLabel">PLAT /oz</div>
+        <div class="price" id="platinumSpot"><span class="loading-dot"></span></div>
+      </div>
       <div style="display:flex;align-items:flex-end;padding-bottom:1px">
         <span style="font-size:10px;color:var(--text-dim);letter-spacing:.04em;opacity:.7">est.</span>
       </div>
@@ -1088,6 +1094,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <button class="htab active" onclick="setHTab('all',this)">All Active</button>
       <button class="htab" onclick="setHTab('gold',this)">Gold</button>
       <button class="htab" onclick="setHTab('silver',this)">Silver</button>
+      <button class="htab" onclick="setHTab('platinum',this)">Platinum</button>
       <button class="htab" onclick="setHTab('sold',this)">Sold</button>
     </div>
 
@@ -1377,12 +1384,15 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
       <div class="field">
         <div class="field-label-row"><label>Metal</label></div>
-        <div class="metal-grid">
+        <div class="metal-grid" style="grid-template-columns:1fr 1fr 1fr">
           <button class="metal-btn gold selected" id="metalGold" onclick="selectMetal('gold')">
             <span class="m-icon">🥇</span><span class="m-name">Gold</span><span class="m-code">XAU</span>
           </button>
           <button class="metal-btn silver" id="metalSilver" onclick="selectMetal('silver')">
             <span class="m-icon">🥈</span><span class="m-name">Silver</span><span class="m-code">XAG</span>
+          </button>
+          <button class="metal-btn platinum" id="metalPlatinum" onclick="selectMetal('platinum')">
+            <span class="m-icon">⬜</span><span class="m-name">Platinum</span><span class="m-code">XPT</span>
           </button>
         </div>
       </div>
@@ -1636,7 +1646,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 // ══════════════════════════════════════════
 // CONSTANTS & GLOBALS
 // ══════════════════════════════════════════
-let prices={gold:3320,silver:33.2};
+let prices={gold:3320,silver:33.2,platinum:980};
 let rates={USD:1,INR:83.5,AED:3.67,EUR:0.92};
 let currency='INR';
 let items=[];
@@ -1656,6 +1666,10 @@ const SILVER_GRADES=[
   {label:'925',purity:.925,name:'Sterling 925'},{label:'900',purity:.900,name:'Coin Silver 900'},
   {label:'800',purity:.800,name:'European 800'},{label:'Raw',purity:.750,name:'Raw ~75%'},
 ];
+const PLATINUM_GRADES=[
+  {label:'999',purity:.999,name:'Pure Platinum 999'},{label:'950',purity:.950,name:'Pt950'},
+  {label:'900',purity:.900,name:'Pt900'},{label:'850',purity:.850,name:'Pt850'},
+];
 const GRADE_NOTES={
   '24K':'Pure gold (99.9%). Bullion bars and investment coins.',
   '22K':'91.6% gold — most common for Indian jewellery (stamp: 916).',
@@ -1663,12 +1677,14 @@ const GRADE_NOTES={
   '18K':'75% gold — common in European fine jewellery.',
   '14K':'58.5% gold — widely used in US and European pieces.',
   '9K':'37.5% gold — common in UK hallmarked jewellery.',
-  '999':'99.9% pure silver. Investment bars and coins.',
+  '999':'99.9% purity — investment grade.',
   '958':'Britannia silver (95.8%) — UK standard.',
   '925':'Sterling silver (92.5%) — the most common grade worldwide.',
   '900':'Coin silver (90%) — old US and European coins.',
   '800':'80% silver — common in older continental silverware.',
   'Raw':'Estimated at 75% purity for unrefined or raw silver.',
+  '950':'Pt950 — most common platinum jewellery grade.',
+  '850':'Pt850 — lower grade platinum alloy.',
 };
 
 // ══════════════════════════════════════════
@@ -2024,6 +2040,7 @@ async function fetchPrices(){
     const data=await api('GET','/prices');
     prices.gold=data.gold;
     prices.silver=data.silver;
+    if(data.platinum) prices.platinum=data.platinum;
     if(data.rates){
       rates.INR=data.rates.INR||rates.INR;
       rates.AED=data.rates.AED||rates.AED;
@@ -2050,7 +2067,7 @@ async function fetchPrices(){
 function toGrams(w,u){if(u==='oz')return w*31.1035;if(u==='tola')return w*11.6638;return w}
 function toOz(g){return g/31.1035}
 function toUSD(a,c){return a/rates[c]}
-function metalValueUSD(metal,grams,purity){return toOz(grams*purity)*(metal==='gold'?prices.gold:prices.silver)}
+function metalValueUSD(metal,grams,purity){return toOz(grams*purity)*(metal==='gold'?prices.gold:metal==='platinum'?prices.platinum:prices.silver)}
 function fmtFull(usd,curr){curr=curr||currency;const v=usd*rates[curr];return SYMBOLS[curr]+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
 function fmtCurr(a,c){return (SYMBOLS[c]||c+' ')+parseFloat(a).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
@@ -2175,6 +2192,7 @@ function openAddModal(){
   document.getElementById('purchaseDate').value=new Date().toISOString().slice(0,10);
   document.getElementById('metalGold').className='metal-btn gold selected';
   document.getElementById('metalSilver').className='metal-btn silver';
+  document.getElementById('metalPlatinum').className='metal-btn platinum';
   document.getElementById('receiptUploadArea').style.display='';
   document.getElementById('receiptPreviewArea').style.display='none';
   document.getElementById('receiptFile').value='';
@@ -2188,9 +2206,10 @@ function openAddModalWith(metal, type){
   openAddModal();
   selectedMetal = metal;
   selectedType  = type;
-  if(metal==='gold'){ document.getElementById('metalGold').className='metal-btn gold selected'; document.getElementById('metalSilver').className='metal-btn silver'; }
-  else { document.getElementById('metalSilver').className='metal-btn silver selected'; document.getElementById('metalGold').className='metal-btn gold'; }
-  selectedGrade = metal==='gold' ? GOLD_GRADES[1] : SILVER_GRADES[0];
+  if(metal==='gold'){ document.getElementById('metalGold').className='metal-btn gold selected'; document.getElementById('metalSilver').className='metal-btn silver'; document.getElementById('metalPlatinum').className='metal-btn platinum'; }
+  else if(metal==='platinum'){ document.getElementById('metalPlatinum').className='metal-btn platinum selected'; document.getElementById('metalGold').className='metal-btn gold'; document.getElementById('metalSilver').className='metal-btn silver'; }
+  else { document.getElementById('metalSilver').className='metal-btn silver selected'; document.getElementById('metalGold').className='metal-btn gold'; document.getElementById('metalPlatinum').className='metal-btn platinum'; }
+  selectedGrade = metal==='gold' ? GOLD_GRADES[1] : metal==='platinum' ? PLATINUM_GRADES[1] : SILVER_GRADES[0];
   renderGradeGrid(); renderTypeGrid();
 }
 
@@ -2200,9 +2219,9 @@ function updateOnboardingGreeting(firstName){
 }
 
 function renderGradeGrid(){
-  const grades=selectedMetal==='gold'?GOLD_GRADES:SILVER_GRADES;
-  const cls=selectedMetal==='gold'?'gold-grade':'silver-grade';
-  if(!selectedGrade||!grades.find(g=>g.label===selectedGrade.label))selectedGrade=grades[selectedMetal==='gold'?1:2];
+  const grades=selectedMetal==='gold'?GOLD_GRADES:selectedMetal==='platinum'?PLATINUM_GRADES:SILVER_GRADES;
+  const cls=selectedMetal==='gold'?'gold-grade':selectedMetal==='platinum'?'platinum-grade':'silver-grade';
+  if(!selectedGrade||!grades.find(g=>g.label===selectedGrade.label))selectedGrade=grades[selectedMetal==='gold'?1:0];
   document.getElementById('gradeGrid').innerHTML=grades.map(g=>`
     <button class="grade-btn ${selectedGrade&&selectedGrade.label===g.label?'selected '+cls:''}" onclick="selectGrade('${g.label}')">
       <span class="purity">${g.label}</span><span class="label">${(g.purity*100).toFixed(1)}%</span>
@@ -2218,10 +2237,14 @@ function selectMetal(m){
   selectedMetal=m;selectedGrade=null;
   document.getElementById('metalGold').className='metal-btn gold'+(m==='gold'?' selected':'');
   document.getElementById('metalSilver').className='metal-btn silver'+(m==='silver'?' selected':'');
+  document.getElementById('metalPlatinum').className='metal-btn platinum'+(m==='platinum'?' selected':'');
   renderGradeGrid();updatePreview();
 }
 function selectType(t){selectedType=t;renderTypeGrid()}
-function selectGrade(l){selectedGrade=(selectedMetal==='gold'?GOLD_GRADES:SILVER_GRADES).find(g=>g.label===l);renderGradeGrid();updatePreview()}
+function selectGrade(l){
+  const grades=selectedMetal==='gold'?GOLD_GRADES:selectedMetal==='platinum'?PLATINUM_GRADES:SILVER_GRADES;
+  selectedGrade=grades.find(g=>g.label===l);renderGradeGrid();updatePreview();
+}
 
 function updatePreview(){
   const w=parseFloat(document.getElementById('itemWeight').value)||0;
@@ -2423,7 +2446,7 @@ function openDetail(idx){
   ];
   if(item.notes)acqRows.push(['Notes',escHtml(item.notes)]);
   const valRows=[
-    ['Spot Price',item.metal==='gold'?'$'+prices.gold.toFixed(2)+'/oz':'$'+prices.silver.toFixed(2)+'/oz'],
+    ['Spot Price',item.metal==='gold'?'$'+prices.gold.toFixed(2)+'/oz':item.metal==='platinum'?'$'+prices.platinum.toFixed(2)+'/oz':'$'+prices.silver.toFixed(2)+'/oz'],
     ['Current Value',fmtFull(sU)],
   ];
   if(item.pricePaidUSD){const g=sU-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';valRows.push(['Unrealised G/L',`<span class="${g>=0?'pos':'neg'}">${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</span>`])}
@@ -2548,7 +2571,7 @@ function renderPerfGrid(){
   if(!active.length){grid.innerHTML='<div style="text-align:center;padding:24px;font-size:11px;color:var(--text-dim)">No active holdings to display</div>';return}
   grid.innerHTML=active.map(item=>{
     const sU=metalValueUSD(item.metal,item.grams,item.purity);
-    const spotPriceDisplay=item.metal==='gold'?'$'+prices.gold.toFixed(2)+'/oz':'$'+prices.silver.toFixed(2)+'/oz';
+    const spotPriceDisplay=item.metal==='gold'?'$'+prices.gold.toFixed(2)+'/oz':item.metal==='platinum'?'$'+prices.platinum.toFixed(2)+'/oz':'$'+prices.silver.toFixed(2)+'/oz';
     let glHTML='<div class="perf-val">—</div>';
     if(item.pricePaidUSD){const g=sU-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';glHTML=`<div class="perf-val ${g>=0?'pos':'neg'}">${s}${fmtFull(g)}<br><span style="font-size:11px">${s}${p.toFixed(1)}%</span></div>`}
     return `<div class="perf-card" onclick="openDetail(${items.indexOf(item)})">
@@ -2918,16 +2941,22 @@ function _coreUpdatePriceDisplay(){
   if(isINR){
     document.getElementById('goldSpotLabel').textContent   = 'GOLD /10g (MCX)';
     document.getElementById('silverSpotLabel').textContent = 'SILVER /10g (MCX)';
+    document.getElementById('platinumSpotLabel').textContent = 'PLAT /10g';
     document.getElementById('goldSpot').textContent   = '₹' + Math.round(goldINR10g).toLocaleString('en-IN');
     document.getElementById('silverSpot').textContent = '₹' + Math.round(silverINR10g).toLocaleString('en-IN');
+    const platINR10g = prices.platinum * rates.INR * (10/31.1035);
+    document.getElementById('platinumSpot').textContent = '₹' + Math.round(platINR10g).toLocaleString('en-IN');
   } else {
     const sym = SYMBOLS[currency] || '$';
     const goldDisp   = prices.gold   * (rates[currency]||1);
     const silverDisp = prices.silver * (rates[currency]||1);
+    const platDisp   = prices.platinum * (rates[currency]||1);
     document.getElementById('goldSpotLabel').textContent   = 'GOLD /oz';
     document.getElementById('silverSpotLabel').textContent = 'SILVER /oz';
+    document.getElementById('platinumSpotLabel').textContent = 'PLAT /oz';
     document.getElementById('goldSpot').textContent   = sym + goldDisp.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
     document.getElementById('silverSpot').textContent = sym + silverDisp.toFixed(2);
+    document.getElementById('platinumSpot').textContent = sym + platDisp.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
   }
 
   // Home spot cards
