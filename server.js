@@ -153,7 +153,7 @@ async function initDB() {
   console.log('[db] Tables ready');
 }
 
-let priceCache = { gold: 3320, silver: 33.2, usd_inr: 83.5, usd_aed: 3.67, usd_eur: 0.92, usd_gbp: 0.79 };
+let priceCache = { gold: 3320, silver: 33.2, platinum: 980, usd_inr: 83.5, usd_aed: 3.67, usd_eur: 0.92, usd_gbp: 0.79 };
 
 function fetchJSON(url) {
   return new Promise((resolve, reject) => {
@@ -169,17 +169,19 @@ function fetchJSON(url) {
 
 async function refreshPrices() {
   console.log('[prices] Fetching…');
-  let { gold, silver, usd_inr, usd_aed, usd_eur, usd_gbp } = priceCache;
+  let { gold, silver, platinum, usd_inr, usd_aed, usd_eur, usd_gbp } = priceCache;
   let pricesFetched = false;
 
   // Primary: gold-api.com — free, no key, no rate limit
   try {
-    const [gData, sData] = await Promise.all([
+    const [gData, sData, pData] = await Promise.all([
       fetchJSON('https://api.gold-api.com/price/XAU'),
       fetchJSON('https://api.gold-api.com/price/XAG'),
+      fetchJSON('https://api.gold-api.com/price/XPT'),
     ]);
     if (gData?.price > 1000) { gold = gData.price; pricesFetched = true; console.log(`[prices] gold-api.com Gold: $${gold}`); }
     if (sData?.price > 0) { silver = sData.price; console.log(`[prices] gold-api.com Silver: $${silver}`); }
+    if (pData?.price > 0) { platinum = pData.price; console.log(`[prices] gold-api.com Platinum: $${platinum}`); }
   } catch(e) { console.warn('[prices] gold-api.com failed:', e.message); }
 
   if (!pricesFetched) {
@@ -224,7 +226,7 @@ async function refreshPrices() {
     } catch(e2) { console.warn('[prices] FX failed:', e2.message); }
   }
 
-  priceCache = { gold, silver, usd_inr, usd_aed, usd_eur, usd_gbp };
+  priceCache = { gold, silver, platinum, usd_inr, usd_aed, usd_eur, usd_gbp };
   await q(`UPDATE price_cache SET gold=$1,silver=$2,usd_inr=$3,usd_aed=$4,usd_eur=$5,usd_gbp=$6,fetched_at=NOW() WHERE id=1`,
     [gold, silver, usd_inr, usd_aed, usd_eur, usd_gbp]);
 
@@ -529,7 +531,7 @@ async function checkAndFireAlerts() {
   if (!alerts.length) return;
 
   for (const alert of alerts) {
-    const spot = alert.metal === 'gold' ? priceCache.gold : priceCache.silver;
+    const spot = alert.metal === 'gold' ? priceCache.gold : alert.metal === 'platinum' ? priceCache.platinum : priceCache.silver;
     const hit  = (alert.direction||alert.dir) === 'above' ? spot >= alert.price : spot <= alert.price;
     if (!hit) continue;
 
@@ -638,7 +640,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
 app.get('/api/prices', async (req, res) => {
   try {
     const r = await q('SELECT fetched_at FROM price_cache WHERE id=1');
-    res.json({ gold:priceCache.gold, silver:priceCache.silver,
+    res.json({ gold:priceCache.gold, silver:priceCache.silver, platinum:priceCache.platinum,
       rates:{ USD:1, INR:priceCache.usd_inr, AED:priceCache.usd_aed, EUR:priceCache.usd_eur, GBP:priceCache.usd_gbp },
       fetchedAt:r.rows[0]?.fetched_at });
   } catch(e) { res.status(500).json({ error:'Server error' }); }
@@ -735,7 +737,7 @@ app.patch('/api/alerts/:id/fired', requireAuth, async (req, res) => {
           const userR = await q('SELECT email FROM users WHERE id=$1', [alert.user_id]);
           const emailAddr = alert.notify_email || (userR.rows[0] && userR.rows[0].email);
           if (!emailAddr) return;
-          const spot = alert.metal === 'gold' ? priceCache.gold : priceCache.silver;
+          const spot = alert.metal === 'gold' ? priceCache.gold : alert.metal === 'platinum' ? priceCache.platinum : priceCache.silver;
           const { subject, html, text } = buildAlertEmail(alert, spot);
           await sendEmail({ to: emailAddr, subject, html, text });
           console.log(`[alerts] Client-fired alert ${alert.id} -> email sent to ${emailAddr}`);
@@ -979,17 +981,85 @@ app.get('/terms', (req, res) => {
 const ADMIN_PASS = process.env.ADMIN_PASS || 'myaurum_admin_2026';
 const ADMIN_IP   = process.env.ADMIN_IP   || '103.156.212.177';
 const ADMIN_SLUG = process.env.ADMIN_SLUG || 'dash-4f8a2e91c3b7';
+const ADMIN_COOKIE = 'mya_adm';
+const crypto = require('crypto');
+
+function adminToken() {
+  return crypto.createHmac('sha256', JWT_SECRET).update(ADMIN_PASS).digest('hex');
+}
+
+function getAdminCookie(req) {
+  const raw = req.headers.cookie || '';
+  const match = raw.split(';').map(s => s.trim()).find(s => s.startsWith(ADMIN_COOKIE + '='));
+  return match ? match.slice(ADMIN_COOKIE.length + 1) : null;
+}
 
 function requireAdmin(req, res, next) {
   // Layer 1: IP whitelist
   const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '';
   if (ip !== ADMIN_IP) return res.status(404).send('Not found');
-
-  // Layer 2: password query param — wrong or missing = 404 (no hint it's protected)
-  if (req.query.p !== ADMIN_PASS) return res.status(404).send('Not found');
-
-  next();
+  // Layer 2: signed cookie
+  const cookie = getAdminCookie(req);
+  if (cookie && cookie === adminToken()) return next();
+  // Not authenticated — show login form
+  res.setHeader('Cache-Control', 'no-store');
+  res.type('html').send(`<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MyAurum · Admin</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Georgia,serif;background:#FAF7F2;display:flex;align-items:center;justify-content:center;height:100vh}
+  .box{background:#fff;border:1px solid rgba(139,105,20,.2);border-radius:14px;padding:48px 40px;width:340px;text-align:center}
+  h2{font-weight:300;letter-spacing:.18em;color:#8B6914;font-size:22px;margin-bottom:6px}
+  p{font-family:monospace;font-size:11px;color:#aaa;letter-spacing:.08em;margin-bottom:32px}
+  input{width:100%;padding:13px 16px;border:1px solid rgba(139,105,20,.25);border-radius:8px;font-size:14px;background:#FAF7F2;color:#2C2410;outline:none;font-family:monospace;letter-spacing:.05em}
+  input:focus{border-color:#B8860B}
+  button{width:100%;margin-top:14px;padding:13px;background:#8B6914;color:#FDF8F0;border:none;border-radius:8px;font-family:monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+  button:hover{opacity:.88}
+  .err{color:#c0392b;font-size:12px;font-family:monospace;margin-top:12px;display:none}
+</style></head>
+<body><div class="box">
+  <h2>MYAURUM</h2>
+  <p>ADMIN ACCESS</p>
+  <input type="password" id="pw" placeholder="Password" onkeydown="if(event.key==='Enter')login()"/>
+  <button onclick="login()">Sign In →</button>
+  <div class="err" id="err">Incorrect password</div>
+</div>
+<script>
+async function login() {
+  const pw = document.getElementById('pw').value;
+  const res = await fetch('/${ADMIN_SLUG}/login', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({p: pw})
+  });
+  if (res.ok) { window.location.reload(); }
+  else { document.getElementById('err').style.display='block'; }
 }
+</script></body></html>`);
+}
+
+// Admin login POST
+app.post(`/${ADMIN_SLUG}/login`, (req, res) => {
+  const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '';
+  if (ip !== ADMIN_IP) return res.status(404).send('Not found');
+  const { p } = req.body;
+  if (p !== ADMIN_PASS) return res.status(401).json({ error: 'Incorrect password' });
+  const token = adminToken();
+  res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/${ADMIN_SLUG}; Max-Age=28800`);
+  res.json({ ok: true });
+});
+
+// Admin logout
+app.get(`/${ADMIN_SLUG}/logout`, (req, res) => {
+  res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=; HttpOnly; Secure; SameSite=Strict; Path=/${ADMIN_SLUG}; Max-Age=0`);
+  res.setHeader('Cache-Control', 'no-store');
+  res.type('html').send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Signed Out</title>
+  <style>body{font-family:Georgia,serif;background:#FAF7F2;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+  .box{text-align:center;color:#8B6914}.box h2{font-weight:300;letter-spacing:.15em;font-size:22px;margin-bottom:8px}
+  .box p{font-family:monospace;font-size:12px;color:#aaa;letter-spacing:.08em}</style></head>
+  <body><div class="box"><h2>MYAURUM</h2><p>You have been signed out.</p></div></body></html>`);
+});
 
 app.get('/signed-out', (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
@@ -1003,16 +1073,13 @@ app.get('/signed-out', (req, res) => {
 app.get(`/${ADMIN_SLUG}`, requireAdmin, (req, res) => {
   const adminPath = path.join(__dirname, 'admin.html');
   if (fs.existsSync(adminPath)) {
-    let html = fs.readFileSync(adminPath, 'utf8');
-    // Strip any client-side gate scripts (server handles auth)
-    html = html.replace(/<script>\s*\/\/ Hard gate[\s\S]*?<\/script>/, '');
+    const html = fs.readFileSync(adminPath, 'utf8');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '-1');
     res.setHeader('Surrogate-Control', 'no-store');
     res.setHeader('CDN-Cache-Control', 'no-store');
     res.setHeader('Cloudflare-CDN-Cache-Control', 'no-store');
-    res.setHeader('Vary', '*');
     res.type('html').send(html);
   } else res.status(404).send('Not found');
 });
