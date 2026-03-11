@@ -997,32 +997,44 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .ptr-spinning{animation:ptr-spin .65s linear infinite}
 </style>
 
-  <div class="header">
-    <div class="header-left">
-      <div class="logo">
-  <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:.22em;color:#8B6914">MYAURUM</span>
-</div>
-      <div class="user-pill" onclick="setNavTab('profile',document.getElementById('navProfile'))">
-        <div class="user-avatar" id="headerAvatar">?</div>
-        <div class="user-name" id="headerName">—</div>
+  <div class="header" style="flex-direction:column;align-items:stretch;gap:0;padding:10px 16px 10px">
+    <!-- Row 1: logo + user pill + spot strip -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="logo">
+          <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:.22em;color:#8B6914">MYAURUM</span>
+        </div>
+        <div class="user-pill" id="headerUserPill" onclick="setNavTab('profile',document.getElementById('navProfile'))">
+          <div class="user-avatar" id="headerAvatar">?</div>
+          <div class="user-name" id="headerName">—</div>
+        </div>
+      </div>
+      <div class="spot-strip">
+        <div class="spot-item gold">
+          <div class="metal" id="goldSpotLabel">GOLD /oz</div>
+          <div class="price" id="goldSpot"><span class="loading-dot"></span></div>
+        </div>
+        <div class="spot-item silver">
+          <div class="metal" id="silverSpotLabel">SILVER /oz</div>
+          <div class="price" id="silverSpot"><span class="loading-dot"></span></div>
+        </div>
+        <div class="spot-item" style="opacity:.8">
+          <div class="metal" id="platinumSpotLabel">PLAT /oz</div>
+          <div class="price" id="platinumSpot"><span class="loading-dot"></span></div>
+        </div>
+        <div style="display:flex;align-items:flex-end;padding-bottom:1px">
+          <span style="font-size:10px;color:var(--text-dim);letter-spacing:.04em;opacity:.7">est.</span>
+        </div>
       </div>
     </div>
-    <div class="spot-strip">
-      <div class="spot-item gold">
-        <div class="metal" id="goldSpotLabel">GOLD /oz</div>
-        <div class="price" id="goldSpot"><span class="loading-dot"></span></div>
+    <!-- Row 2: dynamic welcome strip -->
+    <div id="headerStrip" style="display:none;align-items:center;justify-content:space-between;border-top:1px solid rgba(139,105,20,.12);padding-top:9px;gap:10px">
+      <div id="headerStripText" style="min-width:0">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:var(--text);line-height:1.2" id="headerWelcomeName">Welcome, —</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:1px" id="headerStripSub">Your vault is empty. Start by adding a holding — anything physical: jewellery, coins, bars, or raw metal.</div>
       </div>
-      <div class="spot-item silver">
-        <div class="metal" id="silverSpotLabel">SILVER /oz</div>
-        <div class="price" id="silverSpot"><span class="loading-dot"></span></div>
-      </div>
-      <div class="spot-item" style="opacity:.8">
-        <div class="metal" id="platinumSpotLabel">PLAT /oz</div>
-        <div class="price" id="platinumSpot"><span class="loading-dot"></span></div>
-      </div>
-      <div style="display:flex;align-items:flex-end;padding-bottom:1px">
-        <span style="font-size:10px;color:var(--text-dim);letter-spacing:.04em;opacity:.7">est.</span>
-      </div>
+      <button id="headerStripBtn" onclick="openAddModal()" style="padding:8px 20px;background:var(--brand);color:#FDF8F0;border:none;border-radius:7px;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;letter-spacing:.06em;cursor:pointer;white-space:nowrap;flex-shrink:0">+ Add First Holding</button>
+    </div>
     </div>
     <div id="inrDutyNote" style="display:none;font-size:11px;color:var(--text-dim);text-align:right;padding:2px 16px 4px;letter-spacing:.04em;opacity:0.7">incl. 15% import duty + 3% GST</div>
   </div>
@@ -1111,38 +1123,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
     <div class="inventory-list pb" id="inventoryList">
       <div class="empty-state" id="emptyOnboarding">
-        <div style="font-size:48px;margin-bottom:8px">🏛</div>
-        <div class="title" id="onboardingGreeting">Welcome to your Aurum</div>
-        <div class="sub" style="margin-bottom:24px">Your vault is empty. Start by adding a holding — anything physical: jewellery, coins, bars, or raw metal.</div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:320px;margin:0 auto 24px;text-align:left">
-          <div onclick="openAddModalWith('gold','jewellery')" style="padding:14px;background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:12px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(240,180,41,.14)'" onmouseout="this.style.background='rgba(240,180,41,.08)'">
-            <div style="font-size:22px;margin-bottom:6px">💍</div>
-            <div style="font-size:11px;color:var(--gold-light);font-weight:500;margin-bottom:3px">Jewellery</div>
-            <div style="font-size:11px;color:var(--text-dim);line-height:1.5">Necklaces, bangles, rings — any karat</div>
-          </div>
-          <div onclick="openAddModalWith('gold','coin_bar')" style="padding:14px;background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:12px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(240,180,41,.14)'" onmouseout="this.style.background='rgba(240,180,41,.08)'">
-            <div style="font-size:22px;margin-bottom:6px">🪙</div>
-            <div style="font-size:11px;color:var(--gold-light);font-weight:500;margin-bottom:3px">Coins &amp; Bars</div>
-            <div style="font-size:11px;color:var(--text-dim);line-height:1.5">Hallmarked coins, investment bars</div>
-          </div>
-          <div onclick="openAddModalWith('silver','jewellery')" style="padding:14px;background:rgba(200,216,232,.08);border:1px solid rgba(200,216,232,.15);border-radius:12px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(200,216,232,.14)'" onmouseout="this.style.background='rgba(200,216,232,.08)'">
-            <div style="font-size:22px;margin-bottom:6px">🥈</div>
-            <div style="font-size:11px;color:var(--silver-bright);font-weight:500;margin-bottom:3px">Silver Jewellery</div>
-            <div style="font-size:11px;color:var(--text-dim);line-height:1.5">Silver ornaments and accessories</div>
-          </div>
-          <div onclick="openAddModalWith('gold','raw')" style="padding:14px;background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:12px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(240,180,41,.14)'" onmouseout="this.style.background='rgba(240,180,41,.08)'">
-            <div style="font-size:22px;margin-bottom:6px">✨</div>
-            <div style="font-size:11px;color:var(--gold-light);font-weight:500;margin-bottom:3px">Raw Metal</div>
-            <div style="font-size:11px;color:var(--text-dim);line-height:1.5">Scrap gold, unrefined metal</div>
-          </div>
-        </div>
-
         <div class="empty-cta" onclick="openAddModal()">+ Add First Holding</div>
-
-        <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border);font-size:11px;color:var(--text-dim);line-height:1.9;letter-spacing:.04em">
-          Prices update every 5 minutes from global spot markets<br>
-          INR prices include 15% import duty + 3% GST
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--text-dim);line-height:1.9;letter-spacing:.04em">
+          Prices update every 5 minutes · INR includes 15% import duty + 3% GST
         </div>
       </div>
     </div>
@@ -1928,7 +1911,27 @@ function refreshHeader(){
   const init=(currentUser.firstName[0]||'?').toUpperCase();
   document.getElementById('headerAvatar').textContent=init;
   document.getElementById('headerName').textContent=currentUser.firstName;
+  document.getElementById('headerWelcomeName').textContent='Welcome, '+currentUser.firstName;
   updateOnboardingGreeting(currentUser.firstName);
+  updateHeaderWelcome();
+}
+
+function updateHeaderWelcome(){
+  if(!currentUser)return;
+  const hasItems = items.filter(i=>!i.sold).length > 0;
+  const strip = document.getElementById('headerStrip');
+  const sub = document.getElementById('headerStripSub');
+  const btn = document.getElementById('headerStripBtn');
+  strip.style.display = 'flex';
+  if(hasItems){
+    const total = fmtFull(items.filter(i=>!i.sold).reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0));
+    const count = items.filter(i=>!i.sold).length;
+    sub.textContent = total + ' across ' + count + ' holding' + (count!==1?'s':'') + '. Last updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '.';
+    btn.textContent = '+ Add Holding';
+  } else {
+    sub.textContent = 'Your vault is empty. Start by adding a holding — anything physical: jewellery, coins, bars, or raw metal.';
+    btn.textContent = '+ Add First Holding';
+  }
 }
 
 function refreshProfile(){
@@ -2074,7 +2077,7 @@ function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
 // ══════════════════════════════════════════
 // SUMMARY & RENDER
 // ══════════════════════════════════════════
-function updateAll(){updateSummary();renderList()}
+function updateAll(){updateSummary();renderList();updateHeaderWelcome();}
 function updateSummary(){
   let gU=0,sU=0,gG=0,sG=0,pU=0,spU=0;
   items.filter(i=>!i.sold).forEach(it=>{
@@ -2109,35 +2112,9 @@ function renderList(){
     const soldItems  = items.filter(i=>i.sold).length;
     const vaultEmpty = totalItems === 0 && soldItems === 0;
     if(vaultEmpty){
-      // First-time onboarding
       list.innerHTML=`<div class="empty-state" id="emptyOnboarding">
-        <div style="font-size:48px;margin-bottom:8px">🏛</div>
-        <div class="title" id="onboardingGreeting">Welcome${currentUser?' , '+currentUser.firstName:''}</div>
-        <div class="sub" style="margin-bottom:24px">Your vault is empty. Start by adding a holding — anything physical: jewellery, coins, bars, or raw metal.</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:320px;margin:0 auto 24px;text-align:left">
-          <div onclick="openAddModalWith('gold','jewellery')" style="padding:14px;background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:12px;cursor:pointer">
-            <div style="font-size:22px;margin-bottom:6px">💍</div>
-            <div style="font-size:11px;color:var(--gold-light);font-weight:500;margin-bottom:3px">Jewellery</div>
-            <div style="font-size:11px;color:var(--text-dim);line-height:1.5">Necklaces, bangles, rings — any karat</div>
-          </div>
-          <div onclick="openAddModalWith('gold','coin_bar')" style="padding:14px;background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:12px;cursor:pointer">
-            <div style="font-size:22px;margin-bottom:6px">🪙</div>
-            <div style="font-size:11px;color:var(--gold-light);font-weight:500;margin-bottom:3px">Coins &amp; Bars</div>
-            <div style="font-size:11px;color:var(--text-dim);line-height:1.5">Hallmarked coins, investment bars</div>
-          </div>
-          <div onclick="openAddModalWith('silver','jewellery')" style="padding:14px;background:rgba(200,216,232,.08);border:1px solid rgba(200,216,232,.15);border-radius:12px;cursor:pointer">
-            <div style="font-size:22px;margin-bottom:6px">🥈</div>
-            <div style="font-size:11px;color:var(--silver-bright);font-weight:500;margin-bottom:3px">Silver Jewellery</div>
-            <div style="font-size:11px;color:var(--text-dim);line-height:1.5">Silver ornaments and accessories</div>
-          </div>
-          <div onclick="openAddModalWith('gold','raw')" style="padding:14px;background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:12px;cursor:pointer">
-            <div style="font-size:22px;margin-bottom:6px">✨</div>
-            <div style="font-size:11px;color:var(--gold-light);font-weight:500;margin-bottom:3px">Raw Metal</div>
-            <div style="font-size:11px;color:var(--text-dim);line-height:1.5">Scrap gold, unrefined metal</div>
-          </div>
-        </div>
         <div class="empty-cta" onclick="openAddModal()">+ Add First Holding</div>
-        <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border);font-size:11px;color:var(--text-dim);line-height:1.9;letter-spacing:.04em">
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--text-dim);line-height:1.9;letter-spacing:.04em">
           Prices update every 5 minutes · INR includes 15% import duty + 3% GST
         </div>
       </div>`;
