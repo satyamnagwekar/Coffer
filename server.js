@@ -1030,7 +1030,7 @@ function requireAdmin(req, res, next) {
 <script>
 async function login() {
   const pw = document.getElementById('pw').value;
-  const res = await fetch(`/${ADMIN_SLUG}/login`, {
+  const res = await fetch('/dash-4f8a2e91c3b7/login', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({p: pw})
