@@ -998,9 +998,11 @@ function requireAdmin(req, res, next) {
   // Layer 1: IP whitelist
   const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '';
   if (ip !== ADMIN_IP) return res.status(404).send('Not found');
-  // Layer 2: signed cookie
+  // Layer 2: signed cookie OR ?p= query param
   const cookie = getAdminCookie(req);
   if (cookie && cookie === adminToken()) return next();
+  const qp = req.query.p || '';
+  if (qp === ADMIN_PASS) return next();
   // Not authenticated — show login form
   res.setHeader('Cache-Control', 'no-store');
   res.type('html').send(`<!DOCTYPE html>
@@ -1028,7 +1030,7 @@ function requireAdmin(req, res, next) {
 <script>
 async function login() {
   const pw = document.getElementById('pw').value;
-  const res = await fetch('/${ADMIN_SLUG}/login', {
+  const res = await fetch(`/${ADMIN_SLUG}/login`, {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({p: pw})
