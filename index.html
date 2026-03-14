@@ -1625,6 +1625,22 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div class="u-sub">Receipt · actual item · certificate · max 3 photos · stored on device only</div>
         </div>
       </div>
+      <div class="field" id="makingChargeField">
+        <div class="field-label-row">
+          <label>Making Charges</label>
+          <span class="field-hint" style="color:var(--gold-dim);font-size:11px">included in price above?</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer">
+            <input type="checkbox" id="hasMakingCharge" onchange="toggleMakingCharge()" style="width:15px;height:15px;accent-color:var(--gold)">
+            Price includes making charges
+          </label>
+        </div>
+        <div id="makingChargeRow" style="display:none">
+          <input type="number" id="makingCharge" placeholder="Making charge amount" step="0.01" oninput="updatePreview()" style="width:100%">
+          <div style="font-size:11px;color:var(--text-dim);margin-top:4px">Making charges have no resale value — this amount will be excluded from your cost basis.</div>
+        </div>
+      </div>
 
       <div class="field">
         <div class="field-label-row"><label>Notes</label><span class="field-hint">optional</span></div>
@@ -1784,6 +1800,18 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <select id="editPricePaidCurrency">
             <option value="USD">USD $</option><option value="INR">INR ₹</option><option value="AED">AED</option><option value="EUR">EUR €</option>
           </select>
+        </div>
+      </div>
+      <div class="field">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer">
+            <input type="checkbox" id="editHasMakingCharge" onchange="toggleEditMakingCharge()" style="width:15px;height:15px;accent-color:var(--gold)">
+            Price includes making charges
+          </label>
+        </div>
+        <div id="editMakingChargeRow" style="display:none">
+          <input type="number" id="editMakingCharge" placeholder="Making charge amount" step="0.01" style="width:100%">
+          <div style="font-size:11px;color:var(--text-dim);margin-top:4px">Making charges have no resale value — excluded from cost basis.</div>
         </div>
       </div>
       <div class="field">
@@ -2261,7 +2289,7 @@ function updateSummary(){
   items.filter(i=>!i.sold).forEach(it=>{
     const v=metalValueUSD(it.metal,it.grams,it.purity);
     if(it.metal==='gold'){gU+=v;gG+=it.grams}else{sU+=v;sG+=it.grams}
-    spU+=v;if(it.pricePaidUSD)pU+=it.pricePaidUSD;
+    spU+=v;const _cb=it.goldCostBasisUSD||it.pricePaidUSD;if(_cb)pU+=_cb;
   });
   const tot=gU+sU;
   document.getElementById('totalValue').textContent=fmtFull(tot);
@@ -2312,8 +2340,8 @@ function renderList(){
     const ri=items.indexOf(item);
     const sU=metalValueUSD(item.metal,item.grams,item.purity);
     let vD,pnlH='';
-    if(item.sold){vD=fmtFull(toUSD(item.sellPrice,item.sellCurrency));if(item.pricePaidUSD){const g=toUSD(item.sellPrice,item.sellCurrency)-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';pnlH=`<div class="item-pnl ${g>=0?'pos':'neg'}">${g>=0?'▲':'▼'} Realised ${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</div>`}}
-    else{vD=fmtFull(sU);if(item.pricePaidUSD){const g=sU-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';pnlH=`<div class="item-pnl ${g>=0?'pos':'neg'}">${g>=0?'▲':'▼'} ${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</div>`}}
+    if(item.sold){vD=fmtFull(toUSD(item.sellPrice,item.sellCurrency));const costB=item.goldCostBasisUSD||item.pricePaidUSD;if(costB){const g=toUSD(item.sellPrice,item.sellCurrency)-costB,p=(g/costB)*100,s=g>=0?'+':'';pnlH=`<div class="item-pnl ${g>=0?'pos':'neg'}">${g>=0?'▲':'▼'} Realised ${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</div>`}}
+    else{vD=fmtFull(sU);const costB=item.goldCostBasisUSD||item.pricePaidUSD;if(costB){const g=sU-costB,p=(g/costB)*100,s=g>=0?'+':'';pnlH=`<div class="item-pnl ${g>=0?'pos':'neg'}">${g>=0?'▲':'▼'} ${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</div>`}}
     const dB=item.purchaseDate?`<span class="badge badge-date">📅 ${item.purchaseDate}</span>`:'';
     const pB=(item.photos&&item.photos.length)||(item.receipt)?`<span class="badge badge-provenance">📷 Photos</span>`:'';
     return `<div class="item-card ${item.metal}${item.sold?' sold':''}" onclick="openDetail(${ri})">
@@ -2339,7 +2367,9 @@ function haptic(ms=10){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(
 function openAddModal(){
   haptic();
   selectedMetal='gold';selectedType='jewellery';selectedGrade=GOLD_GRADES[1];photosBase64=[];
-  ['itemName','itemWeight','itemNotes','pricePaid'].forEach(id=>document.getElementById(id).value='');
+  ['itemName','itemWeight','itemNotes','pricePaid','makingCharge'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('hasMakingCharge').checked=false;
+  document.getElementById('makingChargeRow').style.display='none';
   const msgEl=document.getElementById('addItemMsg');
   if(msgEl){msgEl.textContent='';msgEl.className='msg';}
   document.getElementById('weightUnit').value='g';
@@ -2421,6 +2451,18 @@ function updatePreview(){
   }else document.getElementById('pnlPreviewBox').style.display='none';
 }
 
+function toggleMakingCharge(){
+  const checked=document.getElementById('hasMakingCharge').checked;
+  document.getElementById('makingChargeRow').style.display=checked?'':'none';
+  if(!checked)document.getElementById('makingCharge').value='';
+  updatePreview();
+}
+function toggleEditMakingCharge(){
+  const checked=document.getElementById('editHasMakingCharge').checked;
+  document.getElementById('editMakingChargeRow').style.display=checked?'':'none';
+  if(!checked)document.getElementById('editMakingCharge').value='';
+}
+
 function handlePhotoUpload(input){
   const file=input.files[0];if(!file)return;
   if(photosBase64.length>=3){alert('Maximum 3 photos per item.');input.value='';return}
@@ -2471,6 +2513,12 @@ async function addItem(){
     purity:selectedGrade.purity,grams,notes,purchaseDate,
     pricePaid:paidRaw||null,pricePaidCurrency:paidCurr,
     pricePaidUSD:paidRaw?toUSD(paidRaw,paidCurr):null,
+    makingCharge:(()=>{const mc=parseFloat(document.getElementById('editMakingCharge').value)||0;return document.getElementById('editHasMakingCharge').checked&&mc>0?mc:null})(),
+    makingChargeCurrency:paidCurr,
+    goldCostBasisUSD:(()=>{if(!paidRaw)return null;const mc=document.getElementById('editHasMakingCharge').checked?(parseFloat(document.getElementById('editMakingCharge').value)||0):0;return toUSD(paidRaw,paidCurr)-toUSD(mc,paidCurr);})(),
+    makingCharge:(()=>{const mc=parseFloat(document.getElementById('makingCharge').value)||0;return document.getElementById('hasMakingCharge').checked&&mc>0?mc:null})(),
+    makingChargeCurrency:paidCurr,
+    goldCostBasisUSD:(()=>{if(!paidRaw)return null;const mc=document.getElementById('hasMakingCharge').checked?(parseFloat(document.getElementById('makingCharge').value)||0):0;return toUSD(paidRaw,paidCurr)-toUSD(mc,paidCurr);})(),
     photos:photosBase64.length?photosBase64:null,
     addedAt:new Date().toISOString(),
   };
@@ -2495,6 +2543,10 @@ function openEditModal(idx){
   document.getElementById('editPurchaseDate').value=item.purchaseDate||'';
   document.getElementById('editPricePaid').value=item.pricePaid||'';
   document.getElementById('editPricePaidCurrency').value=item.pricePaidCurrency||'USD';
+  const hasMC=!!(item.makingCharge);
+  document.getElementById('editHasMakingCharge').checked=hasMC;
+  document.getElementById('editMakingChargeRow').style.display=hasMC?'':  'none';
+  document.getElementById('editMakingCharge').value=item.makingCharge||'';
   document.getElementById('editNotes').value=item.notes||'';
   closeModal('detailModal');
   document.getElementById('editModal').classList.add('open');
@@ -2518,6 +2570,9 @@ async function saveEditItem(){
     name,grams,notes,purchaseDate,
     pricePaid:paidRaw||null,pricePaidCurrency:paidCurr,
     pricePaidUSD:paidRaw?toUSD(paidRaw,paidCurr):null,
+    makingCharge:(()=>{const mc=parseFloat(document.getElementById('editMakingCharge').value)||0;return document.getElementById('editHasMakingCharge').checked&&mc>0?mc:null})(),
+    makingChargeCurrency:paidCurr,
+    goldCostBasisUSD:(()=>{if(!paidRaw)return null;const mc=document.getElementById('editHasMakingCharge').checked?(parseFloat(document.getElementById('editMakingCharge').value)||0):0;return toUSD(paidRaw,paidCurr)-toUSD(mc,paidCurr);})(),
   };
   try{
     const updated=await api('PUT','/items/'+item.id,payload);
@@ -2607,14 +2662,23 @@ function openDetail(idx){
     ['Weight',item.grams.toFixed(3)+'g · '+toOz(item.grams).toFixed(4)+' oz'],
     ['Pure Content',(item.grams*item.purity).toFixed(3)+'g'],
     ['Date Purchased',item.purchaseDate||'—'],
-    ['Price Paid',item.pricePaid?fmtCurr(item.pricePaid,item.pricePaidCurrency)+' (≈ $'+item.pricePaidUSD.toFixed(2)+')':'—'],
+
   ];
   if(item.notes)acqRows.push(['Notes',escHtml(item.notes)]);
   const valRows=[
     ['Spot Price',item.metal==='gold'?'$'+prices.gold.toFixed(2)+'/oz':item.metal==='platinum'?'$'+prices.platinum.toFixed(2)+'/oz':'$'+prices.silver.toFixed(2)+'/oz'],
     ['Current Value',fmtFull(sU)],
   ];
-  if(item.pricePaidUSD){const g=sU-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';valRows.push(['Unrealised G/L',`<span class="${g>=0?'pos':'neg'}">${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</span>`])}
+  if(item.pricePaidUSD){
+    const costB=item.goldCostBasisUSD||item.pricePaidUSD;
+    valRows.push(['Purchase Price',fmtCurr(item.pricePaid,item.pricePaidCurrency)]);
+    if(item.makingCharge){
+      valRows.push(['Making Charges',`<span style="color:var(--text-dim)">− ${fmtCurr(item.makingCharge,item.makingChargeCurrency||item.pricePaidCurrency)}</span>`]);
+      valRows.push(['Gold Cost Basis',`<strong>${fmtCurr(item.pricePaid-item.makingCharge,item.pricePaidCurrency)}</strong>`]);
+    }
+    const g=sU-costB,p=(g/costB)*100,s=g>=0?'+':'';
+    valRows.push(['Unrealised G/L',`<span class="${g>=0?'pos':'neg'}">${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</span>`]);
+  }
   let soldHTML='';
   if(item.sold){
     const sellU=toUSD(item.sellPrice,item.sellCurrency);let rRow='';
