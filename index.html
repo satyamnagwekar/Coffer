@@ -256,6 +256,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .item-card.silver::before{background:linear-gradient(180deg,var(--silver-bright),var(--silver))}
 .item-card.sold{opacity:.55}
 .item-card.sold::after{content:'SOLD';position:absolute;top:10px;right:12px;font-size:11px;letter-spacing:.15em;color:var(--green);border:1px solid var(--green-dim);background:rgba(46,204,138,.08);padding:2px 7px;border-radius:10px}
+.item-card.gifted{opacity:.55}
+.item-card.gifted::after{content:'GIFTED';position:absolute;top:10px;right:12px;font-size:11px;letter-spacing:.15em;color:#c084fc;border:1px solid rgba(192,132,252,.3);background:rgba(192,132,252,.08);padding:2px 7px;border-radius:10px}
 .item-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px}
 .item-name{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:400;color:var(--text);line-height:1.1;padding-right:8px}
 .item-value{font-size:15px;font-weight:500;text-align:right;flex-shrink:0}
@@ -420,6 +422,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .detail-action-btn{flex:1;padding:13px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg3);color:var(--text-dim);font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s;text-align:center}
 .detail-action-btn.sell{border-color:var(--green-dim);color:var(--green);background:rgba(46,204,138,.06)}
 .detail-action-btn.sold-tag{border-color:var(--green-dim);color:var(--green);background:rgba(46,204,138,.06);cursor:default;font-size:11px}
+.detail-action-btn.gift{border-color:rgba(192,132,252,.35);color:#c084fc;background:rgba(192,132,252,.06)}
+.detail-action-btn.gifted-tag{border-color:rgba(192,132,252,.35);color:#c084fc;background:rgba(192,132,252,.06);cursor:default;font-size:11px}
 
 /* Lightbox */
 .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.97);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;flex-direction:column;gap:12px}
@@ -1288,6 +1292,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <button class="htab" onclick="setHTab('silver',this)">Silver</button>
       <button class="htab" onclick="setHTab('platinum',this)">Platinum</button>
       <button class="htab" onclick="setHTab('sold',this)">Sold</button>
+          <button class="htab" onclick="setHTab('gifted',this)">Gifted</button>
     </div>
 
     <div class="filter-bar">
@@ -1693,6 +1698,31 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="pnl-row total"><div class="pnl-key">Realised G/L vs cost</div><div class="pnl-val hi" id="spGain">—</div></div>
       </div>
       <button class="btn-primary green" onclick="confirmSell()">Confirm &amp; Record Sale</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ GIFT MODAL ══════════════════════ -->
+<div class="modal-overlay" id="giftModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div><div class="modal-title">Record Gift</div><div class="modal-subtitle">Log this item as gifted to someone</div></div>
+      <button class="modal-close" onclick="closeModal('giftModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--text-mid)" id="giftItemName"></div>
+      <div class="field"><div class="field-label-row"><label>Date of Gift</label></div><input type="date" id="giftDate"></div>
+      <div class="field"><div class="field-label-row"><label>Gifted To</label><span class="field-hint">optional</span></div><input type="text" id="giftTo" placeholder="Daughter, son, occasion…"></div>
+      <div class="field"><div class="field-label-row"><label>Notes</label><span class="field-hint">optional</span></div><input type="text" id="giftNotes" placeholder="Wedding, Diwali, birthday…"></div>
+      <div class="pnl-box" id="giftSummaryBox">
+        <div class="pnl-box-title">Gift Summary</div>
+        <div class="pnl-row"><div class="pnl-key">Cost basis</div><div class="pnl-val" id="giftPaid">—</div></div>
+        <div class="pnl-row"><div class="pnl-key">Value at time of gift</div><div class="pnl-val" id="giftSpot">—</div></div>
+        <div class="pnl-row total"><div class="pnl-key">Gain given away</div><div class="pnl-val hi" id="giftGain">—</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;line-height:1.6">This item will be removed from your active portfolio and recorded as gifted. The gain given away is for your records only.</div>
+      <button class="btn-primary" style="background:linear-gradient(135deg,#a855f7,#c084fc)" onclick="confirmGift()">Confirm &amp; Record Gift</button>
     </div>
   </div>
 </div>
@@ -2124,14 +2154,14 @@ function refreshHeader(){
 
 function updateHeaderWelcome(){
   if(!currentUser)return;
-  const hasItems = items.filter(i=>!i.sold).length > 0;
+  const hasItems = items.filter(i=>!i.sold&&!i.gifted).length > 0;
   const strip = document.getElementById('headerStrip');
   const sub = document.getElementById('headerStripSub');
   const btn = document.getElementById('headerStripBtn');
   strip.style.display = 'flex';
   if(hasItems){
-    const total = fmtFull(items.filter(i=>!i.sold).reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0));
-    const count = items.filter(i=>!i.sold).length;
+    const total = fmtFull(items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0));
+    const count = items.filter(i=>!i.sold&&!i.gifted).length;
     sub.textContent = total + ' across ' + count + ' holding' + (count!==1?'s':'') + '. Last updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '.';
     btn.textContent = '+ Add Holding';
   } else {
@@ -2167,11 +2197,12 @@ function refreshProfile(){
       <div class="profile-key">${k}</div>
       <div class="profile-val">${v}</div>
     </div>`).join('');
-  const active=items.filter(i=>!i.sold).length;
+  const active=items.filter(i=>!i.sold&&!i.gifted).length;
   const sold=items.filter(i=>i.sold).length;
+  const gifted=items.filter(i=>i.gifted).length;
   let portVal='—';
   if(active>0){
-    const tot=items.filter(i=>!i.sold).reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0);
+    const tot=items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0);
     const v=tot*rates[currency];
     portVal=(SYMBOLS[currency]||currency+' ')+(v>=10000?(v/1000).toFixed(0)+'k':v.toFixed(0));
   }
@@ -2286,7 +2317,7 @@ function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function updateAll(){updateSummary();renderList();updateHeaderWelcome();}
 function updateSummary(){
   let gU=0,sU=0,gG=0,sG=0,pU=0,spU=0;
-  items.filter(i=>!i.sold).forEach(it=>{
+  items.filter(i=>!i.sold&&!i.gifted).forEach(it=>{
     const v=metalValueUSD(it.metal,it.grams,it.purity);
     if(it.metal==='gold'){gU+=v;gG+=it.grams}else{sU+=v;sG+=it.grams}
     spU+=v;const _cb=it.goldCostBasisUSD||it.pricePaidUSD;if(_cb)pU+=_cb;
@@ -2306,10 +2337,11 @@ function updateSummary(){
 function renderList(){
   const list=document.getElementById('inventoryList');
   let f=[...items];
-  if(activeHTab==='gold')f=f.filter(i=>i.metal==='gold'&&!i.sold);
-  else if(activeHTab==='silver')f=f.filter(i=>i.metal==='silver'&&!i.sold);
-  else if(activeHTab==='platinum')f=f.filter(i=>i.metal==='platinum'&&!i.sold);
+  if(activeHTab==='gold')f=f.filter(i=>i.metal==='gold'&&!i.sold&&!i.gifted);
+  else if(activeHTab==='silver')f=f.filter(i=>i.metal==='silver'&&!i.sold&&!i.gifted);
+  else if(activeHTab==='platinum')f=f.filter(i=>i.metal==='platinum'&&!i.sold&&!i.gifted);
   else if(activeHTab==='sold')f=f.filter(i=>i.sold);
+  else if(activeHTab==='gifted')f=f.filter(i=>i.gifted);
   else f=f.filter(i=>!i.sold);
   if(activeFilter!=='all')f=f.filter(i=>i.type===activeFilter);
   document.getElementById('itemCount').textContent=f.length+' item'+(f.length!==1?'s':'');
@@ -2344,7 +2376,7 @@ function renderList(){
     else{vD=fmtFull(sU);const costB=item.goldCostBasisUSD||item.pricePaidUSD;if(costB){const g=sU-costB,p=(g/costB)*100,s=g>=0?'+':'';pnlH=`<div class="item-pnl ${g>=0?'pos':'neg'}">${g>=0?'▲':'▼'} ${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</div>`}}
     const dB=item.purchaseDate?`<span class="badge badge-date">📅 ${item.purchaseDate}</span>`:'';
     const pB=(item.photos&&item.photos.length)||(item.receipt)?`<span class="badge badge-provenance">📷 Photos</span>`:'';
-    return `<div class="item-card ${item.metal}${item.sold?' sold':''}" onclick="openDetail(${ri})">
+    return `<div class="item-card ${item.metal}${item.sold?' sold':''}${item.gifted?' gifted':''}" onclick="openDetail(${ri})">
       <div class="item-top"><div class="item-name">${escHtml(item.name)}</div><div class="item-value">${vD}</div></div>
       <div class="item-meta"><span class="badge badge-type">${tL[item.type]}</span><span class="badge badge-grade${item.metal==='silver'?' silver':''}">${item.gradeName.split(' — ')[0]}</span><span class="badge badge-weight">${item.grams.toFixed(2)}g</span>${dB}${pB}</div>
       ${pnlH}${!item.pricePaidUSD&&!item.sold?'<div class="item-hint">Add purchase price to track gain/loss</div>':''}
@@ -2648,6 +2680,62 @@ async function confirmSell(){
   }catch(e){alert('Could not record sale: '+e.message)}
 }
 
+function openGiftModal(idx){
+  viewingItem=idx;
+  const item=items[idx];
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById('giftItemName').textContent=item.name;
+  document.getElementById('giftDate').value=today;
+  document.getElementById('giftDate').max=today;
+  if(item.purchaseDate) document.getElementById('giftDate').min=item.purchaseDate;
+  document.getElementById('giftTo').value='';
+  document.getElementById('giftNotes').value='';
+  // populate summary
+  const sU=metalValueUSD(item.metal,item.grams,item.purity);
+  const costB=item.goldCostBasisUSD||item.pricePaidUSD;
+  document.getElementById('giftSpot').textContent=fmtFull(sU);
+  document.getElementById('giftPaid').textContent=costB?fmtFull(costB):'Not recorded';
+  if(costB){
+    const g=sU-costB,p=(g/costB)*100,s=g>=0?'+':'';
+    document.getElementById('giftGain').className='pnl-val hi '+(g>=0?'pos':'neg');
+    document.getElementById('giftGain').textContent=s+fmtFull(g)+' ('+s+p.toFixed(1)+'%)';
+  } else {
+    document.getElementById('giftGain').textContent='—';
+  }
+  document.getElementById('giftModal').classList.add('open');
+}
+
+async function confirmGift(){
+  const gD=document.getElementById('giftDate').value;
+  const gTo=document.getElementById('giftTo').value.trim();
+  const gN=document.getElementById('giftNotes').value.trim();
+  if(!gD){alert('Please enter the date of gift.');return}
+  const item=items[viewingItem];
+  if(item.purchaseDate && gD < item.purchaseDate){
+    alert(`Gift date cannot be before the purchase date (${item.purchaseDate}).`);return;
+  }
+  const today=new Date().toISOString().slice(0,10);
+  if(gD > today){alert('Gift date cannot be in the future.');return}
+  const recipientStr=gTo?` to ${gTo}`:'';
+  if(!confirm(`Record "${item.name}" as gifted${recipientStr}? This cannot be undone.`))return;
+  const sU=metalValueUSD(item.metal,item.grams,item.purity);
+  const costB=item.goldCostBasisUSD||item.pricePaidUSD;
+  const payload={
+    ...item,
+    gifted:true,
+    giftDate:gD,
+    giftTo:gTo||null,
+    giftNotes:gN||null,
+    giftValueUSD:sU,
+    giftGainUSD:costB?(sU-costB):null,
+  };
+  try{
+    const updated=await api('PUT','/items/'+item.id,payload);
+    items[viewingItem]=updated;
+    closeModal('giftModal');updateAll();
+  }catch(e){alert('Could not record gift: '+e.message)}
+}
+
 // ══════════════════════════════════════════
 // DETAIL
 // ══════════════════════════════════════════
@@ -2688,9 +2776,15 @@ function openDetail(idx){
       <div class="detail-row"><div class="detail-key">Price Received</div><div class="detail-val">${fmtCurr(item.sellPrice,item.sellCurrency)}</div></div>
       ${item.sellNotes?`<div class="detail-row"><div class="detail-key">Buyer/Notes</div><div class="detail-val">${escHtml(item.sellNotes)}</div></div>`:''}${rRow}</div>`;
   }
-  const actionBtn=item.sold
-    ?`<div class="detail-action-btn sold-tag">✓ Sold ${item.sellDate||''}</div>`
-    :`<button class="detail-action-btn sell" onclick="openSellModal(${idx})">Record Sale →</button>`;
+  let actionBtn;
+  if(item.sold){
+    actionBtn=`<div class="detail-action-btn sold-tag">✓ Sold ${item.sellDate||''}</div>`;
+  } else if(item.gifted){
+    actionBtn=`<div class="detail-action-btn gifted-tag">📤 Gifted ${item.giftDate?'· '+item.giftDate:''}${item.giftTo?' to '+escHtml(item.giftTo):''}</div>`;
+  } else {
+    actionBtn=`<button class="detail-action-btn sell" onclick="openSellModal(${idx})">Record Sale →</button>
+      <button class="detail-action-btn gift" onclick="openGiftModal(${idx})">📤 Gift →</button>`;
+  }
   const editBtn=`<button class="detail-action-btn" onclick="openEditModal(${idx})" style="border-color:rgba(74,159,224,.3);color:var(--blue);background:rgba(74,159,224,.06)">✏ Edit</button>`;
   document.getElementById('detailBody').innerHTML=`
     <div class="detail-section"><div class="detail-section-title">Item Details</div>${acqRows.map(([k,v])=>`<div class="detail-row"><div class="detail-key">${k}</div><div class="detail-val">${v}</div></div>`).join('')}</div>
@@ -2701,6 +2795,18 @@ function openDetail(idx){
 })()}</div>
     <div class="detail-section"><div class="detail-section-title">Current Valuation</div>${valRows.map(([k,v])=>`<div class="detail-row"><div class="detail-key">${k}</div><div class="detail-val">${v}</div></div>`).join('')}</div>
     ${soldHTML}
+    ${(()=>{
+      if(!item.gifted)return '';
+      const costB=item.goldCostBasisUSD||item.pricePaidUSD;
+      let gRow='';
+      if(item.giftGainUSD!=null){const g=item.giftGainUSD,p=costB?(g/costB)*100:0,s=g>=0?'+':'';gRow=`<div class="detail-row"><div class="detail-key">Gain given away</div><div class="detail-val ${g>=0?'pos':'neg'}">${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</div></div>`;}
+      return `<div class="detail-section"><div class="detail-section-title">Gift Record</div>
+        <div class="detail-row"><div class="detail-key">Date Gifted</div><div class="detail-val">${item.giftDate||'—'}</div></div>
+        ${item.giftTo?`<div class="detail-row"><div class="detail-key">Gifted To</div><div class="detail-val">${escHtml(item.giftTo)}</div></div>`:''}
+        ${item.giftNotes?`<div class="detail-row"><div class="detail-key">Occasion</div><div class="detail-val">${escHtml(item.giftNotes)}</div></div>`:''}
+        <div class="detail-row"><div class="detail-key">Value at Gift</div><div class="detail-val">${item.giftValueUSD?fmtFull(item.giftValueUSD):'—'}</div></div>
+        ${gRow}</div>`;
+    })()}
     <div class="detail-actions">${editBtn}${actionBtn}</div>
     <button class="btn-danger" onclick="deleteItem(${idx})">Remove from Aurum</button>`;
   document.getElementById('detailModal').classList.add('open');
