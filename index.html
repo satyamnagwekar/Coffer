@@ -374,6 +374,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .receipt-preview{position:relative;border-radius:var(--radius-sm);overflow:hidden}
 .receipt-preview img{width:100%;max-height:200px;object-fit:cover;display:block}
 .receipt-preview .remove-img{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.8);border:1px solid var(--border);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--text)}
+.photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+.photo-thumb{position:relative;border-radius:var(--radius-sm);overflow:hidden;aspect-ratio:1;background:var(--bg3)}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
+.photo-thumb .remove-img{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.8);border:none;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:#fff}
+.detail-receipt .photos-grid{grid-template-columns:repeat(3,1fr)}
+.detail-receipt .photos-grid img{width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);cursor:pointer}
 
 /* Value / PnL previews */
 .value-preview{background:var(--bg3);border:1px solid var(--border-gold);border-radius:var(--radius-sm);padding:15px;display:flex;justify-content:space-between;align-items:center}
@@ -1610,16 +1616,13 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       </div>
 
       <div class="field">
-        <div class="field-label-row"><label>Receipt / Proof</label><span class="field-hint">optional photo</span></div>
-        <div id="receiptUploadArea" class="receipt-upload">
-          <input type="file" id="receiptFile" accept="image/*" onchange="handleReceiptUpload(this)">
-          <div class="u-icon">🧾</div>
-          <div class="u-label">Tap to attach a receipt photo</div>
-          <div class="u-sub">Stored on your device only · max 5MB</div>
-        </div>
-        <div id="receiptPreviewArea" style="display:none" class="receipt-preview">
-          <img id="receiptPreviewImg" src="" alt="Receipt">
-          <div class="remove-img" onclick="removeReceipt()">✕</div>
+        <div class="field-label-row"><label>Photos</label><span class="field-hint">optional · receipt, item, certificate</span></div>
+        <div id="photosGrid" class="photos-grid" style="display:none"></div>
+        <div id="photoUploadArea" class="receipt-upload">
+          <input type="file" id="photoFile" accept="image/*" onchange="handlePhotoUpload(this)">
+          <div class="u-icon">📷</div>
+          <div class="u-label">Tap to attach photos</div>
+          <div class="u-sub">Receipt · actual item · certificate · max 3 photos · stored on device only</div>
         </div>
       </div>
 
@@ -1809,7 +1812,7 @@ let currency='INR';
 let items=[];
 let activeHTab='all',activeFilter='all';
 let selectedMetal='gold',selectedType='jewellery',selectedGrade=null;
-let viewingItem=null,receiptBase64=null;
+let viewingItem=null,photosBase64=[];
 let currentUser=null; // {email, firstName, lastName, age, country, joinedAt, pwHash}
 
 const SYMBOLS={USD:'$',INR:'₹',AED:'د.إ',EUR:'€'};
@@ -2312,7 +2315,7 @@ function renderList(){
     if(item.sold){vD=fmtFull(toUSD(item.sellPrice,item.sellCurrency));if(item.pricePaidUSD){const g=toUSD(item.sellPrice,item.sellCurrency)-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';pnlH=`<div class="item-pnl ${g>=0?'pos':'neg'}">${g>=0?'▲':'▼'} Realised ${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</div>`}}
     else{vD=fmtFull(sU);if(item.pricePaidUSD){const g=sU-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';pnlH=`<div class="item-pnl ${g>=0?'pos':'neg'}">${g>=0?'▲':'▼'} ${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</div>`}}
     const dB=item.purchaseDate?`<span class="badge badge-date">📅 ${item.purchaseDate}</span>`:'';
-    const pB=item.receipt?`<span class="badge badge-provenance">🧾 Receipt</span>`:'';
+    const pB=(item.photos&&item.photos.length)||(item.receipt)?`<span class="badge badge-provenance">📷 Photos</span>`:'';
     return `<div class="item-card ${item.metal}${item.sold?' sold':''}" onclick="openDetail(${ri})">
       <div class="item-top"><div class="item-name">${escHtml(item.name)}</div><div class="item-value">${vD}</div></div>
       <div class="item-meta"><span class="badge badge-type">${tL[item.type]}</span><span class="badge badge-grade${item.metal==='silver'?' silver':''}">${item.gradeName.split(' — ')[0]}</span><span class="badge badge-weight">${item.grams.toFixed(2)}g</span>${dB}${pB}</div>
@@ -2335,7 +2338,7 @@ function haptic(ms=10){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(
 
 function openAddModal(){
   haptic();
-  selectedMetal='gold';selectedType='jewellery';selectedGrade=GOLD_GRADES[1];receiptBase64=null;
+  selectedMetal='gold';selectedType='jewellery';selectedGrade=GOLD_GRADES[1];photosBase64=[];
   ['itemName','itemWeight','itemNotes','pricePaid'].forEach(id=>document.getElementById(id).value='');
   const msgEl=document.getElementById('addItemMsg');
   if(msgEl){msgEl.textContent='';msgEl.className='msg';}
@@ -2345,9 +2348,11 @@ function openAddModal(){
   document.getElementById('metalGold').className='metal-btn gold selected';
   document.getElementById('metalSilver').className='metal-btn silver';
   document.getElementById('metalPlatinum').className='metal-btn platinum';
-  document.getElementById('receiptUploadArea').style.display='';
-  document.getElementById('receiptPreviewArea').style.display='none';
-  document.getElementById('receiptFile').value='';
+  photosBase64=[];
+  document.getElementById('photosGrid').innerHTML='';
+  document.getElementById('photosGrid').style.display='none';
+  document.getElementById('photoUploadArea').style.display='';
+  document.getElementById('photoFile').value='';
   document.getElementById('valuePreview').textContent='—';
   document.getElementById('pnlPreviewBox').style.display='none';
   renderGradeGrid();renderTypeGrid();
@@ -2416,30 +2421,38 @@ function updatePreview(){
   }else document.getElementById('pnlPreviewBox').style.display='none';
 }
 
-function handleReceiptUpload(input){
+function handlePhotoUpload(input){
   const file=input.files[0];if(!file)return;
+  if(photosBase64.length>=3){alert('Maximum 3 photos per item.');input.value='';return}
   if(file.size>20*1024*1024){alert('Please use an image smaller than 20MB.');return}
-  // Compress to max 800px wide, JPEG 0.82 quality before storing
   const img=new Image();
   const objectUrl=URL.createObjectURL(file);
   img.onload=()=>{
     URL.revokeObjectURL(objectUrl);
-    const MAX=800;
-    let w=img.width,h=img.height;
+    const MAX=800;let w=img.width,h=img.height;
     if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
     const canvas=document.createElement('canvas');
     canvas.width=w;canvas.height=h;
     canvas.getContext('2d').drawImage(img,0,0,w,h);
-    receiptBase64=canvas.toDataURL('image/jpeg',0.82);
-    document.getElementById('receiptPreviewImg').src=receiptBase64;
-    document.getElementById('receiptUploadArea').style.display='none';
-    document.getElementById('receiptPreviewArea').style.display='';
-    const kb=Math.round(receiptBase64.length*0.75/1024);
-    console.log(`[receipt] Compressed to ~${kb}KB`);
+    const b64=canvas.toDataURL('image/jpeg',0.82);
+    const idx=photosBase64.length;
+    photosBase64.push(b64);
+    renderPhotoGrid();
+    input.value='';
+    if(photosBase64.length>=3) document.getElementById('photoUploadArea').style.display='none';
   };
   img.src=objectUrl;
 }
-function removeReceipt(){receiptBase64=null;document.getElementById('receiptFile').value='';document.getElementById('receiptUploadArea').style.display='';document.getElementById('receiptPreviewArea').style.display='none'}
+function renderPhotoGrid(){
+  const grid=document.getElementById('photosGrid');
+  grid.innerHTML=photosBase64.map((b64,i)=>`<div class="photo-thumb"><img src="${b64}" alt="Photo ${i+1}" onclick="openLightbox(this.src)"><button class="remove-img" onclick="removePhoto(${i})">✕</button></div>`).join('');
+  grid.style.display=photosBase64.length?'grid':'none';
+  document.getElementById('photoUploadArea').style.display=photosBase64.length>=3?'none':'';
+}
+function removePhoto(idx){
+  photosBase64.splice(idx,1);
+  renderPhotoGrid();
+}
 
 async function addItem(){
   const name=document.getElementById('itemName').value.trim();
@@ -2458,7 +2471,7 @@ async function addItem(){
     purity:selectedGrade.purity,grams,notes,purchaseDate,
     pricePaid:paidRaw||null,pricePaidCurrency:paidCurr,
     pricePaidUSD:paidRaw?toUSD(paidRaw,paidCurr):null,
-    receipt:receiptBase64||null,
+    photos:photosBase64.length?photosBase64:null,
     addedAt:new Date().toISOString(),
   };
   try{
@@ -2617,7 +2630,11 @@ function openDetail(idx){
   const editBtn=`<button class="detail-action-btn" onclick="openEditModal(${idx})" style="border-color:rgba(74,159,224,.3);color:var(--blue);background:rgba(74,159,224,.06)">✏ Edit</button>`;
   document.getElementById('detailBody').innerHTML=`
     <div class="detail-section"><div class="detail-section-title">Item Details</div>${acqRows.map(([k,v])=>`<div class="detail-row"><div class="detail-key">${k}</div><div class="detail-val">${v}</div></div>`).join('')}</div>
-    <div class="detail-receipt"><div class="detail-section-title" style="margin-bottom:10px">Proof of Purchase</div>${item.receipt?`<img src="${item.receipt}" alt="Receipt" onclick="openLightbox(this.src)"><div style="font-size:11px;color:var(--text-dim);margin-top:6px;text-align:center">Tap image to enlarge</div>`:'<div class="no-receipt">No receipt photo attached</div>'}</div>
+    <div class="detail-receipt"><div class="detail-section-title" style="margin-bottom:10px">Photos</div>${(()=>{
+  const imgs=item.photos&&item.photos.length?item.photos:(item.receipt?[item.receipt]:[]);
+  if(!imgs.length) return '<div class="no-receipt">No photos attached</div>';
+  return `<div class="photos-grid">${imgs.map((s,i)=>`<img src="${s}" alt="Photo ${i+1}" onclick="openLightbox(this.src)" style="border-radius:var(--radius-sm);width:100%;height:80px;object-fit:cover">`).join('')}</div><div style="font-size:11px;color:var(--text-dim);margin-top:6px;text-align:center">Tap to enlarge</div>`;
+})()}</div>
     <div class="detail-section"><div class="detail-section-title">Current Valuation</div>${valRows.map(([k,v])=>`<div class="detail-row"><div class="detail-key">${k}</div><div class="detail-val">${v}</div></div>`).join('')}</div>
     ${soldHTML}
     <div class="detail-actions">${editBtn}${actionBtn}</div>
