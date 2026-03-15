@@ -1148,11 +1148,11 @@ app.get(`/api/${ADMIN_SLUG}/stats`, requireAdmin, async (req, res) => {
     const withAlerts = await q(`SELECT COUNT(DISTINCT user_id) FROM alerts`);
 
     // Activation: users with 0 vs 1+ active holdings
-    const withHoldings = await q(`SELECT COUNT(DISTINCT user_id) FROM items WHERE sold=FALSE AND gifted=FALSE`);
+    const withHoldings = await q(`SELECT COUNT(DISTINCT user_id) FROM items WHERE sold=FALSE`);
     const zeroHoldings = await q(`
       SELECT COUNT(*) FROM users u
       WHERE NOT EXISTS (
-        SELECT 1 FROM items i WHERE i.user_id = u.id AND i.sold=FALSE AND i.gifted=FALSE
+        SELECT 1 FROM items i WHERE i.user_id = u.id AND i.sold=FALSE
       )
     `);
     const activatedUsers = parseInt(withHoldings.rows[0].count);
