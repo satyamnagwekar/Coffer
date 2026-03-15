@@ -2049,8 +2049,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 // CONSTANTS & GLOBALS
 // ══════════════════════════════════════════
 let prices={gold:3320,silver:33.2,platinum:980};
-let rates={USD:1,INR:83.5,AED:3.67,EUR:0.92};
+let rates={USD:1,INR:83.5,AED:3.67,EUR:0.92,GBP:0.79};
 let currency='INR';
+function setCurrency(c,btn){currency=c;document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updateSummary();renderList();if(groupedViewActive)renderGroupedPL();}
 let items=[];
 let activeHTab='all',activeFilter='all';
 let selectedMetal='gold',selectedType='jewellery',selectedGrade=null;
