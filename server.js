@@ -1147,6 +1147,19 @@ app.get(`/api/${ADMIN_SLUG}/stats`, requireAdmin, async (req, res) => {
     // Users with alerts set
     const withAlerts = await q(`SELECT COUNT(DISTINCT user_id) FROM alerts`);
 
+    // Activation: users with 0 vs 1+ active holdings
+    const withHoldings = await q(`SELECT COUNT(DISTINCT user_id) FROM items WHERE sold=FALSE AND gifted=FALSE`);
+    const zeroHoldings = await q(`
+      SELECT COUNT(*) FROM users u
+      WHERE NOT EXISTS (
+        SELECT 1 FROM items i WHERE i.user_id = u.id AND i.sold=FALSE AND i.gifted=FALSE
+      )
+    `);
+    const activatedUsers = parseInt(withHoldings.rows[0].count);
+    const notActivatedUsers = parseInt(zeroHoldings.rows[0].count);
+    const activationRate = (activatedUsers + notActivatedUsers) > 0
+      ? Math.round(activatedUsers / (activatedUsers + notActivatedUsers) * 100) : 0;
+
     res.json({
       totalUsers: parseInt(totalUsers.rows[0].count),
       signupsByDay: signupsByDay.rows,
@@ -1161,12 +1174,59 @@ app.get(`/api/${ADMIN_SLUG}/stats`, requireAdmin, async (req, res) => {
       thisWeek: parseInt(thisWeek.rows[0].count),
       lastWeek: parseInt(lastWeek.rows[0].count),
       withAlerts: parseInt(withAlerts.rows[0].count),
+      activatedUsers,
+      notActivatedUsers,
+      activationRate,
     });
   } catch(e) {
     console.error('[admin]', e.message);
     res.status(500).json({ error: e.message });
   }
 });
+
+// ─────────────────────────────────────────
+//  SITEMAP
+// ─────────────────────────────────────────
+app.get('/sitemap.xml', (req, res) => {
+  const base = 'https://myaurum.app';
+  const today = new Date().toISOString().slice(0, 10);
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${base}/</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${base}/terms</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>${base}/privacy</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+</urlset>`;
+  res.setHeader('Content-Type', 'application/xml');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.send(xml);
+});
+
+// Ping Google Search Console on startup (non-blocking)
+const https = require('https');
+function pingGoogleSitemap() {
+  const url = 'https://www.google.com/ping?sitemap=https%3A%2F%2Fmyaurum.app%2Fsitemap.xml';
+  https.get(url, (r) => {
+    console.log(`[sitemap] Google ping: ${r.statusCode}`);
+  }).on('error', (e) => {
+    console.log(`[sitemap] Google ping failed: ${e.message}`);
+  });
+}
+setTimeout(pingGoogleSitemap, 5000); // 5s after startup
 
 app.get('*', (req, res) => {
   const indexPath = path.join(__dirname, 'index.html');
