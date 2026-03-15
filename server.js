@@ -1217,7 +1217,6 @@ app.get('/sitemap.xml', (req, res) => {
 });
 
 // Ping Google Search Console on startup (non-blocking)
-const https = require('https');
 function pingGoogleSitemap() {
   const url = 'https://www.google.com/ping?sitemap=https%3A%2F%2Fmyaurum.app%2Fsitemap.xml';
   https.get(url, (r) => {
