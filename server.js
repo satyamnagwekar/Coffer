@@ -998,11 +998,13 @@ function requireAdmin(req, res, next) {
   // Layer 1: IP whitelist
   const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '';
   if (ip !== ADMIN_IP) return res.status(404).send('Not found');
-  // Layer 2: signed cookie OR ?p= query param
+  // Layer 2: signed cookie OR ?p= query param OR Authorization header
   const cookie = getAdminCookie(req);
   if (cookie && cookie === adminToken()) return next();
   const qp = req.query.p || '';
   if (qp === ADMIN_PASS) return next();
+  const authHeader = req.headers['x-admin-token'] || '';
+  if (authHeader === adminToken()) return next();
   // API routes get JSON 401, page routes get login form
   if (req.path.startsWith('/api/')) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -1057,7 +1059,7 @@ app.post(`/${ADMIN_SLUG}/login`, (req, res) => {
 
 // Admin logout
 app.get(`/${ADMIN_SLUG}/logout`, (req, res) => {
-  res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=; HttpOnly; Secure; SameSite=Strict; Path=/${ADMIN_SLUG}; Max-Age=0`);
+  res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0`);
   res.setHeader('Cache-Control', 'no-store');
   res.type('html').send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Signed Out</title>
   <style>body{font-family:Georgia,serif;background:#FAF7F2;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
@@ -1078,7 +1080,9 @@ app.get('/signed-out', (req, res) => {
 app.get(`/${ADMIN_SLUG}`, requireAdmin, (req, res) => {
   const adminPath = path.join(__dirname, 'admin.html');
   if (fs.existsSync(adminPath)) {
-    const html = fs.readFileSync(adminPath, 'utf8');
+    let html = fs.readFileSync(adminPath, 'utf8');
+    // Inject token so API calls can authenticate without relying on cookies
+    html = html.replace('</head>', `<script>window._adminToken="${adminToken()}";</script></head>`);
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '-1');
