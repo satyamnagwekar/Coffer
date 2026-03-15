@@ -1266,7 +1266,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     <div id="headerStrip" style="display:none;align-items:center;justify-content:space-between;border-top:1px solid rgba(139,105,20,.12);padding-top:9px;gap:10px">
       <div id="headerStripText" style="min-width:0">
         <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:var(--text);line-height:1.2" id="headerWelcomeName">Welcome, —</div>
-        <div style="font-size:11px;color:var(--text-dim);margin-top:1px" id="headerStripSub">Your vault is empty. Start by adding a holding — anything physical: jewellery, coins, bars, or raw metal.</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:1px" id="headerStripSub">Add an item to see its live value instantly. <span style="color:var(--brand);font-weight:500">Takes 30 seconds.</span></div>
       </div>
       <button id="headerStripBtn" onclick="openAddModal()" style="padding:8px 20px;background:var(--brand);color:#FDF8F0;border:none;border-radius:7px;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;letter-spacing:.06em;cursor:pointer;white-space:nowrap;flex-shrink:0">+ Add First Holding</button>
     </div>
@@ -2347,7 +2347,7 @@ function updateHeaderWelcome(){
     sub.textContent = total + ' across ' + count + ' holding' + (count!==1?'s':'') + '. Last updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '.';
     btn.textContent = '+ Add Holding';
   } else {
-    sub.textContent = 'Your vault is empty. Start by adding a holding — anything physical: jewellery, coins, bars, or raw metal.';
+    sub.innerHTML = 'Add an item to see its live value instantly. <span style="color:var(--brand);font-weight:500">Takes 30 seconds.</span>';
     btn.textContent = '+ Add First Holding';
   }
 }
@@ -2590,6 +2590,8 @@ function renderList(){
     const vaultEmpty = totalItems === 0 && soldItems === 0;
     if(vaultEmpty){
       list.innerHTML=`<div class="empty-state" id="emptyOnboarding">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--text);margin-bottom:6px">You're one item away</div>
+        <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:18px;max-width:260px;margin-left:auto;margin-right:auto">Add any piece of gold or silver — jewellery, a coin, anything — and see its live market value in seconds.</div>
         <div class="empty-cta" onclick="openAddModal()">+ Add First Holding</div>
         <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--text-dim);line-height:1.9;letter-spacing:.04em">
           Prices update every 5 minutes · INR includes 15% import duty + 3% GST
