@@ -1003,7 +1003,10 @@ function requireAdmin(req, res, next) {
   if (cookie && cookie === adminToken()) return next();
   const qp = req.query.p || '';
   if (qp === ADMIN_PASS) return next();
-  // Not authenticated — show login form
+  // API routes get JSON 401, page routes get login form
+  if (req.path.startsWith('/api/')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
   res.setHeader('Cache-Control', 'no-store');
   res.type('html').send(`<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -1048,7 +1051,7 @@ app.post(`/${ADMIN_SLUG}/login`, (req, res) => {
   const { p } = req.body;
   if (p !== ADMIN_PASS) return res.status(401).json({ error: 'Incorrect password' });
   const token = adminToken();
-  res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/${ADMIN_SLUG}; Max-Age=28800`);
+  res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=28800`);
   res.json({ ok: true });
 });
 
