@@ -128,8 +128,10 @@ async function loadStats() {
   try {
     // Cookie is sent automatically by browser
     const res = await fetch(`/api/dash-4f8a2e91c3b7/stats`, { credentials: 'same-origin' });
-    if (!res.ok) throw new Error('Failed to load stats');
-    const d = await res.json();
+    const text = await res.text();
+    if (!res.ok) throw new Error(`Stats API ${res.status}: ${text.slice(0,200)}`);
+    let d;
+    try { d = JSON.parse(text); } catch(e) { throw new Error(`Bad JSON: ${text.slice(0,200)}`); }
     updatedAt.textContent = 'Last updated: ' + new Date().toLocaleString('en-IN', {timeZone:'Asia/Kolkata'}) + ' IST';
     render(d);
   } catch(e) {
