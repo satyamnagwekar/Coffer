@@ -127,7 +127,10 @@ async function loadStats() {
   const updatedAt = document.getElementById('updatedAt');
   try {
     // Cookie is sent automatically by browser
-    const res = await fetch(`/api/dash-4f8a2e91c3b7/stats`, { credentials: 'same-origin' });
+    const res = await fetch(`/api/dash-4f8a2e91c3b7/stats`, {
+      credentials: 'same-origin',
+      headers: window._adminToken ? { 'x-admin-token': window._adminToken } : {}
+    });
     const text = await res.text();
     if (!res.ok) throw new Error(`Stats API ${res.status}: ${text.slice(0,200)}`);
     let d;
