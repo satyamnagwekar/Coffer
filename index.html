@@ -162,6 +162,65 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* Free badge */
 .free-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(46,204,138,.08);border:1px solid var(--green-dim);border-radius:20px;padding:6px 14px;font-size:11px;color:var(--green);letter-spacing:.1em;text-transform:uppercase;width:fit-content}
 .free-badge .dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.premium-badge{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,rgba(139,105,20,.12),rgba(184,146,26,.08));border:1px solid rgba(139,105,20,.3);border-radius:20px;padding:6px 14px;font-size:11px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;width:fit-content}
+.premium-badge .star{font-size:10px}
+/* Plan section */
+.plan-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.plan-card.premium{background:linear-gradient(135deg,rgba(139,105,20,.06),rgba(184,146,26,.04));border-color:rgba(139,105,20,.25)}
+.plan-title{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-mid);font-weight:500;margin-bottom:4px}
+.plan-price{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--text);line-height:1.2}
+.plan-price span{font-size:12px;color:var(--text-dim);font-family:'Jost',sans-serif}
+.plan-features{margin-top:10px;display:flex;flex-direction:column;gap:5px}
+.plan-feat{font-size:11px;color:var(--text-mid);display:flex;align-items:center;gap:7px}
+.plan-feat .tick{color:var(--green);font-size:12px}
+.plan-feat .lock{color:var(--text-dim);font-size:10px}
+.btn-upgrade{width:100%;padding:15px;background:linear-gradient(135deg,#8B6914,#B8921A);border:none;border-radius:var(--radius-sm);color:#FDF8F0;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(139,105,20,.25);margin-top:12px}
+.btn-upgrade:hover{box-shadow:0 6px 20px rgba(139,105,20,.35)}
+/* Holdings cap warning */
+.cap-warning{background:rgba(240,180,41,.1);border:1px solid rgba(240,180,41,.3);border-radius:var(--radius-xs);padding:10px 14px;font-size:11px;color:#7A5A00;line-height:1.6;margin-bottom:12px}
+.cap-warning strong{color:#5A3A00}
+.cap-block{background:rgba(176,48,48,.06);border:1px solid rgba(176,48,48,.2);border-radius:var(--radius-xs);padding:12px 14px;font-size:11px;color:var(--red);line-height:1.6;margin-bottom:12px}
+/* Premium gate overlay */
+.premium-gate{position:relative;border-radius:var(--radius-sm);overflow:hidden}
+.premium-gate-overlay{position:absolute;inset:0;background:rgba(245,240,232,.88);backdrop-filter:blur(2px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;z-index:2;border-radius:var(--radius-sm)}
+.premium-gate-overlay .gate-icon{font-size:20px;opacity:.6}
+.premium-gate-overlay .gate-label{font-size:11px;color:var(--text-mid);letter-spacing:.08em;text-align:center;max-width:180px;line-height:1.4}
+.premium-gate-overlay .gate-btn{margin-top:6px;padding:8px 18px;background:var(--gold);color:#FDF8F0;border:none;border-radius:20px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;font-family:'Jost',sans-serif}
+/* Vault section */
+.vault-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.vault-item:last-child{border-bottom:none}
+.vault-name{font-size:13px;color:var(--text);font-weight:500}
+.vault-meta{font-size:11px;color:var(--text-dim);margin-top:2px}
+.vault-actions{display:flex;gap:8px}
+.vault-btn{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:10px;color:var(--text-mid);cursor:pointer;font-family:'Jost',sans-serif;letter-spacing:.06em}
+.vault-btn:hover{border-color:var(--gold-dim);color:var(--gold)}
+.vault-btn.danger:hover{border-color:rgba(176,48,48,.3);color:var(--red)}
+.btn-add-vault{width:100%;padding:12px;border:1px dashed var(--border);border-radius:var(--radius-sm);background:transparent;font-family:'Jost',sans-serif;font-size:11px;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-top:8px}
+.btn-add-vault:hover{border-color:var(--gold-dim);color:var(--gold)}
+/* Heir section */
+.heir-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:8px}
+.heir-name{font-size:13px;color:var(--text);font-weight:500}
+.heir-meta{font-size:11px;color:var(--text-dim);margin-top:3px;line-height:1.5}
+/* Notes section */
+.vault-notes-wrap{position:relative}
+.vault-notes-textarea{width:100%;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Jost',sans-serif;font-size:12px;color:var(--text);resize:vertical;min-height:90px;box-sizing:border-box}
+.notes-hint{font-size:10px;color:var(--text-dim);margin-top:5px;line-height:1.5}
+/* Upgrade modal */
+.upgrade-modal{max-width:360px}
+.upgrade-modal .modal-title{text-align:center;font-size:20px;margin-bottom:4px}
+.upgrade-modal .modal-sub{text-align:center;font-size:12px;color:var(--text-dim);margin-bottom:20px}
+.upgrade-feature-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.upgrade-feat{display:flex;align-items:flex-start;gap:10px;padding:10px;background:var(--bg3);border-radius:var(--radius-xs)}
+.upgrade-feat .feat-icon{font-size:16px;flex-shrink:0}
+.upgrade-feat .feat-text{font-size:12px;color:var(--text-mid);line-height:1.4}
+.upgrade-feat .feat-text strong{color:var(--text);display:block;margin-bottom:1px}
+.upgrade-price-row{display:flex;gap:8px;margin-bottom:12px}
+.upgrade-price-opt{flex:1;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center;cursor:pointer;transition:all .2s}
+.upgrade-price-opt.selected{border-color:var(--gold);background:rgba(139,105,20,.05)}
+.upgrade-price-opt .opt-price{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text)}
+.upgrade-price-opt .opt-label{font-size:10px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.upgrade-price-opt .opt-save{font-size:10px;color:var(--green);margin-top:2px}
+.upgrade-note{font-size:10px;color:var(--text-dim);text-align:center;line-height:1.5;margin-top:8px}
 @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
 
 /* ═══════════════════════════════════════
@@ -1295,6 +1354,14 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <button class="htab" onclick="setHTab('gifted',this)">Gifted</button>
     </div>
 
+    <!-- Held By grouped view (shown when toggled) -->
+    <div id="groupedPLSection" style="display:none;margin:0 14px 14px"></div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 14px 4px">
+      <div style="font-size:11px;color:var(--text-dim);letter-spacing:.04em">Group by person</div>
+      <button id="groupToggleBtn" onclick="toggleGroupedView()" style="font-size:11px;color:var(--brand);background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'Jost',sans-serif;letter-spacing:.04em">By Person ↕</button>
+    </div>
+
     <div class="filter-bar">
       <button class="filter-btn active" onclick="setFilter('all',this)">All Types</button>
       <button class="filter-btn" onclick="setFilter('jewellery',this)">💍 Jewellery</button>
@@ -1518,9 +1585,22 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         </div>
       </div>
 
+      <!-- PLAN SECTION — populated by JS -->
+      <div class="profile-section" id="planSection"></div>
+
+      <!-- VAULTS SECTION — premium only -->
+      <div class="profile-section" id="vaultsSection"></div>
+
+      <!-- HEIRS SECTION — premium only -->
+      <div class="profile-section" id="heirsSection"></div>
+
+      <!-- VAULT NOTES — premium only -->
+      <div class="profile-section" id="vaultNotesSection"></div>
+
       <div class="profile-section">
         <div class="profile-section-title">Actions</div>
         <button class="btn-profile-action btn-edit-profile" onclick="openEditProfile()">✏ Edit Profile</button>
+        <button class="btn-profile-action" onclick="exportSuccessionPDF()" style="background:rgba(192,132,252,.06);border:1px solid rgba(192,132,252,.2);color:#c084fc;border-radius:8px;padding:13px 16px;font-size:13px;font-family:'Jost',sans-serif;letter-spacing:.04em;cursor:pointer;width:100%;margin-bottom:10px;text-align:left">📄 Export Succession PDF</button>
         <button class="btn-profile-action btn-logout" onclick="doLogout()">Sign Out</button>
       </div>
 
@@ -1650,6 +1730,16 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <div class="field">
         <div class="field-label-row"><label>Notes</label><span class="field-hint">optional</span></div>
         <input type="text" id="itemNotes" placeholder="Jeweller, occasion, cert. number…">
+      </div>
+
+      <div class="field">
+        <div class="field-label-row"><label>Held By</label><span class="field-hint">optional · e.g. Self, Mum, Spouse</span></div>
+        <input type="text" id="itemHeldBy" placeholder="e.g. Self, Mum, Spouse…" autocomplete="off">
+      </div>
+
+      <div class="field">
+        <div class="field-label-row"><label>Nominee</label><span class="field-hint">optional · who inherits this</span></div>
+        <input type="text" id="itemNominee" placeholder="e.g. Priya Sharma…" autocomplete="off">
       </div>
 
       <div class="value-preview">
@@ -1790,6 +1880,99 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 </div>
 
 <!-- ══════════════════════ EDIT ITEM MODAL ══════════════════════ -->
+<!-- ══════════════════════ UPGRADE MODAL ══════════════════════ -->
+<div class="modal-overlay" id="upgradeModal">
+  <div class="modal upgrade-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header" style="justify-content:flex-end;padding-bottom:0">
+      <button class="modal-close" onclick="closeModal('upgradeModal')">✕</button>
+    </div>
+    <div class="modal-body" style="padding-top:8px">
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:28px;margin-bottom:6px">✦</div>
+        <div class="modal-title" style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--text)">MyAurum Premium</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:4px;line-height:1.5">Unlock the full power of your family gold ledger.</div>
+      </div>
+      <div class="upgrade-feature-list">
+        <div class="upgrade-feat"><div class="feat-icon">∞</div><div class="feat-text"><strong>Unlimited Holdings</strong>Free tier is capped at 25 — premium removes all limits.</div></div>
+        <div class="upgrade-feat"><div class="feat-icon">🏛</div><div class="feat-text"><strong>Multiple Vaults</strong>Create named ledgers — "Mum's Gold", "FD Coins" — under one login.</div></div>
+        <div class="upgrade-feat"><div class="feat-icon">👤</div><div class="feat-text"><strong>Heir Nomination</strong>Nominate heirs per vault. Attach to your will.</div></div>
+        <div class="upgrade-feat"><div class="feat-icon">📄</div><div class="feat-text"><strong>Succession PDF</strong>One-tap export — holdings, values, nominees — formatted for estate planning.</div></div>
+        <div class="upgrade-feat"><div class="feat-icon">🔐</div><div class="feat-text"><strong>Encrypted Notes</strong>Store locker numbers, bank details, lawyer contacts — decrypted on device only.</div></div>
+      </div>
+      <div class="upgrade-price-row">
+        <div class="upgrade-price-opt selected" id="priceOptMonth" onclick="selectPlan('month')">
+          <div class="opt-price">₹149</div>
+          <div class="opt-label">/ month</div>
+        </div>
+        <div class="upgrade-price-opt" id="priceOptYear" onclick="selectPlan('year')">
+          <div class="opt-price">₹999</div>
+          <div class="opt-label">/ year</div>
+          <div class="opt-save">Save ₹789</div>
+        </div>
+      </div>
+      <button class="btn-upgrade" onclick="initiateUpgrade()">Unlock Premium →</button>
+      <div class="upgrade-note" style="margin-top:10px">Payment gateway coming soon. You'll be notified when premium launches — your data is safe in the meantime.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ VAULT MODAL ══════════════════════ -->
+<div class="modal-overlay" id="vaultModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div><div class="modal-title" id="vaultModalTitle">New Vault</div><div class="modal-subtitle">Create a named ledger for a subset of your holdings</div></div>
+      <button class="modal-close" onclick="closeModal('vaultModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <div class="field-label-row"><label>Vault Name</label></div>
+        <input type="text" id="vaultNameInput" placeholder="e.g. Mum's Gold, FD Coins, My Collection">
+      </div>
+      <div class="field">
+        <div class="field-label-row"><label>Description <span class="field-opt">optional</span></label></div>
+        <input type="text" id="vaultDescInput" placeholder="e.g. Jewellery purchased before 2015">
+      </div>
+      <div id="vaultModalMsg" class="msg"></div>
+      <button class="btn-primary" onclick="saveVault()">Save Vault</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ HEIR MODAL ══════════════════════ -->
+<div class="modal-overlay" id="heirModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div><div class="modal-title" id="heirModalTitle">Add Heir</div><div class="modal-subtitle">Nominated heirs appear in your succession export</div></div>
+      <button class="modal-close" onclick="closeModal('heirModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <div class="field-label-row"><label>Full Name</label></div>
+        <input type="text" id="heirNameInput" placeholder="e.g. Priya Nagwekar">
+      </div>
+      <div class="field">
+        <div class="field-label-row"><label>Relationship</label></div>
+        <input type="text" id="heirRelInput" placeholder="e.g. Daughter, Spouse, Son">
+      </div>
+      <div class="field">
+        <div class="field-label-row"><label>Contact / Note <span class="field-opt">optional</span></label></div>
+        <input type="text" id="heirContactInput" placeholder="e.g. phone number, email, or note">
+      </div>
+      <div class="field">
+        <div class="field-label-row"><label>Applied to</label></div>
+        <select id="heirScopeSelect">
+          <option value="account">All vaults (account default)</option>
+        </select>
+      </div>
+      <div id="heirModalMsg" class="msg"></div>
+      <button class="btn-primary" onclick="saveHeir()">Save Heir</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="editModal">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -1847,6 +2030,14 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <div class="field">
         <div class="field-label-row"><label>Notes</label><span class="field-hint">optional</span></div>
         <input type="text" id="editNotes" placeholder="Jeweller, occasion, cert. number…">
+      </div>
+      <div class="field">
+        <div class="field-label-row"><label>Held By</label><span class="field-hint">optional</span></div>
+        <input type="text" id="editHeldBy" placeholder="e.g. Self, Mum, Spouse…" autocomplete="off">
+      </div>
+      <div class="field">
+        <div class="field-label-row"><label>Nominee</label><span class="field-hint">optional · who inherits this</span></div>
+        <input type="text" id="editNominee" placeholder="e.g. Priya Sharma…" autocomplete="off">
       </div>
       <div id="editItemMsg" class="msg"></div>
       <button class="btn-primary" onclick="saveEditItem()">Save Changes</button>
@@ -2209,6 +2400,59 @@ function refreshProfile(){
   document.getElementById('statItems').textContent=active;
   document.getElementById('statSold').textContent=sold;
   document.getElementById('statValue').textContent=portVal;
+
+  // Plan section
+  const activeCount=items.filter(i=>!i.sold&&!i.gifted).length;
+  const capPct=Math.min(100,Math.round((activeCount/25)*100));
+  const capColor=activeCount>=20?'var(--brand)':'var(--text-dim)';
+  document.getElementById('planSection').innerHTML=`
+    <div class="profile-section-title">MyAurum Plan</div>
+    <div style="background:rgba(240,180,41,.06);border:1px solid rgba(240,180,41,.18);border-radius:10px;padding:14px 16px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text)">Free Tier</div>
+        <div style="font-size:11px;color:var(--brand);letter-spacing:.06em;text-transform:uppercase">Active</div>
+      </div>
+      <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:10px">All features unlocked · up to 25 holdings</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+        <div style="font-size:11px;color:${capColor};letter-spacing:.04em">${activeCount} / 25 holdings used</div>
+        <div style="font-size:11px;color:var(--text-dim)">${25-activeCount} remaining</div>
+      </div>
+      <div style="height:4px;background:rgba(139,105,20,.12);border-radius:2px;overflow:hidden">
+        <div style="height:100%;width:${capPct}%;background:var(--brand);border-radius:2px;transition:width .4s"></div>
+      </div>
+      ${activeCount>=20?`<div style="font-size:11px;color:var(--brand);margin-top:8px;line-height:1.6">You're approaching the 25-holding limit. A ₹600/year plan will be available soon — existing users will be grandfathered.</div>`:''}
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text)">Premium <span style="font-size:13px;color:var(--brand)">— coming soon</span></div>
+          <div style="font-size:22px;font-weight:600;color:var(--brand);letter-spacing:-.5px;margin-top:4px">₹600 <span style="font-size:13px;font-weight:400;color:var(--text-dim)">/year</span></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-dim);text-align:right;line-height:1.6">= ₹50/month<br>less than a cup of chai</div>
+      </div>
+      <div style="font-size:12px;color:var(--text-dim);line-height:1.8;margin-top:8px">
+        ✦ Unlimited holdings<br>
+        ✦ Grouped P&amp;L by person (Held By)<br>
+        ✦ Nominee tracking per holding<br>
+        ✦ Succession PDF export<br>
+        ✦ Everything current users have, forever
+      </div>
+    </div>`;
+
+  // Nominee summary — show if any holdings have nominees
+  const withNominee=items.filter(i=>!i.sold&&!i.gifted&&i.nominee);
+  const heirsEl=document.getElementById('heirsSection');
+  if(withNominee.length){
+    const grouped={};
+    withNominee.forEach(it=>{const n=it.nominee||'Unspecified';if(!grouped[n])grouped[n]=[];grouped[n].push(it);});
+    heirsEl.innerHTML=`<div class="profile-section-title">Nominees</div>`+
+      Object.entries(grouped).map(([nominee,its])=>{
+        const val=its.reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0);
+        return `<div class="profile-row"><div class="profile-key">${escHtml(nominee)}</div><div class="profile-val" style="color:var(--text-mid)">${its.length} item${its.length!==1?'s':''} · ${fmtFull(val)}</div></div>`;
+      }).join('');
+  } else {
+    heirsEl.innerHTML='';
+  }
 }
 
 function openEditProfile(){
@@ -2314,7 +2558,7 @@ function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
 // ══════════════════════════════════════════
 // SUMMARY & RENDER
 // ══════════════════════════════════════════
-function updateAll(){updateSummary();renderList();updateHeaderWelcome();}
+function updateAll(){updateSummary();renderList();updateHeaderWelcome();if(groupedViewActive)renderGroupedPL();}
 function updateSummary(){
   let gU=0,sU=0,gG=0,sG=0,pU=0,spU=0;
   items.filter(i=>!i.sold&&!i.gifted).forEach(it=>{
@@ -2376,9 +2620,10 @@ function renderList(){
     else{vD=fmtFull(sU);const costB=item.goldCostBasisUSD||item.pricePaidUSD;if(costB){const g=sU-costB,p=(g/costB)*100,s=g>=0?'+':'';pnlH=`<div class="item-pnl ${g>=0?'pos':'neg'}">${g>=0?'▲':'▼'} ${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</div>`}}
     const dB=item.purchaseDate?`<span class="badge badge-date">📅 ${item.purchaseDate}</span>`:'';
     const pB=(item.photos&&item.photos.length)||(item.receipt)?`<span class="badge badge-provenance">📷 Photos</span>`:'';
+    const hB=item.heldBy?`<span class="badge" style="background:rgba(139,105,20,.08);color:var(--brand);border:1px solid rgba(139,105,20,.2);font-size:10px;padding:2px 7px;border-radius:10px">👤 ${escHtml(item.heldBy)}</span>`:'';
     return `<div class="item-card ${item.metal}${item.sold?' sold':''}${item.gifted?' gifted':''}" onclick="openDetail(${ri})">
       <div class="item-top"><div class="item-name">${escHtml(item.name)}</div><div class="item-value">${vD}</div></div>
-      <div class="item-meta"><span class="badge badge-type">${tL[item.type]}</span><span class="badge badge-grade${item.metal==='silver'?' silver':''}">${item.gradeName.split(' — ')[0]}</span><span class="badge badge-weight">${item.grams.toFixed(2)}g</span>${dB}${pB}</div>
+      <div class="item-meta"><span class="badge badge-type">${tL[item.type]}</span><span class="badge badge-grade${item.metal==='silver'?' silver':''}">${item.gradeName.split(' — ')[0]}</span><span class="badge badge-weight">${item.grams.toFixed(2)}g</span>${dB}${pB}${hB}</div>
       ${pnlH}${!item.pricePaidUSD&&!item.sold?'<div class="item-hint">Add purchase price to track gain/loss</div>':''}
     </div>`;
   }).join('');
@@ -2387,7 +2632,68 @@ function renderList(){
 // ══════════════════════════════════════════
 // CURRENCY / TABS
 // ══════════════════════════════════════════
-function setCurrency(c,btn){currency=c;document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updatePriceDisplay();updateAll();updatePreview()}
+let groupedViewActive=false;
+function toggleGroupedView(){
+  groupedViewActive=!groupedViewActive;
+  const btn=document.getElementById('groupToggleBtn');
+  const sec=document.getElementById('groupedPLSection');
+  if(groupedViewActive){
+    btn.textContent='By Person ✓';
+    btn.style.background='rgba(240,180,41,.16)';
+    btn.style.color='var(--brand)';
+    sec.style.display='';
+    renderGroupedPL();
+  } else {
+    btn.textContent='By Person ↕';
+    btn.style.background='rgba(240,180,41,.08)';
+    sec.style.display='none';
+  }
+}
+
+function renderGroupedPL(){
+  const sec=document.getElementById('groupedPLSection');
+  if(!sec||!groupedViewActive)return;
+  const active=items.filter(i=>!i.sold&&!i.gifted);
+  // Group by heldBy, default to 'Self' if blank
+  const groups={};
+  active.forEach(it=>{
+    const key=it.heldBy&&it.heldBy.trim()?it.heldBy.trim():'Self';
+    if(!groups[key])groups[key]={items:[],spotUSD:0,costUSD:0};
+    const v=metalValueUSD(it.metal,it.grams,it.purity);
+    groups[key].items.push(it);
+    groups[key].spotUSD+=v;
+    const cb=it.goldCostBasisUSD||it.pricePaidUSD;
+    if(cb)groups[key].costUSD+=cb;
+  });
+  if(!Object.keys(groups).length){sec.innerHTML='';return;}
+  sec.innerHTML=Object.entries(groups).map(([person,g])=>{
+    const hasCost=g.costUSD>0;
+    const gl=hasCost?g.spotUSD-g.costUSD:null;
+    const glPct=hasCost?(gl/g.costUSD)*100:null;
+    const s=gl>=0?'+':'';
+    const nominees=[...new Set(g.items.filter(i=>i.nominee).map(i=>i.nominee))];
+    return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-size:12px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px">👤 ${escHtml(person)}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--text)">${fmtFull(g.spotUSD)}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:var(--text-dim)">${g.items.length} holding${g.items.length!==1?'s':''}</div>
+          ${nominees.length?`<div style="font-size:11px;color:#c084fc;margin-top:3px">→ ${nominees.map(n=>escHtml(n)).join(', ')}</div>`:''}
+        </div>
+      </div>
+      ${hasCost?`<div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--text-dim)">Cost basis</div>
+        <div style="font-size:11px;color:var(--text-mid)">${fmtFull(g.costUSD)}</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px">
+        <div style="font-size:11px;color:var(--text-dim)">Unrealised G/L</div>
+        <div style="font-size:12px;font-weight:500;color:${gl>=0?'var(--green)':'var(--red)'}">${s}${fmtFull(gl)} (${s}${glPct.toFixed(1)}%)</div>
+      </div>`:'<div style="font-size:11px;color:var(--text-dim);padding-top:6px;border-top:1px solid var(--border)">Add purchase prices to track G/L</div>'}
+    </div>`;
+  }).join('');
+}
 function setHTab(t,btn){activeHTab=t;document.querySelectorAll('.htab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderList()}
 function setFilter(f,btn){activeFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderList()}
 
@@ -2399,7 +2705,7 @@ function haptic(ms=10){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(
 function openAddModal(){
   haptic();
   selectedMetal='gold';selectedType='jewellery';selectedGrade=GOLD_GRADES[1];photosBase64=[];
-  ['itemName','itemWeight','itemNotes','pricePaid','makingCharge'].forEach(id=>document.getElementById(id).value='');
+  ['itemName','itemWeight','itemNotes','pricePaid','makingCharge','itemHeldBy','itemNominee'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('hasMakingCharge').checked=false;
   document.getElementById('makingChargeRow').style.display='none';
   const msgEl=document.getElementById('addItemMsg');
@@ -2536,28 +2842,37 @@ async function addItem(){
   const paidRaw=parseFloat(document.getElementById('pricePaid').value)||0;
   const paidCurr=document.getElementById('pricePaidCurrency').value;
   const purchaseDate=document.getElementById('purchaseDate').value;
+  const heldBy=document.getElementById('itemHeldBy').value.trim();
+  const nominee=document.getElementById('itemNominee').value.trim();
   if(!name){showMsg('addItemMsg','Please give this item a name.','error');return}
   if(!weight||weight<=0||weight>100000){showMsg('addItemMsg','Please enter a valid weight greater than zero.','error');return}
   if(!selectedGrade){showMsg('addItemMsg','Please select a purity grade.','error');return}
+  // Soft cap at 20, hard block at 25
+  const activeCount=items.filter(i=>!i.sold&&!i.gifted).length;
+  if(activeCount>=25){showMsg('addItemMsg','You have reached the 25-holding limit. This limit will become a paid tier in a future update — it will not affect existing users.','error');return}
   const grams=toGrams(weight,unit);
+  const mcAmt=parseFloat(document.getElementById('makingCharge').value)||0;
+  const hasMC=document.getElementById('hasMakingCharge').checked&&mcAmt>0;
   const payload={
     name,metal:selectedMetal,type:selectedType,gradeName:selectedGrade.name,
     purity:selectedGrade.purity,grams,notes,purchaseDate,
     pricePaid:paidRaw||null,pricePaidCurrency:paidCurr,
     pricePaidUSD:paidRaw?toUSD(paidRaw,paidCurr):null,
-    makingCharge:(()=>{const mc=parseFloat(document.getElementById('editMakingCharge').value)||0;return document.getElementById('editHasMakingCharge').checked&&mc>0?mc:null})(),
+    makingCharge:hasMC?mcAmt:null,
     makingChargeCurrency:paidCurr,
-    goldCostBasisUSD:(()=>{if(!paidRaw)return null;const mc=document.getElementById('editHasMakingCharge').checked?(parseFloat(document.getElementById('editMakingCharge').value)||0):0;return toUSD(paidRaw,paidCurr)-toUSD(mc,paidCurr);})(),
-    makingCharge:(()=>{const mc=parseFloat(document.getElementById('makingCharge').value)||0;return document.getElementById('hasMakingCharge').checked&&mc>0?mc:null})(),
-    makingChargeCurrency:paidCurr,
-    goldCostBasisUSD:(()=>{if(!paidRaw)return null;const mc=document.getElementById('hasMakingCharge').checked?(parseFloat(document.getElementById('makingCharge').value)||0):0;return toUSD(paidRaw,paidCurr)-toUSD(mc,paidCurr);})(),
+    goldCostBasisUSD:paidRaw?(toUSD(paidRaw,paidCurr)-(hasMC?toUSD(mcAmt,paidCurr):0)):null,
     photos:photosBase64.length?photosBase64:null,
+    heldBy:heldBy||null,
+    nominee:nominee||null,
     addedAt:new Date().toISOString(),
   };
   try{
     const newItem=await api('POST','/items',payload);
     items.unshift(newItem);
     closeModal('addModal');updateAll();
+    if(activeCount+1===20){
+      setTimeout(()=>alert('You have 20 active holdings. MyAurum will be free until 25 — after that a ₹600/year plan will apply to new additions.'),400);
+    }
   }catch(e){alert('Could not save item: '+e.message)}
 }
 
@@ -2580,6 +2895,8 @@ function openEditModal(idx){
   document.getElementById('editMakingChargeRow').style.display=hasMC?'':  'none';
   document.getElementById('editMakingCharge').value=item.makingCharge||'';
   document.getElementById('editNotes').value=item.notes||'';
+  document.getElementById('editHeldBy').value=item.heldBy||'';
+  document.getElementById('editNominee').value=item.nominee||'';
   closeModal('detailModal');
   document.getElementById('editModal').classList.add('open');
 }
@@ -2593,18 +2910,24 @@ async function saveEditItem(){
   const paidRaw=parseFloat(document.getElementById('editPricePaid').value)||0;
   const paidCurr=document.getElementById('editPricePaidCurrency').value;
   const notes=document.getElementById('editNotes').value.trim();
+  const heldBy=document.getElementById('editHeldBy').value.trim();
+  const nominee=document.getElementById('editNominee').value.trim();
   if(!name){showMsg('editItemMsg','Please enter a name.','error');return}
   if(!weight||weight<=0||weight>100000){showMsg('editItemMsg','Please enter a valid weight greater than zero.','error');return}
   const grams=toGrams(weight,unit);
   const item=items[viewingItem];
+  const mcAmt=parseFloat(document.getElementById('editMakingCharge').value)||0;
+  const hasMC=document.getElementById('editHasMakingCharge').checked&&mcAmt>0;
   const payload={
     ...item,
     name,grams,notes,purchaseDate,
     pricePaid:paidRaw||null,pricePaidCurrency:paidCurr,
     pricePaidUSD:paidRaw?toUSD(paidRaw,paidCurr):null,
-    makingCharge:(()=>{const mc=parseFloat(document.getElementById('editMakingCharge').value)||0;return document.getElementById('editHasMakingCharge').checked&&mc>0?mc:null})(),
+    makingCharge:hasMC?mcAmt:null,
     makingChargeCurrency:paidCurr,
-    goldCostBasisUSD:(()=>{if(!paidRaw)return null;const mc=document.getElementById('editHasMakingCharge').checked?(parseFloat(document.getElementById('editMakingCharge').value)||0):0;return toUSD(paidRaw,paidCurr)-toUSD(mc,paidCurr);})(),
+    goldCostBasisUSD:paidRaw?(toUSD(paidRaw,paidCurr)-(hasMC?toUSD(mcAmt,paidCurr):0)):null,
+    heldBy:heldBy||null,
+    nominee:nominee||null,
   };
   try{
     const updated=await api('PUT','/items/'+item.id,payload);
@@ -2753,6 +3076,8 @@ function openDetail(idx){
 
   ];
   if(item.notes)acqRows.push(['Notes',escHtml(item.notes)]);
+  if(item.heldBy)acqRows.push(['Held By',escHtml(item.heldBy)]);
+  if(item.nominee)acqRows.push(['Nominee',`<span style="color:#c084fc">${escHtml(item.nominee)}</span>`]);
   const valRows=[
     ['Spot Price',item.metal==='gold'?'$'+prices.gold.toFixed(2)+'/oz':item.metal==='platinum'?'$'+prices.platinum.toFixed(2)+'/oz':'$'+prices.silver.toFixed(2)+'/oz'],
     ['Current Value',fmtFull(sU)],
@@ -2992,6 +3317,106 @@ async function renderHistoryChart(){
 // ══════════════════════════════════════════
 // EXPORT
 // ══════════════════════════════════════════
+// ══════════════════════════════════════════
+// SUCCESSION PDF
+// ══════════════════════════════════════════
+function exportSuccessionPDF(){
+  const active=items.filter(i=>!i.sold&&!i.gifted);
+  if(!active.length){alert('No active holdings to export.');return;}
+  // Group by heldBy
+  const groups={};
+  active.forEach(it=>{
+    const key=it.heldBy&&it.heldBy.trim()?it.heldBy.trim():'Self';
+    if(!groups[key])groups[key]=[];
+    groups[key].push(it);
+  });
+  const today=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+  const ownerName=currentUser?`${currentUser.firstName} ${currentUser.lastName}`:'—';
+  const totalUSD=active.reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0);
+
+  let groupsHTML='';
+  Object.entries(groups).forEach(([person,its])=>{
+    const gVal=its.reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0);
+    const nominees=[...new Set(its.filter(i=>i.nominee).map(i=>i.nominee))];
+    groupsHTML+=`
+      <div style="margin-bottom:28px;page-break-inside:avoid">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1.5px solid #c8a84b;padding-bottom:6px;margin-bottom:12px">
+          <div style="font-size:16px;font-weight:600;color:#2C2410">👤 ${person}</div>
+          <div style="font-size:13px;color:#5a4a1a">${fmtFull(gVal)}</div>
+        </div>
+        ${nominees.length?`<div style="font-size:11px;color:#8B6914;margin-bottom:10px;padding:6px 10px;background:#fdf5e0;border-radius:5px">Nominated heir${nominees.length>1?'s':''}: <strong>${nominees.join(', ')}</strong></div>`:''}
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead>
+            <tr style="background:#f5ead0">
+              <th style="text-align:left;padding:6px 8px;color:#5a4a1a;font-weight:600">Item</th>
+              <th style="text-align:left;padding:6px 8px;color:#5a4a1a;font-weight:600">Purity</th>
+              <th style="text-align:right;padding:6px 8px;color:#5a4a1a;font-weight:600">Weight</th>
+              <th style="text-align:right;padding:6px 8px;color:#5a4a1a;font-weight:600">Value</th>
+              <th style="text-align:left;padding:6px 8px;color:#5a4a1a;font-weight:600">Nominee</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${its.map((it,idx)=>{
+              const v=metalValueUSD(it.metal,it.grams,it.purity);
+              return `<tr style="background:${idx%2===0?'#fff':'#fdf8ef'}">
+                <td style="padding:6px 8px;color:#2C2410;font-weight:500">${it.name}</td>
+                <td style="padding:6px 8px;color:#5a4a1a">${it.gradeName.split(' — ')[0]}</td>
+                <td style="text-align:right;padding:6px 8px;color:#5a4a1a">${it.grams.toFixed(2)}g</td>
+                <td style="text-align:right;padding:6px 8px;font-weight:600;color:#2C2410">${fmtFull(v)}</td>
+                <td style="padding:6px 8px;color:#7c3aed">${it.nominee?it.nominee:'—'}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  });
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>MyAurum Succession Document — ${ownerName}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Jost:wght@300;400;500&display=swap');
+    body{font-family:'Jost',sans-serif;color:#2C2410;background:#fff;margin:0;padding:32px 40px;max-width:800px;margin:0 auto}
+    h1{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:32px;color:#2C2410;margin:0 0 4px}
+    .subtitle{font-size:13px;color:#8B6914;margin-bottom:4px;letter-spacing:.04em}
+    .disclaimer{font-size:10px;color:#aaa;line-height:1.6;margin-top:32px;padding-top:12px;border-top:1px solid #eee}
+    @media print{body{padding:20px}}
+  </style></head><body>
+  <div style="border-bottom:2px solid #c8a84b;padding-bottom:16px;margin-bottom:24px">
+    <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8B6914;margin-bottom:8px">MyAurum · Succession Document</div>
+    <h1>${ownerName}</h1>
+    <div class="subtitle">Gold &amp; Precious Metal Holdings Register</div>
+    <div style="display:flex;gap:24px;margin-top:12px;font-size:12px;color:#5a4a1a">
+      <div>Date: <strong>${today}</strong></div>
+      <div>Total Estate Value: <strong>${fmtFull(totalUSD)}</strong></div>
+      <div>Active Holdings: <strong>${active.length}</strong></div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:#8B6914;padding:8px 12px;background:#fdf5e0;border-radius:5px;margin-bottom:20px;line-height:1.6">
+    This document is intended as a personal record to assist in estate administration. Values are based on live spot prices as of the date above and are indicative only. Physical assets should be independently verified.
+  </div>
+  ${groupsHTML}
+  <div style="background:#f5ead0;border-radius:8px;padding:14px 16px;margin-top:8px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <div style="font-size:14px;font-weight:600;color:#2C2410">Total Portfolio Value</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#2C2410">${fmtFull(totalUSD)}</div>
+    </div>
+    <div style="font-size:11px;color:#8B6914;margin-top:4px">At ${currency} spot prices · ${today}</div>
+  </div>
+  <div class="disclaimer">
+    Generated by MyAurum (myaurum.app) · This document does not constitute legal advice or a binding will. Consult a legal professional for formal estate planning. Values shown are live-spot estimates and will change with market prices.
+  </div>
+  </body></html>`;
+
+  const blob=new Blob([html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`MyAurum_Succession_${ownerName.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Succession document downloaded — open in browser and print as PDF','ok',5000);
+}
+
 function exportData(){
   // Scroll to the export section which already has two distinct buttons
   const sec = document.querySelector('.export-section');
