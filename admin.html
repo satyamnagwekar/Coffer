@@ -113,27 +113,21 @@
 </main>
 
 <script>
-// Disable bfcache restore — if page is loaded from bfcache without ?p=, redirect
+// bfcache guard
 window.addEventListener('pageshow', function(e) {
-  var p = new URLSearchParams(location.search).get('p');
-  if (!p) { location.replace('/signed-out'); return; }
-  if (e.persisted) {
-    // Page restored from bfcache — force fresh load with password
-    location.replace(location.href);
-  }
+  if (e.persisted) { location.replace(location.pathname); }
 });
 
 function logout() {
-  window.location.replace('/signed-out');
+  window.location.replace('/dash-4f8a2e91c3b7/logout');
 }
 
 async function loadStats() {
   const content = document.getElementById('content');
   const updatedAt = document.getElementById('updatedAt');
   try {
-    // Get password from current URL query param
-    const p = new URLSearchParams(window.location.search).get('p') || '';
-    const res = await fetch(`/api/dash-4f8a2e91c3b7/stats?p=${encodeURIComponent(p)}`);
+    // Cookie is sent automatically by browser
+    const res = await fetch(`/api/dash-4f8a2e91c3b7/stats`, { credentials: 'same-origin' });
     if (!res.ok) throw new Error('Failed to load stats');
     const d = await res.json();
     updatedAt.textContent = 'Last updated: ' + new Date().toLocaleString('en-IN', {timeZone:'Asia/Kolkata'}) + ' IST';
@@ -153,6 +147,8 @@ function render(d) {
   const unverifiedCount = (d.verified.find(v => v.email_verified === false || v.email_verified === 'f')?.count) || 0;
   const activePct = d.totalUsers > 0 ? Math.round(d.activeWeek / d.totalUsers * 100) : 0;
   const dropPct = d.totalUsers > 0 ? Math.round(d.dropoff / d.totalUsers * 100) : 0;
+  const activationRate = d.activationRate || 0;
+  const activationColor = activationRate >= 50 ? '#1a7a4a' : activationRate >= 25 ? '#b87800' : '#b03030';
 
   // Auth methods
   const emailCount = d.authMethods.find(m => m.method === 'email')?.count || 0;
@@ -166,8 +162,19 @@ function render(d) {
 
     <!-- KPIs -->
     <div class="kpi-grid">
+      <div class="kpi" style="border:1px solid rgba(139,105,20,.2);background:#fffdf7;grid-column:span 2">
+        <div class="kpi-label">Activation — Users with ≥1 Holding</div>
+        <div style="display:flex;align-items:flex-end;gap:12px;margin:6px 0 4px">
+          <div class="kpi-value" style="color:${activationColor}">${activationRate}%</div>
+          <div style="font-size:13px;color:#888;margin-bottom:4px">${d.activatedUsers} activated · ${d.notActivatedUsers} registered only</div>
+        </div>
+        <div style="height:6px;background:#eee;border-radius:3px;overflow:hidden;margin-top:4px">
+          <div style="height:100%;width:${activationRate}%;background:${activationColor};border-radius:3px;transition:width .4s"></div>
+        </div>
+        <div style="font-size:11px;color:#aaa;margin-top:6px">of ${d.totalUsers} total registered users · ${d.totalUsers > 0 ? Math.round(d.activatedUsers / d.totalUsers * 100) : 0}% have added at least one holding</div>
+      </div>
       <div class="kpi">
-        <div class="kpi-label">Total Users</div>
+        <div class="kpi-label">Total Registered</div>
         <div class="kpi-value">${d.totalUsers}</div>
         <div class="kpi-sub ${weekDir}">${weekChange >= 0 ? '+' : ''}${weekChange}% vs last week</div>
       </div>
