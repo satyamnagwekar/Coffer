@@ -250,6 +250,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .spot-item .price{font-size:12px;font-weight:500}
 .spot-item.gold .price{color:var(--gold-light)}
 .spot-item.silver .price{color:var(--silver)}
+.benchmark-btn{font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 5px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;font-family:'Jost',sans-serif;transition:all .15s}
+.benchmark-btn.active{background:rgba(139,105,20,.12);border-color:var(--brand-dim);color:var(--brand)}
 
 /* Nav tabs */
 .nav-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg3)}
@@ -1258,8 +1260,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div class="metal" id="platinumSpotLabel">PLAT /oz</div>
           <div class="price" id="platinumSpot"><span class="loading-dot"></span></div>
         </div>
-        <div style="display:flex;align-items:flex-end;padding-bottom:1px">
+        <div style="display:flex;align-items:flex-end;padding-bottom:1px;flex-direction:column;gap:2px">
           <span style="font-size:10px;color:var(--text-dim);letter-spacing:.04em;opacity:.7">est.</span>
+          <div id="benchmarkToggle" style="display:flex;gap:3px;align-items:center"></div>
         </div>
       </div>
     </div>
@@ -2082,7 +2085,27 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 let prices={gold:3320,silver:33.2,platinum:980};
 let rates={USD:1,INR:83.5,AED:3.67,EUR:0.92,GBP:0.79};
 let currency='INR';
-function setCurrency(c,btn){currency=c;document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updateSummary();renderList();if(groupedViewActive)renderGroupedPL();if(document.getElementById('panelChart').classList.contains('active')){updateChartPanel();renderHistoryChart();}}
+
+// Benchmark: 'MCX' | 'COMEX' | 'LBMA' | 'DGCX'
+// MCX = Indian domestic (includes 15% import duty + 3% GST, priced per 10g)
+// COMEX/LBMA/DGCX = international spot (per oz, raw USD × rate) — numbers nearly identical, labels differ
+let benchmark='MCX';
+const BENCHMARK_LABELS={MCX:'MCX',COMEX:'COMEX',LBMA:'LBMA',DGCX:'DGCX'};
+const CURRENCY_DEFAULT_BENCHMARK={INR:'MCX',USD:'COMEX',GBP:'LBMA',EUR:'LBMA',AED:'DGCX'};
+function setBenchmark(b){
+  benchmark=b;
+  document.querySelectorAll('.benchmark-btn').forEach(el=>el.classList.toggle('active',el.dataset.b===b));
+  _coreUpdatePriceDisplay();
+}
+function setCurrency(c,btn){
+  currency=c;
+  benchmark=CURRENCY_DEFAULT_BENCHMARK[c]||'COMEX';
+  document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  updateSummary();renderList();
+  if(groupedViewActive)renderGroupedPL();
+  if(document.getElementById('panelChart').classList.contains('active')){updateChartPanel();renderHistoryChart();}
+}
 let items=[];
 let activeHTab='all',activeFilter='all';
 let selectedMetal='gold',selectedType='jewellery',selectedGrade=null;
@@ -2383,7 +2406,7 @@ function updateHeaderWelcome(){
   const btn = document.getElementById('headerStripBtn');
   strip.style.display = 'flex';
   if(hasItems){
-    const total = fmtFull(items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0));
+    const total = fmtDisp(items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0));
     const count = items.filter(i=>!i.sold&&!i.gifted).length;
     // Find the most recently updated holding date
     const dates = items.filter(i=>!i.sold&&!i.gifted).map(i=>i.updatedAt||i.purchaseDate).filter(Boolean).sort().reverse();
@@ -2427,9 +2450,8 @@ function refreshProfile(){
   const gifted=items.filter(i=>i.gifted).length;
   let portVal='—';
   if(active>0){
-    const tot=items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0);
-    const v=tot*rates[currency];
-    portVal=(SYMBOLS[currency]||currency+' ')+(v>=10000?(v/1000).toFixed(0)+'k':v.toFixed(0));
+    const v=items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0);
+    portVal=(benchmark==='MCX'?'₹':(SYMBOLS[currency]||currency+' '))+(v>=10000?(v/1000).toFixed(0)+'k':v.toFixed(0));
   }
   document.getElementById('statItems').textContent=active;
   document.getElementById('statSold').textContent=sold;
@@ -2485,8 +2507,7 @@ function refreshProfile(){
     withNominee.forEach(it=>{const n=it.nominee||'Unspecified';if(!grouped[n])grouped[n]=[];grouped[n].push(it);});
     heirsEl.innerHTML=`<div class="profile-section-title">Nominees</div>`+
       Object.entries(grouped).map(([nominee,its])=>{
-        const val=its.reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0);
-        return `<div class="profile-row"><div class="profile-key">${escHtml(nominee)}</div><div class="profile-val" style="color:var(--text-mid)">${its.length} item${its.length!==1?'s':''} · ${fmtFull(val)}</div></div>`;
+        return `<div class="profile-row"><div class="profile-key">${escHtml(nominee)}</div><div class="profile-val" style="color:var(--text-mid)">${its.length} item${its.length!==1?'s':''} · ${fmtDisp(its.reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0))}</div></div>`;
       }).join('');
   } else {
     heirsEl.innerHTML='';
@@ -2594,6 +2615,37 @@ function toGrams(w,u){if(u==='oz')return w*31.1035;if(u==='tola')return w*11.663
 function toOz(g){return g/31.1035}
 function toUSD(a,c){return a/rates[c]}
 function metalValueUSD(metal,grams,purity){return toOz(grams*purity)*(metal==='gold'?prices.gold:metal==='platinum'?prices.platinum:prices.silver)}
+
+// Returns value in display currency, applying MCX factor when benchmark=MCX
+// MCX: raw_oz_USD * rates.INR * 1.15 * 1.03 (15% import duty + 3% GST)
+// Other benchmarks: raw_oz_USD * rates[currency]
+// Platinum has no MCX import premium — uses raw spot × rate
+function spotDisplayValue(metal,grams,purity){
+  const usd=metalValueUSD(metal,grams,purity);
+  if(benchmark==='MCX'&&metal!=='platinum') return usd*rates.INR*1.15*1.03;
+  return usd*(rates[currency]||1);
+}
+
+// Returns cost basis in display currency for P&L comparison
+function costBasisDisplay(item){
+  if(!item.pricePaidUSD&&!item.pricePaid) return null;
+  const metalMultiplier=item.makingCharge?1:1; // making charge already excluded in goldCostBasisUSD
+  const cbUSD=item.goldCostBasisUSD||item.pricePaidUSD;
+  if(!cbUSD) return null;
+  if(benchmark==='MCX'&&item.metal!=='platinum'){
+    // cbUSD is raw USD cost basis. Convert to MCX-equivalent INR.
+    return cbUSD*rates.INR*1.15*1.03;
+  }
+  return cbUSD*(rates[currency]||1);
+}
+
+// Format a display-currency value (no conversion needed — already in display currency)
+function fmtDisp(val){
+  const s=SYMBOLS[currency]||'$';
+  if(benchmark==='MCX') return '₹'+Math.round(val).toLocaleString('en-IN');
+  return s+val.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
 function fmtFull(usd,curr){curr=curr||currency;const v=usd*rates[curr];return SYMBOLS[curr]+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
 function fmtCurr(a,c){return (SYMBOLS[c]||c+' ')+parseFloat(a).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
@@ -2607,21 +2659,22 @@ function updateAll(){
   updateSummary();renderList();updateHeaderWelcome();if(groupedViewActive)renderGroupedPL();
 }
 function updateSummary(){
-  let gU=0,sU=0,gG=0,sG=0,pU=0,spU=0;
+  let gD=0,sD=0,gG=0,sG=0,pD=0,spD=0;
   items.filter(i=>!i.sold&&!i.gifted).forEach(it=>{
-    const v=metalValueUSD(it.metal,it.grams,it.purity);
-    if(it.metal==='gold'){gU+=v;gG+=it.grams}else{sU+=v;sG+=it.grams}
-    spU+=v;const _cb=it.goldCostBasisUSD||it.pricePaidUSD;if(_cb)pU+=_cb;
+    const v=spotDisplayValue(it.metal,it.grams,it.purity);
+    if(it.metal==='gold'){gD+=v;gG+=it.grams}else{sD+=v;sG+=it.grams}
+    spD+=v;const _cb=costBasisDisplay(it);if(_cb)pD+=_cb;
   });
-  const tot=gU+sU;
-  document.getElementById('totalValue').textContent=fmtFull(tot);
-  document.getElementById('totalUSD').textContent=currency!=='USD'?'≈ $'+tot.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+' USD':'';
-  document.getElementById('goldTotal').textContent=fmtFull(gU);
-  document.getElementById('silverTotal').textContent=fmtFull(sU);
+  const tot=gD+sD;
+  const totUSD=items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0);
+  document.getElementById('totalValue').textContent=fmtDisp(tot);
+  document.getElementById('totalUSD').textContent=currency!=='USD'?'≈ $'+totUSD.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+' USD':'';
+  document.getElementById('goldTotal').textContent=fmtDisp(gD);
+  document.getElementById('silverTotal').textContent=fmtDisp(sD);
   document.getElementById('goldWeight').textContent=gG.toFixed(2)+'g';
   document.getElementById('silverWeight').textContent=sG.toFixed(2)+'g';
   const pEl=document.getElementById('totalPnl'),pPct=document.getElementById('totalPnlPct');
-  if(pU>0){const g=spU-pU,p=(g/pU)*100,s=g>=0?'+':'';pEl.textContent=s+fmtFull(g);pEl.className='split-val pnl '+(g>=0?'pos':'neg');pPct.textContent=s+p.toFixed(1)+'%'}
+  if(pD>0){const g=spD-pD,p=(g/pD)*100,s=g>=0?'+':'';pEl.textContent=s+fmtDisp(g);pEl.className='split-val pnl '+(g>=0?'pos':'neg');pPct.textContent=s+p.toFixed(1)+'%'}
   else{pEl.textContent='—';pEl.className='split-val pnl';pPct.textContent='add cost to track'}
 }
 
@@ -2684,10 +2737,18 @@ function renderList(){
   const tL={jewellery:'💍 Jewellery',coin_bar:'🪙 Coin/Bar',raw:'⚗️ Raw'};
   list.innerHTML=f.map(item=>{
     const ri=items.indexOf(item);
-    const sU=metalValueUSD(item.metal,item.grams,item.purity);
+    const sD=spotDisplayValue(item.metal,item.grams,item.purity);
     let vD,pnlH='';
-    if(item.sold){vD=fmtFull(toUSD(item.sellPrice,item.sellCurrency));const costB=item.goldCostBasisUSD||item.pricePaidUSD;if(costB){const g=toUSD(item.sellPrice,item.sellCurrency)-costB,p=(g/costB)*100,s=g>=0?'+':'';pnlH=`<div class="item-pnl ${g>=0?'pos':'neg'}">${g>=0?'▲':'▼'} Realised ${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</div>`}}
-    else{vD=fmtFull(sU);const costB=item.goldCostBasisUSD||item.pricePaidUSD;if(costB){const g=sU-costB,p=(g/costB)*100,s=g>=0?'+':'';pnlH=`<div class="item-pnl ${g>=0?'pos':'neg'}">${g>=0?'▲':'▼'} ${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</div>`}}
+    if(item.sold){
+      const sellDisp=item.sellPrice*(rates[item.sellCurrency]?1:1); // kept in original currency
+      vD=fmtCurr(item.sellPrice,item.sellCurrency);
+      const cbD=costBasisDisplay(item);
+      if(cbD){const sellD=toUSD(item.sellPrice,item.sellCurrency)*(rates[currency]||1);const g=sellD-cbD,p=(g/cbD)*100,s=g>=0?'+':'';pnlH=`<div class="item-pnl ${g>=0?'pos':'neg'}">${g>=0?'▲':'▼'} Realised ${s}${fmtDisp(g)} (${s}${p.toFixed(1)}%)</div>`}
+    } else {
+      vD=fmtDisp(sD);
+      const cbD=costBasisDisplay(item);
+      if(cbD){const g=sD-cbD,p=(g/cbD)*100,s=g>=0?'+':'';pnlH=`<div class="item-pnl ${g>=0?'pos':'neg'}">${g>=0?'▲':'▼'} ${s}${fmtDisp(g)} (${s}${p.toFixed(1)}%)</div>`}
+    }
     const dB=item.purchaseDate?`<span class="badge badge-date">📅 ${item.purchaseDate}</span>`:'';
     const pB=(item.photos&&item.photos.length)||(item.receipt)?`<span class="badge badge-provenance">📷 Photos</span>`:'';
     const hB=item.heldBy?`<span class="badge" style="background:rgba(139,105,20,.08);color:var(--brand);border:1px solid rgba(139,105,20,.2);font-size:10px;padding:2px 7px;border-radius:10px">👤 ${escHtml(item.heldBy)}</span>`:'';
@@ -2728,25 +2789,24 @@ function renderGroupedPL(){
   const groups={};
   active.forEach(it=>{
     const key=it.heldBy&&it.heldBy.trim()?it.heldBy.trim():'Self';
-    if(!groups[key])groups[key]={items:[],spotUSD:0,costUSD:0};
-    const v=metalValueUSD(it.metal,it.grams,it.purity);
+    if(!groups[key])groups[key]={items:[],spotD:0,costD:0};
     groups[key].items.push(it);
-    groups[key].spotUSD+=v;
-    const cb=it.goldCostBasisUSD||it.pricePaidUSD;
-    if(cb)groups[key].costUSD+=cb;
+    groups[key].spotD+=spotDisplayValue(it.metal,it.grams,it.purity);
+    const cbD=costBasisDisplay(it);
+    if(cbD)groups[key].costD+=cbD;
   });
   if(!Object.keys(groups).length){sec.innerHTML='';return;}
   sec.innerHTML=Object.entries(groups).map(([person,g])=>{
-    const hasCost=g.costUSD>0;
-    const gl=hasCost?g.spotUSD-g.costUSD:null;
-    const glPct=hasCost?(gl/g.costUSD)*100:null;
+    const hasCost=g.costD>0;
+    const gl=hasCost?g.spotD-g.costD:null;
+    const glPct=hasCost?(gl/g.costD)*100:null;
     const s=gl>=0?'+':'';
     const nominees=[...new Set(g.items.filter(i=>i.nominee).map(i=>i.nominee))];
     return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
         <div>
           <div style="font-size:12px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px">👤 ${escHtml(person)}</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--text)">${fmtFull(g.spotUSD)}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--text)">${fmtDisp(g.spotD)}</div>
         </div>
         <div style="text-align:right">
           <div style="font-size:11px;color:var(--text-dim)">${g.items.length} holding${g.items.length!==1?'s':''}</div>
@@ -2755,11 +2815,11 @@ function renderGroupedPL(){
       </div>
       ${hasCost?`<div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border)">
         <div style="font-size:11px;color:var(--text-dim)">Cost basis</div>
-        <div style="font-size:11px;color:var(--text-mid)">${fmtFull(g.costUSD)}</div>
+        <div style="font-size:11px;color:var(--text-mid)">${fmtDisp(g.costD)}</div>
       </div>
       <div style="display:flex;justify-content:space-between;margin-top:4px">
         <div style="font-size:11px;color:var(--text-dim)">Unrealised G/L</div>
-        <div style="font-size:12px;font-weight:500;color:${gl>=0?'var(--green)':'var(--red)'}">${s}${fmtFull(gl)} (${s}${glPct.toFixed(1)}%)</div>
+        <div style="font-size:12px;font-weight:500;color:${gl>=0?'var(--green)':'var(--red)'}">${s}${fmtDisp(Math.abs(gl))} (${s}${Math.abs(glPct).toFixed(1)}%)</div>
       </div>`:'<div style="font-size:11px;color:var(--text-dim);padding-top:6px;border-top:1px solid var(--border)">Add purchase prices to track G/L</div>'}
     </div>`;
   }).join('');
@@ -2854,14 +2914,17 @@ function updatePreview(){
   const pR=parseFloat(document.getElementById('pricePaid').value)||0;
   const pC=document.getElementById('pricePaidCurrency').value;
   if(!w||!selectedGrade){document.getElementById('valuePreview').textContent='—';document.getElementById('pnlPreviewBox').style.display='none';return}
-  const g=toGrams(w,u),sU=metalValueUSD(selectedMetal,g,selectedGrade.purity);
-  document.getElementById('valuePreview').textContent=fmtFull(sU);
+  const g=toGrams(w,u);
+  const sD=spotDisplayValue(selectedMetal,g,selectedGrade.purity);
+  document.getElementById('valuePreview').textContent=fmtDisp(sD);
   if(pR>0){
-    const pU=toUSD(pR,pC),gain=sU-pU,pct=pU>0?(gain/pU)*100:0,s=gain>=0?'+':'';
+    const paidUSD=toUSD(pR,pC);
+    const cbD=benchmark==='MCX'&&selectedMetal!=='platinum'?paidUSD*rates.INR*1.15*1.03:paidUSD*(rates[currency]||1);
+    const gain=sD-cbD,pct=cbD>0?(gain/cbD)*100:0,s=gain>=0?'+':'';
     document.getElementById('pnlPaid').textContent=fmtCurr(pR,pC);
-    document.getElementById('pnlSpot').textContent=fmtFull(sU);
+    document.getElementById('pnlSpot').textContent=fmtDisp(sD);
     document.getElementById('pnlGain').className='pnl-val hi '+(gain>=0?'pos':'neg');
-    document.getElementById('pnlGain').textContent=s+fmtFull(gain)+' ('+s+pct.toFixed(1)+'%)';
+    document.getElementById('pnlGain').textContent=s+fmtDisp(Math.abs(gain))+' ('+s+Math.abs(pct).toFixed(1)+'%)';
     document.getElementById('pnlPreviewBox').style.display='';
   }else document.getElementById('pnlPreviewBox').style.display='none';
 }
@@ -3070,15 +3133,16 @@ function openSellModal(idx){
 function updateSellPreview(){
   if(viewingItem===null)return;
   const item=items[viewingItem];
-  const sU=metalValueUSD(item.metal,item.grams,item.purity);
+  const sD=spotDisplayValue(item.metal,item.grams,item.purity);
+  const cbD=costBasisDisplay(item);
   const sR=parseFloat(document.getElementById('sellPrice').value)||0;
   const sC=document.getElementById('sellCurrency').value;
-  document.getElementById('spSpot').textContent=fmtFull(sU);
-  document.getElementById('spPaid').textContent=item.pricePaidUSD?fmtFull(item.pricePaidUSD):'Not recorded';
+  document.getElementById('spSpot').textContent=fmtDisp(sD);
+  document.getElementById('spPaid').textContent=cbD?fmtDisp(cbD):'Not recorded';
   if(sR>0){
-    const sellU=toUSD(sR,sC);
+    const sellD=toUSD(sR,sC)*(rates[currency]||1);
     document.getElementById('spReceived').textContent=fmtCurr(sR,sC);
-    if(item.pricePaidUSD){const g=sellU-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';document.getElementById('spGain').className='pnl-val hi '+(g>=0?'pos':'neg');document.getElementById('spGain').textContent=s+fmtFull(g)+' ('+s+p.toFixed(1)+'%)'}
+    if(cbD){const g=sellD-cbD,p=(g/cbD)*100,s=g>=0?'+':'-';document.getElementById('spGain').className='pnl-val hi '+(g>=0?'pos':'neg');document.getElementById('spGain').textContent=s+fmtDisp(Math.abs(g))+' ('+s+Math.abs(p).toFixed(1)+'%)'}
     else document.getElementById('spGain').textContent='—';
   }else{document.getElementById('spReceived').textContent='—';document.getElementById('spGain').textContent='—'}
 }
@@ -3120,14 +3184,14 @@ function openGiftModal(idx){
   document.getElementById('giftTo').value='';
   document.getElementById('giftNotes').value='';
   // populate summary
-  const sU=metalValueUSD(item.metal,item.grams,item.purity);
-  const costB=item.goldCostBasisUSD||item.pricePaidUSD;
-  document.getElementById('giftSpot').textContent=fmtFull(sU);
-  document.getElementById('giftPaid').textContent=costB?fmtFull(costB):'Not recorded';
-  if(costB){
-    const g=sU-costB,p=(g/costB)*100,s=g>=0?'+':'';
+  const sD=spotDisplayValue(item.metal,item.grams,item.purity);
+  const cbD=costBasisDisplay(item);
+  document.getElementById('giftSpot').textContent=fmtDisp(sD);
+  document.getElementById('giftPaid').textContent=cbD?fmtDisp(cbD):'Not recorded';
+  if(cbD){
+    const g=sD-cbD,p=(g/cbD)*100,s=g>=0?'+':'';
     document.getElementById('giftGain').className='pnl-val hi '+(g>=0?'pos':'neg');
-    document.getElementById('giftGain').textContent=s+fmtFull(g)+' ('+s+p.toFixed(1)+'%)';
+    document.getElementById('giftGain').textContent=s+fmtDisp(Math.abs(g))+' ('+s+Math.abs(p).toFixed(1)+'%)';
   } else {
     document.getElementById('giftGain').textContent='—';
   }
@@ -3166,11 +3230,11 @@ async function confirmGift(){
 }
 
 // ══════════════════════════════════════════
-// DETAIL
-// ══════════════════════════════════════════
 function openDetail(idx){
   viewingItem=idx;const item=items[idx];
-  const sU=metalValueUSD(item.metal,item.grams,item.purity);
+  const sD=spotDisplayValue(item.metal,item.grams,item.purity);
+  const bLabel=BENCHMARK_LABELS[benchmark]||benchmark;
+  const isMCX=benchmark==='MCX';
   const tL={jewellery:'Jewellery',coin_bar:'Coin / Bar',raw:'Raw / Unrefined'};
   document.getElementById('detailTitle').textContent=item.name;
   const acqRows=[
@@ -3179,29 +3243,34 @@ function openDetail(idx){
     ['Weight',item.grams.toFixed(3)+'g · '+toOz(item.grams).toFixed(4)+' oz'],
     ['Pure Content',(item.grams*item.purity).toFixed(3)+'g'],
     ['Date Purchased',item.purchaseDate||'—'],
-
   ];
   if(item.notes)acqRows.push(['Notes',escHtml(item.notes)]);
   if(item.heldBy)acqRows.push(['Held By',escHtml(item.heldBy)]);
   if(item.nominee)acqRows.push(['Nominee',`<span style="color:#c084fc">${escHtml(item.nominee)}</span>`]);
+  const spotLabel = isMCX&&item.metal!=='platinum' ? 'Spot (MCX /10g)' : `Spot (${bLabel} /oz)`;
+  const spotDisp = isMCX&&item.metal!=='platinum'
+    ? '₹'+Math.round((item.metal==='gold'?prices.gold:prices.silver)*rates.INR*1.15*1.03).toLocaleString('en-IN')
+    : (SYMBOLS[currency]||'$')+((item.metal==='gold'?prices.gold:item.metal==='platinum'?prices.platinum:prices.silver)*(rates[currency]||1)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
   const valRows=[
-    ['Spot Price',item.metal==='gold'?'$'+prices.gold.toFixed(2)+'/oz':item.metal==='platinum'?'$'+prices.platinum.toFixed(2)+'/oz':'$'+prices.silver.toFixed(2)+'/oz'],
-    ['Current Value',fmtFull(sU)],
+    [spotLabel, spotDisp],
+    ['Current Value',fmtDisp(sD)],
   ];
   if(item.pricePaidUSD){
-    const costB=item.goldCostBasisUSD||item.pricePaidUSD;
+    const cbD=costBasisDisplay(item);
     valRows.push(['Purchase Price',fmtCurr(item.pricePaid,item.pricePaidCurrency)]);
     if(item.makingCharge){
       valRows.push(['Making Charges',`<span style="color:var(--text-dim)">− ${fmtCurr(item.makingCharge,item.makingChargeCurrency||item.pricePaidCurrency)}</span>`]);
       valRows.push(['Gold Cost Basis',`<strong>${fmtCurr(item.pricePaid-item.makingCharge,item.pricePaidCurrency)}</strong>`]);
     }
-    const g=sU-costB,p=(g/costB)*100,s=g>=0?'+':'';
-    valRows.push(['Unrealised G/L',`<span class="${g>=0?'pos':'neg'}">${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</span>`]);
+    if(cbD){const g=sD-cbD,p=(g/cbD)*100,s=g>=0?'+':'';
+      valRows.push(['Unrealised G/L',`<span class="${g>=0?'pos':'neg'}">${s}${fmtDisp(g)} (${s}${p.toFixed(1)}%)</span>`]);
+    }
   }
   let soldHTML='';
   if(item.sold){
-    const sellU=toUSD(item.sellPrice,item.sellCurrency);let rRow='';
-    if(item.pricePaidUSD){const g=sellU-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';rRow=`<div class="detail-row"><div class="detail-key">Realised G/L</div><div class="detail-val ${g>=0?'pos':'neg'}">${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</div></div>`}
+    const sellD=toUSD(item.sellPrice,item.sellCurrency)*(rates[currency]||1);let rRow='';
+    const cbD=costBasisDisplay(item);
+    if(cbD){const g=sellD-cbD,p=(g/cbD)*100,s=g>=0?'+':'';rRow=`<div class="detail-row"><div class="detail-key">Realised G/L</div><div class="detail-val ${g>=0?'pos':'neg'}">${s}${fmtDisp(g)} (${s}${p.toFixed(1)}%)</div></div>`}
     soldHTML=`<div class="detail-section"><div class="detail-section-title">Sale Record</div>
       <div class="detail-row"><div class="detail-key">Date Sold</div><div class="detail-val">${item.sellDate||'—'}</div></div>
       <div class="detail-row"><div class="detail-key">Price Received</div><div class="detail-val">${fmtCurr(item.sellPrice,item.sellCurrency)}</div></div>
@@ -3230,12 +3299,12 @@ function openDetail(idx){
       if(!item.gifted)return '';
       const costB=item.goldCostBasisUSD||item.pricePaidUSD;
       let gRow='';
-      if(item.giftGainUSD!=null){const g=item.giftGainUSD,p=costB?(g/costB)*100:0,s=g>=0?'+':'';gRow=`<div class="detail-row"><div class="detail-key">Gain given away</div><div class="detail-val ${g>=0?'pos':'neg'}">${s}${fmtFull(g)} (${s}${p.toFixed(1)}%)</div></div>`;}
+      if(item.giftGainUSD!=null){const gD=item.giftGainUSD*(benchmark==='MCX'&&item.metal!=='platinum'?rates.INR*1.15*1.03:rates[currency]||1);const cbD=costBasisDisplay(item);const p=cbD?(gD/cbD)*100:0,s=gD>=0?'+':'';gRow=`<div class="detail-row"><div class="detail-key">Gain given away</div><div class="detail-val ${gD>=0?'pos':'neg'}">${s}${fmtDisp(Math.abs(gD))} (${s}${Math.abs(p).toFixed(1)}%)</div></div>`;}
       return `<div class="detail-section"><div class="detail-section-title">Gift Record</div>
         <div class="detail-row"><div class="detail-key">Date Gifted</div><div class="detail-val">${item.giftDate||'—'}</div></div>
         ${item.giftTo?`<div class="detail-row"><div class="detail-key">Gifted To</div><div class="detail-val">${escHtml(item.giftTo)}</div></div>`:''}
         ${item.giftNotes?`<div class="detail-row"><div class="detail-key">Occasion</div><div class="detail-val">${escHtml(item.giftNotes)}</div></div>`:''}
-        <div class="detail-row"><div class="detail-key">Value at Gift</div><div class="detail-val">${item.giftValueUSD?fmtFull(item.giftValueUSD):'—'}</div></div>
+        <div class="detail-row"><div class="detail-key">Value at Gift</div><div class="detail-val">${item.giftValueUSD?fmtDisp(item.giftValueUSD*(benchmark==='MCX'&&item.metal!=='platinum'?rates.INR*1.15*1.03:rates[currency]||1)):'—'}</div></div>
         ${gRow}</div>`;
     })()}
     <div class="detail-actions">${editBtn}${actionBtn}</div>
@@ -3276,7 +3345,7 @@ function setChartRange(r,btn){
 
 function updateChartPanel(){
   const active=items.filter(i=>!i.sold);
-  const tot=active.reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0);
+  const tot=active.reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0);
 
   // Show/hide empty state overlay for chart
   const chartEmpty = document.getElementById('chartEmptyState');
@@ -3291,9 +3360,9 @@ function updateChartPanel(){
     }
   }
 
-  document.getElementById('chartHeadline').textContent=fmtFull(tot);
+  document.getElementById('chartHeadline').textContent=fmtDisp(tot);
   document.getElementById('chartSub').textContent=active.length+' active holding'+(active.length!==1?'s':'');
-  document.getElementById('donutTotal').textContent=fmtFull(tot);
+  document.getElementById('donutTotal').textContent=fmtDisp(tot);
   if(chartRange==='composition')drawDonut();
   if(chartRange==='performance')renderPerfGrid();
   if(chartRange==='history')renderHistoryChart();
@@ -3309,7 +3378,7 @@ function drawDonut(){
   const goldItems=active.filter(i=>i.metal==='gold');
   const silverItems=active.filter(i=>i.metal==='silver');
   const allSlices=[...goldItems,...silverItems];
-  const vals=allSlices.map(i=>metalValueUSD(i.metal,i.grams,i.purity));
+  const vals=allSlices.map(i=>spotDisplayValue(i.metal,i.grams,i.purity));
   const tot=vals.reduce((a,b)=>a+b,0)||1;
   const GOLD_COLORS=['#F0B429','#FFD166','#D4920A','#E8A020','#B87800'];
   const SILVER_COLORS=['#C8D8E8','#E0EDF8','#90A8C0','#A8C0D8','#788898'];
@@ -3331,7 +3400,7 @@ function drawDonut(){
       <div class="legend-left"><div class="legend-dot" style="background:${d.color}"></div>
         <div><div class="legend-name">${escHtml(d.name)}</div><div class="legend-sub">${d.grams.toFixed(2)}g · ${d.pct}%</div></div>
       </div>
-      <div class="legend-right"><div class="legend-val">${fmtFull(d.val)}</div></div>
+      <div class="legend-right"><div class="legend-val">${fmtDisp(d.val)}</div></div>
     </div>`).join('');
 }
 
@@ -3340,7 +3409,7 @@ function renderPerfGrid(){
   const grid=document.getElementById('perfGrid');
   if(!active.length){grid.innerHTML='<div style="text-align:center;padding:24px;font-size:11px;color:var(--text-dim)">No active holdings to display</div>';return}
   grid.innerHTML=active.map(item=>{
-    const sU=metalValueUSD(item.metal,item.grams,item.purity);
+    const sD=spotDisplayValue(item.metal,item.grams,item.purity);
     const isINR=currency==='INR';
     const INDIA_FACTOR=(10/31.1035)*1.15*1.03;
     const rate=rates[currency]||1;
@@ -3350,11 +3419,11 @@ function renderPerfGrid(){
       ?'₹'+Math.round(rawSpot*rates.INR*INDIA_FACTOR).toLocaleString('en-IN')+'/10g'
       :sym+(rawSpot*rate).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'/oz';
     let glHTML='<div class="perf-val">—</div>';
-    if(item.pricePaidUSD){const g=sU-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';glHTML=`<div class="perf-val ${g>=0?'pos':'neg'}">${s}${fmtFull(g)}<br><span style="font-size:11px">${s}${p.toFixed(1)}%</span></div>`}
+    const cbD=costBasisDisplay(item);if(cbD){const g=sD-cbD,p=(g/cbD)*100,s=g>=0?'+':'';glHTML=`<div class="perf-val ${g>=0?'pos':'neg'}">${s}${fmtDisp(Math.abs(g))}<br><span style="font-size:11px">${s}${Math.abs(p).toFixed(1)}%</span></div>`}
     return `<div class="perf-card" onclick="openDetail(${items.indexOf(item)})">
       <div class="perf-card-name">${escHtml(item.name)}</div>
       <div class="perf-rows">
-        <div class="perf-row"><div class="perf-key">Current Value</div><div class="perf-val ${item.metal==='gold'?'gold-c':'silver-c'}">${fmtFull(sU)}</div></div>
+        <div class="perf-row"><div class="perf-key">Current Value</div><div class="perf-val ${item.metal==='gold'?'gold-c':'silver-c'}">${fmtDisp(sD)}</div></div>
         <div class="perf-row"><div class="perf-key">Spot Price</div><div class="perf-val">${spotPriceDisplay}</div></div>
         <div class="perf-row"><div class="perf-key">Weight</div><div class="perf-val">${item.grams.toFixed(3)}g</div></div>
         <div class="perf-row"><div class="perf-key">G / L</div>${glHTML}</div>
@@ -3456,17 +3525,18 @@ function exportSuccessionPDF(){
   });
   const today=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
   const ownerName=currentUser?`${currentUser.firstName} ${currentUser.lastName}`:'—';
-  const totalUSD=active.reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0);
+  const totalUSD=active.reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0); // kept in USD for PDF header
+  const totalDisp=active.reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0);
 
   let groupsHTML='';
   Object.entries(groups).forEach(([person,its])=>{
-    const gVal=its.reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0);
+    const gVal=its.reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0);
     const nominees=[...new Set(its.filter(i=>i.nominee).map(i=>i.nominee))];
     groupsHTML+=`
       <div style="margin-bottom:28px;page-break-inside:avoid">
         <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1.5px solid #c8a84b;padding-bottom:6px;margin-bottom:12px">
           <div style="font-size:16px;font-weight:600;color:#2C2410">👤 ${person}</div>
-          <div style="font-size:13px;color:#5a4a1a">${fmtFull(gVal)}</div>
+          <div style="font-size:13px;color:#5a4a1a">${fmtDisp(gVal)}</div>
         </div>
         ${nominees.length?`<div style="font-size:11px;color:#8B6914;margin-bottom:10px;padding:6px 10px;background:#fdf5e0;border-radius:5px">Nominated heir${nominees.length>1?'s':''}: <strong>${nominees.join(', ')}</strong></div>`:''}
         <table style="width:100%;border-collapse:collapse;font-size:11px">
@@ -3481,12 +3551,12 @@ function exportSuccessionPDF(){
           </thead>
           <tbody>
             ${its.map((it,idx)=>{
-              const v=metalValueUSD(it.metal,it.grams,it.purity);
+              const v=spotDisplayValue(it.metal,it.grams,it.purity);
               return `<tr style="background:${idx%2===0?'#fff':'#fdf8ef'}">
                 <td style="padding:6px 8px;color:#2C2410;font-weight:500">${it.name}</td>
                 <td style="padding:6px 8px;color:#5a4a1a">${it.gradeName.split(' — ')[0]}</td>
                 <td style="text-align:right;padding:6px 8px;color:#5a4a1a">${it.grams.toFixed(2)}g</td>
-                <td style="text-align:right;padding:6px 8px;font-weight:600;color:#2C2410">${fmtFull(v)}</td>
+                <td style="text-align:right;padding:6px 8px;font-weight:600;color:#2C2410">${fmtDisp(v)}</td>
                 <td style="padding:6px 8px;color:#7c3aed">${it.nominee?it.nominee:'—'}</td>
               </tr>`;
             }).join('')}
@@ -3511,7 +3581,7 @@ function exportSuccessionPDF(){
     <div class="subtitle">Gold &amp; Precious Metal Holdings Register</div>
     <div style="display:flex;gap:24px;margin-top:12px;font-size:12px;color:#5a4a1a">
       <div>Date: <strong>${today}</strong></div>
-      <div>Total Estate Value: <strong>${fmtFull(totalUSD)}</strong></div>
+      <div>Total Estate Value: <strong>${fmtDisp(totalDisp)}</strong></div>
       <div>Active Holdings: <strong>${active.length}</strong></div>
     </div>
   </div>
@@ -3522,7 +3592,7 @@ function exportSuccessionPDF(){
   <div style="background:#f5ead0;border-radius:8px;padding:14px 16px;margin-top:8px">
     <div style="display:flex;justify-content:space-between;align-items:baseline">
       <div style="font-size:14px;font-weight:600;color:#2C2410">Total Portfolio Value</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#2C2410">${fmtFull(totalUSD)}</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#2C2410">${fmtDisp(totalDisp)}</div>
     </div>
     <div style="font-size:11px;color:#8B6914;margin-top:4px">At ${currency} spot prices · ${today}</div>
   </div>
@@ -3652,23 +3722,25 @@ async function exportToGoogleSheets(){
 let priceAlerts=[];
 
 function refreshAlertsPanel(){
-  const isINR = currency === 'INR';
+  const isMCX = benchmark === 'MCX';
   const INDIA_FACTOR = (10/31.1035) * 1.15 * 1.03;
-  const goldINR10g   = prices.gold   * rates.INR * INDIA_FACTOR;
-  const silverINR10g = prices.silver * rates.INR * INDIA_FACTOR;
+  const bLabel = BENCHMARK_LABELS[benchmark] || benchmark;
   const alertDutyNote = document.getElementById('alertDutyNote');
-  if(alertDutyNote) alertDutyNote.style.display = isINR ? 'block' : 'none';
-  if(isINR){
+  if(alertDutyNote) alertDutyNote.style.display = isMCX ? 'block' : 'none';
+  if(isMCX){
+    const goldINR10g   = prices.gold   * rates.INR * INDIA_FACTOR;
+    const silverINR10g = prices.silver * rates.INR * INDIA_FACTOR;
     document.getElementById('alertGoldLabel').textContent   = 'Gold / 10g (MCX)';
     document.getElementById('alertSilverLabel').textContent = 'Silver / 10g (MCX)';
     document.getElementById('alertGoldPrice').textContent   = '₹' + Math.round(goldINR10g).toLocaleString('en-IN');
     document.getElementById('alertSilverPrice').textContent = '₹' + Math.round(silverINR10g).toLocaleString('en-IN');
   } else {
     const sym = SYMBOLS[currency] || '$';
-    document.getElementById('alertGoldLabel').textContent   = 'Gold / oz';
-    document.getElementById('alertSilverLabel').textContent = 'Silver / oz';
-    document.getElementById('alertGoldPrice').textContent   = sym + (prices.gold*(rates[currency]||1)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-    document.getElementById('alertSilverPrice').textContent = sym + (prices.silver*(rates[currency]||1)).toFixed(2);
+    const rate = rates[currency] || 1;
+    document.getElementById('alertGoldLabel').textContent   = `Gold / oz (${bLabel})`;
+    document.getElementById('alertSilverLabel').textContent = `Silver / oz (${bLabel})`;
+    document.getElementById('alertGoldPrice').textContent   = sym + (prices.gold*rate).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('alertSilverPrice').textContent = sym + (prices.silver*rate).toFixed(2);
   }
   renderAlertsList();updateNotifStatus();
   // Default price currency selector to match current display currency
@@ -3831,53 +3903,58 @@ function fireNotification(a,spot){
 // PRICE DISPLAY
 // ══════════════════════════════════════════
 function _coreUpdatePriceDisplay(){
-  const isINR = currency === 'INR';
+  const isMCX = benchmark === 'MCX';
   const INDIA_FACTOR = (10/31.1035) * 1.15 * 1.03;
-  const goldINR10g   = prices.gold   * rates.INR * INDIA_FACTOR;
-  const silverINR10g = prices.silver * rates.INR * INDIA_FACTOR;
+  const sym = SYMBOLS[currency] || '$';
+  const rate = rates[currency] || 1;
+  const bLabel = BENCHMARK_LABELS[benchmark] || benchmark;
 
+  // Duty note only for MCX
   const dutyNote = document.getElementById('inrDutyNote');
-  if(dutyNote) dutyNote.style.display = isINR ? 'block' : 'none';
+  if(dutyNote) dutyNote.style.display = isMCX ? 'block' : 'none';
 
-  if(isINR){
+  // Build benchmark toggle buttons
+  const tog = document.getElementById('benchmarkToggle');
+  if(tog){
+    const options = currency==='INR' ? ['MCX','COMEX'] :
+                    currency==='GBP'||currency==='EUR' ? ['LBMA','COMEX'] :
+                    currency==='AED' ? ['DGCX','COMEX'] :
+                    ['COMEX','LBMA'];
+    tog.innerHTML = options.map(b=>
+      `<button class="benchmark-btn${benchmark===b?' active':''}" data-b="${b}" onclick="setBenchmark('${b}')">${b}</button>`
+    ).join('');
+  }
+
+  if(isMCX){
+    const goldINR10g   = prices.gold   * rates.INR * INDIA_FACTOR;
+    const silverINR10g = prices.silver * rates.INR * INDIA_FACTOR;
+    const platINR10g   = prices.platinum * rates.INR * (10/31.1035);
     document.getElementById('goldSpotLabel').textContent   = 'GOLD /10g (MCX)';
     document.getElementById('silverSpotLabel').textContent = 'SILVER /10g (MCX)';
     document.getElementById('platinumSpotLabel').textContent = 'PLAT /10g';
     document.getElementById('goldSpot').textContent   = '₹' + Math.round(goldINR10g).toLocaleString('en-IN');
     document.getElementById('silverSpot').textContent = '₹' + Math.round(silverINR10g).toLocaleString('en-IN');
-    const platINR10g = prices.platinum * rates.INR * (10/31.1035);
     document.getElementById('platinumSpot').textContent = '₹' + Math.round(platINR10g).toLocaleString('en-IN');
+    // Home cards
+    const hgEl=document.getElementById('homeGoldSpot'),hsEl=document.getElementById('homeSilverSpot');
+    const hgU=document.getElementById('homeGoldUnit'),hsU=document.getElementById('homeSilverUnit');
+    if(hgEl){hgEl.textContent='₹'+Math.round(goldINR10g).toLocaleString('en-IN');if(hgU)hgU.textContent='per 10g · MCX incl. duty+GST';}
+    if(hsEl){hsEl.textContent='₹'+Math.round(silverINR10g).toLocaleString('en-IN');if(hsU)hsU.textContent='per 10g · MCX incl. duty+GST';}
   } else {
-    const sym = SYMBOLS[currency] || '$';
-    const goldDisp   = prices.gold   * (rates[currency]||1);
-    const silverDisp = prices.silver * (rates[currency]||1);
-    const platDisp   = prices.platinum * (rates[currency]||1);
-    document.getElementById('goldSpotLabel').textContent   = 'GOLD /oz';
-    document.getElementById('silverSpotLabel').textContent = 'SILVER /oz';
+    const goldDisp = prices.gold   * rate;
+    const silverDisp = prices.silver * rate;
+    const platDisp  = prices.platinum * rate;
+    document.getElementById('goldSpotLabel').textContent   = `GOLD /oz (${bLabel})`;
+    document.getElementById('silverSpotLabel').textContent = `SILVER /oz (${bLabel})`;
     document.getElementById('platinumSpotLabel').textContent = 'PLAT /oz';
     document.getElementById('goldSpot').textContent   = sym + goldDisp.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
     document.getElementById('silverSpot').textContent = sym + silverDisp.toFixed(2);
     document.getElementById('platinumSpot').textContent = sym + platDisp.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-  }
-
-  // Home spot cards
-  const hgEl = document.getElementById('homeGoldSpot');
-  const hsEl = document.getElementById('homeSilverSpot');
-  const hgU  = document.getElementById('homeGoldUnit');
-  const hsU  = document.getElementById('homeSilverUnit');
-  if(hgEl && hsEl){
-    if(isINR){
-      hgEl.textContent = '₹' + Math.round(goldINR10g).toLocaleString('en-IN');
-      hsEl.textContent = '₹' + Math.round(silverINR10g).toLocaleString('en-IN');
-      if(hgU) hgU.textContent = 'per 10g · MCX incl. duty+GST';
-      if(hsU) hsU.textContent = 'per 10g · MCX incl. duty+GST';
-    } else {
-      const sym = SYMBOLS[currency] || '$';
-      hgEl.textContent = sym + (prices.gold * (rates[currency]||1)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-      hsEl.textContent = sym + (prices.silver * (rates[currency]||1)).toFixed(2);
-      if(hgU) hgU.textContent = 'per oz · ' + currency;
-      if(hsU) hsU.textContent = 'per oz · ' + currency;
-    }
+    // Home cards
+    const hgEl=document.getElementById('homeGoldSpot'),hsEl=document.getElementById('homeSilverSpot');
+    const hgU=document.getElementById('homeGoldUnit'),hsU=document.getElementById('homeSilverUnit');
+    if(hgEl){hgEl.textContent=sym+goldDisp.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});if(hgU)hgU.textContent=`per oz · ${bLabel}`;}
+    if(hsEl){hsEl.textContent=sym+silverDisp.toFixed(2);if(hsU)hsU.textContent=`per oz · ${bLabel}`;}
   }
 }
 
