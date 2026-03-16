@@ -3443,7 +3443,11 @@ function exportCSV(){
 }
 function exportJSON(){
   if(!items.length){alert('No items to export.');return}
-  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),items},null,2)],{type:'application/json'});
+  const exportItems=items.map(it=>{
+    const {photos,receipt,...rest}=it;
+    return {...rest,photoCount:(photos&&photos.length)||0};
+  });
+  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),items:exportItems},null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download=`myaurum-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();
 }
