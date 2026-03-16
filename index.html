@@ -941,9 +941,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="auth-rule-icon">✦</div>
         <div class="auth-rule-line"></div>
       </div>
-      <div class="auth-headline">Your gold &amp; silver, valued <em>in real time.</em></div>
+      <div class="auth-headline">See what your gold is worth — <em>right now.</em></div>
       <div class="auth-desc">
-        A private digital ledger for tracking the live market value of your physical gold, silver and platinum — jewellery, hallmarked coins, investment bars, and raw metal. Built for families who hold precious metals as a long-term store of wealth. No broker account, no KYC, no one looking over your shoulder. Know exactly what your holdings are worth today, in your currency, with full gain and loss history. No ads, no data sharing, ever.
+        Add any piece of gold or silver — a bangle, a coin, anything — and see its live market value in seconds. No broker account, no KYC, no one looking over your shoulder. Works in rupees, dollars, dirhams, or pounds. No ads, no data sharing, ever.
       </div>
 
       <!-- Mock portfolio preview card -->
@@ -1657,6 +1657,16 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="field-label-row"><label>Purity / Grade</label><span class="field-hint">Select below</span></div>
         <div class="grade-grid" id="gradeGrid"></div>
         <div class="field-note" id="gradeNote">Select a purity grade. For jewellery, this is usually stamped inside the piece.</div>
+        <div style="font-size:11px;color:var(--brand);margin-top:6px;cursor:pointer" onclick="document.getElementById('purityHelperBox').style.display=document.getElementById('purityHelperBox').style.display==='none'?'block':'none'">Not sure of the purity? ▾</div>
+        <div id="purityHelperBox" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:6px;font-size:11px;color:var(--text-mid);line-height:1.8">
+          <strong style="color:var(--text)">Quick guide:</strong><br>
+          Indian jewellery → usually <strong>22K</strong> (stamp: 916)<br>
+          Middle Eastern jewellery → usually <strong>21K</strong><br>
+          European/UK fine jewellery → usually <strong>18K</strong><br>
+          UK hallmarked pieces → may be <strong>9K</strong><br>
+          Investment coins/bars → usually <strong>24K</strong><br>
+          <span style="color:var(--text-dim);margin-top:4px;display:block">You can always update this later.</span>
+        </div>
       </div>
 
       <div class="field-row">
@@ -1760,6 +1770,20 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
       <div id="addItemMsg" class="msg"></div>
       <button class="btn-primary" onclick="addItem()">Save to Aurum</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ FIRST LOGIN MODAL ══════════════════════ -->
+<div class="modal-overlay" id="firstLoginModal" style="z-index:1100">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-handle"></div>
+    <div class="modal-body" style="text-align:center;padding:28px 24px 24px">
+      <div style="font-size:36px;margin-bottom:12px">🪙</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:var(--text);margin-bottom:8px" id="firstLoginName">Welcome!</div>
+      <div style="font-size:13px;color:var(--text-mid);line-height:1.7;margin-bottom:20px">Your vault is empty. Add your first piece of gold or silver and see its live market value — it takes under a minute.</div>
+      <button onclick="closeModal('firstLoginModal');openAddModal();" style="width:100%;padding:13px;background:var(--brand);color:#FDF8F0;border:none;border-radius:8px;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;letter-spacing:.08em;cursor:pointer;margin-bottom:10px">+ Add My First Holding</button>
+      <button onclick="closeModal('firstLoginModal')" style="width:100%;padding:10px;background:transparent;color:var(--text-dim);border:none;font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;letter-spacing:.04em">I'll explore first</button>
     </div>
   </div>
 </div>
@@ -2304,6 +2328,13 @@ async function loginUser(user){
   // Post-login: email verify banner + web push
   setTimeout(()=>{
     initWebPush();
+    // Show first-login prompt if vault is empty and not already shown this session
+    if(!items.length && !sessionStorage.getItem('firstLoginShown')){
+      sessionStorage.setItem('firstLoginShown','1');
+      const el = document.getElementById('firstLoginName');
+      if(el && currentUser) el.textContent = `Welcome, ${currentUser.firstName}!`;
+      document.getElementById('firstLoginModal').classList.add('open');
+    }
   }, 800);
 }
 
@@ -2607,12 +2638,33 @@ function renderList(){
     const soldItems  = items.filter(i=>i.sold).length;
     const vaultEmpty = totalItems === 0 && soldItems === 0;
     if(vaultEmpty){
+      const sym = SYMBOLS[currency]||'$';
+      const isINR = currency==='INR';
+      const INDIA_FACTOR = (10/31.1035)*1.15*1.03;
+      const goldDisp = isINR
+        ? '₹'+Math.round(prices.gold*rates.INR*INDIA_FACTOR).toLocaleString('en-IN')+' /10g'
+        : sym+( prices.gold*(rates[currency]||1) ).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+' /oz';
+      const silverDisp = isINR
+        ? '₹'+Math.round(prices.silver*rates.INR*INDIA_FACTOR).toLocaleString('en-IN')+' /10g'
+        : sym+( prices.silver*(rates[currency]||1) ).toFixed(2)+' /oz';
       list.innerHTML=`<div class="empty-state" id="emptyOnboarding">
         <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--text);margin-bottom:6px">You're one item away</div>
         <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:18px;max-width:260px;margin-left:auto;margin-right:auto">Add any piece of gold or silver — jewellery, a coin, anything — and see its live market value in seconds.</div>
+        <div style="display:flex;gap:10px;justify-content:center;margin-bottom:18px">
+          <div style="background:rgba(139,105,20,.07);border:1px solid var(--brand-dim);border-radius:10px;padding:10px 16px;text-align:center;min-width:110px">
+            <div style="font-size:10px;color:var(--brand);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px">🥇 Gold</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--text);font-weight:500">${goldDisp}</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">live spot</div>
+          </div>
+          <div style="background:rgba(180,200,220,.07);border:1px solid rgba(180,200,220,.3);border-radius:10px;padding:10px 16px;text-align:center;min-width:110px">
+            <div style="font-size:10px;color:var(--silver);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px">🥈 Silver</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--text);font-weight:500">${silverDisp}</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">live spot</div>
+          </div>
+        </div>
         <div class="empty-cta" onclick="openAddModal()">+ Add First Holding</div>
         <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--text-dim);line-height:1.9;letter-spacing:.04em">
-          Prices update every 5 minutes · INR includes 15% import duty + 3% GST
+          Prices update every 5 minutes${isINR?' · INR includes 15% import duty + 3% GST':''}
         </div>
       </div>`;
     } else {
