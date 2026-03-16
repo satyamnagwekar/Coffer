@@ -1619,7 +1619,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-header">
-      <div><div class="modal-title">Add Holding</div><div class="modal-subtitle">Enter your gold or silver item details</div></div>
+      <div><div class="modal-title">Add Holding</div><div class="modal-subtitle">Metal, purity, and weight is all you need to see a live value</div></div>
       <button class="modal-close" onclick="closeModal('addModal')">✕</button>
     </div>
     <div class="modal-body">
@@ -1674,56 +1674,66 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         </div>
       </div>
 
-      <div class="form-divider"><div class="form-divider-line"></div><div class="form-divider-text">Provenance &amp; Purchase</div><div class="form-divider-line"></div></div>
-
-      <div class="field">
-        <div class="field-label-row"><label>Date Purchased</label></div>
-        <input type="date" id="purchaseDate">
+      <div class="form-divider provenance-toggle" onclick="toggleProvenance()" style="cursor:pointer">
+        <div class="form-divider-line"></div>
+        <div class="form-divider-text" style="display:flex;align-items:center;gap:5px;white-space:nowrap">
+          <span>Purchase Details</span>
+          <span style="font-size:10px;color:var(--text-dim);font-weight:400;letter-spacing:0">· optional</span>
+          <span id="provenanceChevron" style="font-size:10px;color:var(--text-dim);transition:transform .2s">▼</span>
+        </div>
+        <div class="form-divider-line"></div>
       </div>
 
-      <div class="field-row">
+      <div id="provenanceSection" style="display:none">
         <div class="field">
-          <div class="field-label-row"><label>Price Paid</label></div>
-          <input type="number" id="pricePaid" placeholder="0.00" step="0.01" oninput="updatePreview()">
+          <div class="field-label-row"><label>Date Purchased</label></div>
+          <input type="date" id="purchaseDate">
         </div>
+
+        <div class="field-row">
+          <div class="field">
+            <div class="field-label-row"><label>Price Paid</label></div>
+            <input type="number" id="pricePaid" placeholder="0.00" step="0.01" oninput="updatePreview()">
+          </div>
+          <div class="field">
+            <div class="field-label-row"><label>Currency</label></div>
+            <select id="pricePaidCurrency" onchange="updatePreview()">
+              <option value="USD">USD $</option><option value="INR">INR ₹</option><option value="AED">AED</option><option value="EUR">EUR €</option><option value="GBP">GBP £</option>
+            </select>
+          </div>
+        </div>
+
         <div class="field">
-          <div class="field-label-row"><label>Currency</label></div>
-          <select id="pricePaidCurrency" onchange="updatePreview()">
-            <option value="USD">USD $</option><option value="INR">INR ₹</option><option value="AED">AED</option><option value="EUR">EUR €</option><option value="GBP">GBP £</option>
-          </select>
+          <div class="field-label-row"><label>Photos</label><span class="field-hint">optional · receipt, item, certificate</span></div>
+          <div id="photosGrid" class="photos-grid" style="display:none"></div>
+          <div id="photoUploadArea" class="receipt-upload">
+            <input type="file" id="photoFile" accept="image/*" onchange="handlePhotoUpload(this)">
+            <div class="u-icon">📷</div>
+            <div class="u-label">Tap to attach photos</div>
+            <div class="u-sub">Receipt · actual item · certificate · max 3 photos · stored on device only</div>
+          </div>
         </div>
-      </div>
+        <div class="field" id="makingChargeField">
+          <div class="field-label-row">
+            <label>Making Charges</label>
+            <span class="field-hint" style="color:var(--gold-dim);font-size:11px">included in price above?</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer">
+              <input type="checkbox" id="hasMakingCharge" onchange="toggleMakingCharge()" style="width:15px;height:15px;accent-color:var(--gold)">
+              Price includes making charges
+            </label>
+          </div>
+          <div id="makingChargeRow" style="display:none">
+            <input type="number" id="makingCharge" placeholder="Making charge amount" step="0.01" oninput="updatePreview()" style="width:100%">
+            <div style="font-size:11px;color:var(--text-dim);margin-top:4px">Making charges have no resale value — this amount will be excluded from your cost basis.</div>
+          </div>
+        </div>
 
-      <div class="field">
-        <div class="field-label-row"><label>Photos</label><span class="field-hint">optional · receipt, item, certificate</span></div>
-        <div id="photosGrid" class="photos-grid" style="display:none"></div>
-        <div id="photoUploadArea" class="receipt-upload">
-          <input type="file" id="photoFile" accept="image/*" onchange="handlePhotoUpload(this)">
-          <div class="u-icon">📷</div>
-          <div class="u-label">Tap to attach photos</div>
-          <div class="u-sub">Receipt · actual item · certificate · max 3 photos · stored on device only</div>
+        <div class="field">
+          <div class="field-label-row"><label>Notes</label><span class="field-hint">optional</span></div>
+          <input type="text" id="itemNotes" placeholder="Jeweller, occasion, cert. number…">
         </div>
-      </div>
-      <div class="field" id="makingChargeField">
-        <div class="field-label-row">
-          <label>Making Charges</label>
-          <span class="field-hint" style="color:var(--gold-dim);font-size:11px">included in price above?</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer">
-            <input type="checkbox" id="hasMakingCharge" onchange="toggleMakingCharge()" style="width:15px;height:15px;accent-color:var(--gold)">
-            Price includes making charges
-          </label>
-        </div>
-        <div id="makingChargeRow" style="display:none">
-          <input type="number" id="makingCharge" placeholder="Making charge amount" step="0.01" oninput="updatePreview()" style="width:100%">
-          <div style="font-size:11px;color:var(--text-dim);margin-top:4px">Making charges have no resale value — this amount will be excluded from your cost basis.</div>
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="field-label-row"><label>Notes</label><span class="field-hint">optional</span></div>
-        <input type="text" id="itemNotes" placeholder="Jeweller, occasion, cert. number…">
       </div>
 
       <div class="field">
@@ -2729,6 +2739,9 @@ function openAddModal(){
   document.getElementById('photoFile').value='';
   document.getElementById('valuePreview').textContent='—';
   document.getElementById('pnlPreviewBox').style.display='none';
+  // Collapse provenance section by default
+  document.getElementById('provenanceSection').style.display='none';
+  document.getElementById('provenanceChevron').style.transform='';
   renderGradeGrid();renderTypeGrid();
   document.getElementById('addModal').classList.add('open');
 }
@@ -2795,6 +2808,13 @@ function updatePreview(){
   }else document.getElementById('pnlPreviewBox').style.display='none';
 }
 
+function toggleProvenance(){
+  const sec=document.getElementById('provenanceSection');
+  const chev=document.getElementById('provenanceChevron');
+  const open=sec.style.display==='none'||sec.style.display==='';
+  sec.style.display=open?'block':'none';
+  chev.style.transform=open?'rotate(180deg)':'';
+}
 function toggleMakingCharge(){
   const checked=document.getElementById('hasMakingCharge').checked;
   document.getElementById('makingChargeRow').style.display=checked?'':'none';
