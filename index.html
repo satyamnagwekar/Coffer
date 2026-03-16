@@ -723,7 +723,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         "featureList": [
           "Live gold and silver price tracking",
           "Physical holdings portfolio management",
-          "MCX-aligned spot prices updated every 5 minutes",
+          "Live spot prices updated every 5 minutes — INR, USD, AED, GBP, EUR",
           "Gain and loss calculation",
           "Price alerts",
           "CSV export",
@@ -1368,12 +1368,6 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     </div>
 
     <div class="inventory-list pb" id="inventoryList">
-      <div class="empty-state" id="emptyOnboarding">
-        <div class="empty-cta" onclick="openAddModal()">+ Add First Holding</div>
-        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--text-dim);line-height:1.9;letter-spacing:.04em">
-          Prices update every 5 minutes · INR includes 15% import duty + 3% GST
-        </div>
-      </div>
     </div>
 
     <div class="app-footer">
@@ -1505,6 +1499,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
             <select id="alertPriceCurrency" class="alert-input" style="width:auto;flex-shrink:0;padding:13px 10px" onchange="updateAlertCurrencyUI()">
               <option value="USD">USD /oz</option>
               <option value="INR">INR /10g</option>
+              <option value="GBP">GBP /oz</option>
+              <option value="AED">AED /oz</option>
+              <option value="EUR">EUR /oz</option>
             </select>
           </div>
         </div>
@@ -1929,14 +1926,13 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="upgrade-feat"><div class="feat-icon">🔐</div><div class="feat-text"><strong>Encrypted Notes</strong>Store locker numbers, bank details, lawyer contacts — decrypted on device only.</div></div>
       </div>
       <div class="upgrade-price-row">
-        <div class="upgrade-price-opt selected" id="priceOptMonth" onclick="selectPlan('month')">
-          <div class="opt-price">₹149</div>
-          <div class="opt-label">/ month</div>
+        <div class="upgrade-price-opt selected" id="priceOptMonth" onclick="selectPlan('india')">
+          <div class="opt-price">₹600</div>
+          <div class="opt-label">India / year</div>
         </div>
-        <div class="upgrade-price-opt" id="priceOptYear" onclick="selectPlan('year')">
-          <div class="opt-price">₹999</div>
-          <div class="opt-label">/ year</div>
-          <div class="opt-save">Save ₹789</div>
+        <div class="upgrade-price-opt" id="priceOptYear" onclick="selectPlan('intl')">
+          <div class="opt-price">$15</div>
+          <div class="opt-label">International / year</div>
         </div>
       </div>
       <button class="btn-upgrade" onclick="initiateUpgrade()">Unlock Premium →</button>
@@ -2086,7 +2082,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 let prices={gold:3320,silver:33.2,platinum:980};
 let rates={USD:1,INR:83.5,AED:3.67,EUR:0.92,GBP:0.79};
 let currency='INR';
-function setCurrency(c,btn){currency=c;document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updateSummary();renderList();if(groupedViewActive)renderGroupedPL();}
+function setCurrency(c,btn){currency=c;document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updateSummary();renderList();if(groupedViewActive)renderGroupedPL();if(document.getElementById('panelChart').classList.contains('active')){updateChartPanel();renderHistoryChart();}}
 let items=[];
 let activeHTab='all',activeFilter='all';
 let selectedMetal='gold',selectedType='jewellery',selectedGrade=null;
@@ -2460,7 +2456,7 @@ function refreshProfile(){
       </div>
       ${activeCount>=20?`<div style="font-size:11px;color:var(--brand);margin-top:8px;line-height:1.6">You're approaching the 25-holding limit. A ₹600/year plan will be available soon — existing users will be grandfathered.</div>`:''}
     </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer" onclick="openUpgradeModal()">
       <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text);margin-bottom:10px">Premium <span style="font-size:13px;color:var(--brand)">— coming soon</span></div>
       <div style="display:flex;gap:8px;margin-bottom:10px">
         <div style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:8px;text-align:center">
@@ -2495,6 +2491,11 @@ function refreshProfile(){
   } else {
     heirsEl.innerHTML='';
   }
+}
+
+function openUpgradeModal(){
+  selectPlan('india');
+  document.getElementById('upgradeModal').classList.add('open');
 }
 
 function openEditProfile(){
@@ -2796,6 +2797,9 @@ function openAddModal(){
   // Collapse provenance section by default
   document.getElementById('provenanceSection').style.display='none';
   document.getElementById('provenanceChevron').style.transform='';
+  // Collapse purity helper
+  const phb=document.getElementById('purityHelperBox');
+  if(phb)phb.style.display='none';
   renderGradeGrid();renderTypeGrid();
   document.getElementById('addModal').classList.add('open');
 }
@@ -2860,6 +2864,28 @@ function updatePreview(){
     document.getElementById('pnlGain').textContent=s+fmtFull(gain)+' ('+s+pct.toFixed(1)+'%)';
     document.getElementById('pnlPreviewBox').style.display='';
   }else document.getElementById('pnlPreviewBox').style.display='none';
+}
+
+// ══════════════════════════════════════════
+// PREMIUM STUBS — payment not yet wired
+// ══════════════════════════════════════════
+let _selectedPlan = 'year';
+function selectPlan(plan){
+  _selectedPlan = plan;
+  document.getElementById('priceOptMonth').classList.toggle('selected', plan==='month');
+  document.getElementById('priceOptYear').classList.toggle('selected', plan==='year');
+}
+function initiateUpgrade(){
+  showToast('Payment gateway coming soon. You\'ll be notified when premium launches.');
+  closeModal('upgradeModal');
+}
+function saveVault(){
+  showToast('Multiple vaults are a premium feature — coming soon.');
+  closeModal('vaultModal');
+}
+function saveHeir(){
+  showToast('Heir nomination is a premium feature — coming soon.');
+  closeModal('heirModal');
 }
 
 function toggleProvenance(){
@@ -2951,7 +2977,7 @@ async function addItem(){
     items.unshift(newItem);
     closeModal('addModal');updateAll();
     if(activeCount+1===20){
-      setTimeout(()=>alert('You have 20 active holdings. MyAurum will be free until 25 — after that a ₹600/year plan will apply to new additions.'),400);
+      setTimeout(()=>alert('You have 20 active holdings. The free tier supports up to 25 — premium is coming soon for unlimited holdings.'),400);
     }
   }catch(e){alert('Could not save item: '+e.message)}
 }
@@ -3315,7 +3341,14 @@ function renderPerfGrid(){
   if(!active.length){grid.innerHTML='<div style="text-align:center;padding:24px;font-size:11px;color:var(--text-dim)">No active holdings to display</div>';return}
   grid.innerHTML=active.map(item=>{
     const sU=metalValueUSD(item.metal,item.grams,item.purity);
-    const spotPriceDisplay=item.metal==='gold'?'$'+prices.gold.toFixed(2)+'/oz':item.metal==='platinum'?'$'+prices.platinum.toFixed(2)+'/oz':'$'+prices.silver.toFixed(2)+'/oz';
+    const isINR=currency==='INR';
+    const INDIA_FACTOR=(10/31.1035)*1.15*1.03;
+    const rate=rates[currency]||1;
+    const sym=SYMBOLS[currency]||'$';
+    const rawSpot=item.metal==='gold'?prices.gold:item.metal==='platinum'?prices.platinum:prices.silver;
+    const spotPriceDisplay=isINR
+      ?'₹'+Math.round(rawSpot*rates.INR*INDIA_FACTOR).toLocaleString('en-IN')+'/10g'
+      :sym+(rawSpot*rate).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'/oz';
     let glHTML='<div class="perf-val">—</div>';
     if(item.pricePaidUSD){const g=sU-item.pricePaidUSD,p=(g/item.pricePaidUSD)*100,s=g>=0?'+':'';glHTML=`<div class="perf-val ${g>=0?'pos':'neg'}">${s}${fmtFull(g)}<br><span style="font-size:11px">${s}${p.toFixed(1)}%</span></div>`}
     return `<div class="perf-card" onclick="openDetail(${items.indexOf(item)})">
@@ -3345,8 +3378,13 @@ function drawHistoryCanvas(rows){
     document.getElementById('historyNote').textContent='Price snapshots recorded every 5 minutes · builds up over time';
     return;
   }
-  const gH=rows.map(r=>r.gold);
-  const sH=rows.map(r=>r.silver*100); // scale silver for visibility
+  const sym = SYMBOLS[currency] || '$';
+  const isINR = currency === 'INR';
+  const INDIA_FACTOR = (10/31.1035)*1.15*1.03;
+  const rate = rates[currency] || 1;
+  const convertGold = v => isINR ? Math.round(v * rates.INR * INDIA_FACTOR) : v * rate;
+  const gH = rows.map(r => convertGold(r.gold));
+  const sH = rows.map(r => r.silver * rate * 100); // scale silver for visibility
   const allVals=[...gH,...sH];
   const minV=Math.min(...allVals)*.995,maxV=Math.max(...allVals)*1.005;
   const n=rows.length-1||1;
@@ -3364,7 +3402,13 @@ function drawHistoryCanvas(rows){
   const oldest=new Date(rows[0].recorded_at).toLocaleDateString([],{month:'short',day:'numeric'});
   ctx.fillText(oldest,pad.l,H-4);ctx.fillText('Today',W-pad.r-30,H-4);
   const days=rows.length>1?Math.round((new Date(rows[rows.length-1].recorded_at)-new Date(rows[0].recorded_at))/(86400000)):0;
-  document.getElementById('historyNote').textContent=`${days}d of real spot data · Gold $${gH[n].toFixed(2)} · Silver $${(sH[n]/100).toFixed(2)}`;
+  const goldLabel = isINR
+    ? `Gold ₹${Math.round(gH[n]).toLocaleString('en-IN')}/10g`
+    : `Gold ${sym}${gH[n].toFixed(2)}/oz`;
+  const silverLabel = isINR
+    ? `Silver ₹${Math.round(rows[n].silver * rates.INR * INDIA_FACTOR).toLocaleString('en-IN')}/10g`
+    : `Silver ${sym}${(rows[n].silver * rate).toFixed(2)}/oz`;
+  document.getElementById('historyNote').textContent=`${days}d of real spot data · ${goldLabel} · ${silverLabel}`;
 }
 
 async function renderHistoryChart(){
@@ -3630,7 +3674,9 @@ function refreshAlertsPanel(){
   // Default price currency selector to match current display currency
   const alertCurrEl=document.getElementById('alertPriceCurrency');
   if(alertCurrEl){
-    alertCurrEl.value=(currency==='INR')?'INR':'USD';
+    // Map current currency to alert currency (INR stays INR, others stay as-is if supported, fallback USD)
+    const supported=['USD','INR','GBP','AED','EUR'];
+    alertCurrEl.value=supported.includes(currency)?currency:'USD';
     updateAlertCurrencyUI();
   }
 }
@@ -3659,13 +3705,14 @@ function updateAlertCurrencyUI(){
   const c = document.getElementById('alertPriceCurrency').value;
   const label = document.getElementById('alertPriceLabel');
   const input = document.getElementById('alertPrice');
+  const sym = SYMBOLS[c] || c;
   if(c === 'INR'){
     label.textContent = 'Target Price (INR / 10g · MCX)';
     input.placeholder = 'e.g. 96000';
     input.step = '100';
   } else {
-    label.textContent = 'Target Price (USD / oz)';
-    input.placeholder = 'e.g. 3400';
+    label.textContent = `Target Price (${sym} / oz)`;
+    input.placeholder = c === 'GBP' ? 'e.g. 2600' : c === 'AED' ? 'e.g. 12500' : c === 'EUR' ? 'e.g. 3100' : 'e.g. 3400';
     input.step = '1';
   }
 }
@@ -3680,11 +3727,11 @@ async function addAlert(){
   const note=document.getElementById('alertNote').value.trim();
   if(!priceRaw||priceRaw<=0){alert('Please enter a valid target price.');return}
 
-  // Normalise to USD/oz for comparison — INR/10g → USD/oz
+  // Normalise to USD/oz for comparison — INR/10g → USD/oz, other currencies → USD/oz
   const INDIA_FACTOR=(10/31.1035)*1.15*1.03;
   const priceUSD = priceCurrency==='INR'
     ? priceRaw / (rates.INR * INDIA_FACTOR)
-    : priceRaw;
+    : (rates[priceCurrency] ? priceRaw / rates[priceCurrency] : priceRaw);
 
   try{
     const a=await api('POST','/alerts',{
@@ -3720,14 +3767,17 @@ function renderAlertsList(){
     const statusTxt=a.fired||triggered?'⚡ Triggered':'👁 Watching';
     const statusCls=a.fired||triggered?'fired':'watching';
     const INDIA_FACTOR=(10/31.1035)*1.15*1.03;
+    const sym = SYMBOLS[a.priceCurrency] || '$';
     let priceDisplay,spotDisplay;
     if(a.priceCurrency==='INR'){
       const inrVal=a.priceDisplay||Math.round(a.price*rates.INR*INDIA_FACTOR);
       priceDisplay='₹'+Math.round(inrVal).toLocaleString('en-IN')+'/10g';
       spotDisplay='₹'+Math.round(spot*rates.INR*INDIA_FACTOR).toLocaleString('en-IN')+'/10g';
     } else {
-      priceDisplay='$'+(a.priceDisplay||a.price).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'/oz';
-      spotDisplay='$'+spot.toFixed(2)+'/oz';
+      const rate = rates[a.priceCurrency]||1;
+      const dispPrice = a.priceDisplay || (a.price * rate);
+      priceDisplay=sym+parseFloat(dispPrice).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'/oz';
+      spotDisplay=sym+(spot*rate).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'/oz';
     }
     return `<div class="alert-card ${a.fired||triggered?'triggered':''}">
       <div class="alert-icon">${a.metal==='gold'?'🥇':'🥈'}</div>
@@ -3760,14 +3810,17 @@ async function checkAlerts(){
 function fireNotification(a,spot){
   const title=`MyAurum Alert — ${a.metal==='gold'?'Gold':'Silver'} ${a.dir==='above'?'↑':'↓'}`;
   const INDIA_FACTOR=(10/31.1035)*1.15*1.03;
+  const sym=SYMBOLS[a.priceCurrency]||'$';
   let spotStr,targetStr;
   if(a.priceCurrency==='INR'){
     spotStr='₹'+Math.round(spot*rates.INR*INDIA_FACTOR).toLocaleString('en-IN')+'/10g';
     const inrTarget=a.priceDisplay||Math.round(a.price*rates.INR*INDIA_FACTOR);
     targetStr='₹'+Math.round(inrTarget).toLocaleString('en-IN')+'/10g';
   } else {
-    spotStr='$'+spot.toFixed(2)+'/oz';
-    targetStr='$'+(a.priceDisplay||a.price)+'/oz';
+    const rate=rates[a.priceCurrency]||1;
+    spotStr=sym+(spot*rate).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'/oz';
+    const dispTarget=a.priceDisplay||(a.price*rate);
+    targetStr=sym+parseFloat(dispTarget).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'/oz';
   }
   const body=`${a.metal==='gold'?'Gold':'Silver'} hit ${spotStr} — your target was ${a.dir==='above'?'above':'below'} ${targetStr}${a.note?' ('+a.note+')':''}`;
   if('Notification' in window&&Notification.permission==='granted'){new Notification(title,{body,tag:'myaurum-alert-'+a.id})}
