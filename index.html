@@ -1224,7 +1224,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
   <div class="header" style="flex-direction:column;align-items:stretch;gap:0;padding:10px 16px 10px">
     <!-- Row 1: logo + spot strip -->
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
       <div class="logo">
         <span style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:.22em;color:#8B6914">MYAURUM</span>
       </div>
@@ -1241,11 +1241,15 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div class="metal" id="platinumSpotLabel">PLAT /oz</div>
           <div class="price" id="platinumSpot"><span class="loading-dot"></span></div>
         </div>
-        <div style="display:flex;align-items:flex-end;padding-bottom:1px;flex-direction:column;gap:2px">
+        <div style="display:flex;align-items:flex-end;padding-bottom:1px">
           <span style="font-size:10px;color:var(--text-dim);letter-spacing:.04em;opacity:.7">est.</span>
-          <div id="benchmarkToggle" style="display:flex;gap:3px;align-items:center"></div>
         </div>
       </div>
+    </div>
+    <!-- Benchmark toggle row -->
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:4px;margin-bottom:8px">
+      <span style="font-size:9px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;opacity:.6;margin-right:2px">Benchmark</span>
+      <div id="benchmarkToggle" style="display:flex;gap:3px;align-items:center"></div>
     </div>
     <!-- Row 2: dynamic welcome strip -->
     <div id="headerStrip" style="display:none;align-items:center;justify-content:space-between;border-top:1px solid rgba(139,105,20,.12);padding-top:9px;gap:10px">
