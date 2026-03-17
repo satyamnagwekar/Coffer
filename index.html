@@ -237,13 +237,13 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 .header{position:sticky;top:0;z-index:100;background:rgba(253,251,247,.97);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .header-left{display:flex;align-items:center;gap:10px}
-.logo{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:.16em;color:var(--brand);flex-shrink:0}
+.logo{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:.16em;color:var(--brand);flex-shrink:1;min-width:0}
 .logo span{color:var(--text-dim);font-style:italic}
 
 
 .user-name{font-size:11px;color:var(--text-mid);letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-.spot-strip{display:flex;gap:12px;font-size:11px;color:var(--text-dim);text-transform:uppercase}
+.spot-strip{display:flex;gap:10px;font-size:11px;color:var(--text-dim);text-transform:uppercase;flex-shrink:0}
 .spot-item{display:flex;flex-direction:column;align-items:flex-end}
 .spot-item .metal{font-size:11px;color:var(--text-dim);margin-bottom:1px}
 .spot-item .price{font-size:12px;font-weight:500}
@@ -1240,9 +1240,6 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="spot-item" style="opacity:.8">
           <div class="metal" id="platinumSpotLabel">PLAT /oz</div>
           <div class="price" id="platinumSpot"><span class="loading-dot"></span></div>
-        </div>
-        <div style="display:flex;align-items:flex-end;padding-bottom:1px">
-          <span style="font-size:10px;color:var(--text-dim);letter-spacing:.04em;opacity:.7">est.</span>
         </div>
       </div>
     </div>
