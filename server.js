@@ -489,6 +489,122 @@ app.post('/api/auth/send-welcome', authLimiter, async (req, res) => {
 });
 
 // ─────────────────────────────────────────
+//  20-HOLDINGS MILESTONE EMAIL
+// ─────────────────────────────────────────
+app.post('/api/auth/milestone-20', requireAuth, async (req, res) => {
+  // Respond immediately — don't block on email
+  res.json({ ok: true });
+  setImmediate(async () => {
+    try {
+      const r = await q('SELECT * FROM users WHERE id=$1', [req.user.userId]);
+      const u = r.rows[0];
+      if (!u) return;
+
+      // Only send once — check if already sent
+      const already = await q(
+        "SELECT 1 FROM email_verify_tokens WHERE user_id=$1 AND used=FALSE AND expires_at > NOW()",
+        [u.id]
+      );
+      // If they already have a pending verify token, don't spam
+      // But we still want to send if email_verified is false OR if never sent milestone
+      // Use a simple approach: check for a milestone marker in the token notes column
+      // Easier: just always send but check a flag on the user — add column if needed
+      // Simplest: send if not already email_verified (they need the link)
+      // If already verified, send without the verify link
+
+      const crypto = require('crypto');
+      let verifyUrl = null;
+
+      if (!u.email_verified) {
+        // Invalidate old tokens, issue fresh one
+        await q('UPDATE email_verify_tokens SET used=TRUE WHERE user_id=$1 AND used=FALSE', [u.id]);
+        const token = crypto.randomBytes(32).toString('hex');
+        const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+        await q('INSERT INTO email_verify_tokens (user_id, token, expires_at) VALUES ($1,$2,$3)', [u.id, token, expires]);
+        verifyUrl = `${APP_URL}/?verify=${token}`;
+      }
+
+      await sendMilestone20Email(u.email, u.first_name, verifyUrl);
+      console.log('[milestone-20] Email sent to:', u.email);
+    } catch(e) {
+      console.error('[milestone-20] Error:', e.message);
+    }
+  });
+});
+
+async function sendMilestone20Email(email, firstName, verifyUrl) {
+  const ctaBlock = verifyUrl
+    ? `<div style="text-align:center;margin:28px 0">
+        <a href="${verifyUrl}" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#D4A017);color:#0c0a06;text-decoration:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:15px 36px;border-radius:8px;font-weight:600">Confirm my email address &rarr;</a>
+       </div>
+       <p style="margin:0 0 8px;font-size:11px;color:#AAA;text-align:center;line-height:1.7">This link is valid for 7 days.</p>`
+    : `<div style="text-align:center;margin:28px 0">
+        <a href="${APP_URL}" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#D4A017);color:#0c0a06;text-decoration:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:15px 36px;border-radius:8px;font-weight:600">Open MyAurum &rarr;</a>
+       </div>`;
+
+  const premiumLine = verifyUrl
+    ? `<p style="margin:0 0 16px;font-size:14px;color:#4a3a1a;line-height:1.85">The other is to know that MyAurum premium is coming. For those who want to go further — unlimited holdings, advanced succession tools, priority support — we are building it. You will hear from me first.</p>`
+    : `<p style="margin:0 0 16px;font-size:14px;color:#4a3a1a;line-height:1.85">MyAurum premium is coming. For those who want to go further — unlimited holdings, advanced succession tools, priority support — we are building it. You will hear from me first.</p>`;
+
+  const html = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F5F0E8;font-family:Georgia,serif">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0E8;padding:40px 16px">
+<tr><td align="center">
+<table role="presentation" width="100%" style="max-width:520px">
+  <tr><td style="background:#1A1508;padding:24px 32px;text-align:center;border-radius:16px 16px 0 0">
+    <p style="margin:0;font-family:Georgia,serif;font-size:28px;font-weight:300;letter-spacing:.24em;color:#F0B429">MYAURUM</p>
+    <p style="margin:6px 0 0;font-size:10px;color:#907030;letter-spacing:.2em;text-transform:uppercase">Precious Metals Ledger</p>
+  </td></tr>
+  <tr><td style="background:#FDFAF5;padding:36px 40px;border-left:1px solid #DDD5C0;border-right:1px solid #DDD5C0">
+    <p style="margin:0 0 20px;font-size:15px;color:#2C2410;line-height:1.7">Hi ${firstName},</p>
+    <p style="margin:0 0 16px;font-size:14px;color:#4a3a1a;line-height:1.85">You have been building something worth keeping.</p>
+    <p style="margin:0 0 16px;font-size:14px;color:#4a3a1a;line-height:1.85">Twenty holdings is not a casual tracker. It is a real record — weights, purities, purchase history, values across currencies. The kind of documentation most families never have.</p>
+    <p style="margin:0 0 24px;font-size:14px;color:#4a3a1a;line-height:1.85">A couple of things worth doing now that your vault has grown:</p>
+    ${verifyUrl ? `<p style="margin:0 0 16px;font-size:14px;color:#4a3a1a;line-height:1.85">One is to confirm your email address. It takes one click and ensures you never lose access to what you have built — especially important if you are documenting gold that belongs to the whole family.</p>` : ''}
+    ${premiumLine}
+    ${ctaBlock}
+    <p style="margin:0;font-size:13px;color:#4a3a1a;line-height:1.7">If something is not working the way you expect, reply to this email. I read every one.</p>
+  </td></tr>
+  <tr><td style="background:#F0EBE0;padding:20px 40px;border:1px solid #DDD5C0;border-top:none;border-radius:0 0 16px 16px">
+    <p style="margin:0 0 4px;font-size:13px;color:#2C2410;font-weight:600">Satyam</p>
+    <p style="margin:0;font-size:12px;color:#8B6914">Founder, MyAurum</p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>`;
+
+  const verifyBlock = verifyUrl
+    ? `\nOne is to confirm your email address. It takes one click and ensures you never lose access to what you have built.\n\n${verifyUrl}\n`
+    : '';
+
+  const text = [
+    `Hi ${firstName},`,
+    '',
+    'You have been building something worth keeping.',
+    '',
+    'Twenty holdings is not a casual tracker. It is a real record — weights, purities, purchase history, values across currencies. The kind of documentation most families never have.',
+    '',
+    'A couple of things worth doing now that your vault has grown:',
+    verifyBlock,
+    'MyAurum premium is coming. For those who want to go further — unlimited holdings, advanced succession tools, priority support — we are building it. You will hear from me first.',
+    '',
+    'If something is not working the way you expect, reply to this email. I read every one.',
+    '',
+    'Satyam',
+    'Founder, MyAurum',
+  ].join('\n');
+
+  return sendEmail({
+    to: email,
+    subject: 'Your vault is taking shape',
+    html,
+    text,
+  });
+}
+
+// ─────────────────────────────────────────
 //  ALERT EMAIL BUILDER
 // ─────────────────────────────────────────
 const INDIA_FACTOR = (10 / 31.1035) * 1.15 * 1.03;
