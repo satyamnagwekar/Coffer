@@ -3002,7 +3002,9 @@ async function addItem(){
     items.unshift(newItem);
     closeModal('addModal');updateAll();
     if(activeCount+1===20){
-      setTimeout(()=>alert('You have 20 active holdings. The free tier supports up to 25 — premium is coming soon for unlimited holdings.'),400);
+      // Fire 20-holdings milestone email (fire and forget)
+      try{ await api('POST','/auth/milestone-20',{}); }catch(_){}
+      setTimeout(()=>showToast('20 holdings — your vault is taking shape 🏛','ok',4000),400);
     }
   }catch(e){alert('Could not save item: '+e.message)}
 }
