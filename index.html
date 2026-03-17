@@ -239,9 +239,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .header-left{display:flex;align-items:center;gap:10px}
 .logo{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:.16em;color:var(--brand);flex-shrink:0}
 .logo span{color:var(--text-dim);font-style:italic}
-.user-pill{display:flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 11px 5px 6px;cursor:pointer;transition:all .2s;max-width:140px}
-.user-pill:hover{border-color:var(--gold-dim)}
-.user-avatar{width:24px;height:24px;border-radius:50%;background:rgba(139,105,20,.15);border:1px solid rgba(139,105,20,.4);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--brand);flex-shrink:0;font-family:'Cormorant Garamond',serif}
+
+
 .user-name{font-size:11px;color:var(--text-mid);letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .spot-strip{display:flex;gap:12px;font-size:11px;color:var(--text-dim);text-transform:uppercase}
@@ -1224,16 +1223,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 </style>
 
   <div class="header" style="flex-direction:column;align-items:stretch;gap:0;padding:10px 16px 10px">
-    <!-- Row 1: logo + user pill + spot strip -->
+    <!-- Row 1: logo + spot strip -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div class="logo">
-          <span style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:.22em;color:#8B6914">MYAURUM</span>
-        </div>
-        <div class="user-pill" id="headerUserPill" onclick="setNavTab('profile',document.getElementById('navProfile'))">
-          <div class="user-avatar" id="headerAvatar">?</div>
-          <div class="user-name" id="headerName">—</div>
-        </div>
+      <div class="logo">
+        <span style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:.22em;color:#8B6914">MYAURUM</span>
       </div>
       <div class="spot-strip">
         <div class="spot-item gold">
@@ -2359,9 +2352,6 @@ async function deleteAccount(){
 // ══════════════════════════════════════════
 function refreshHeader(){
   if(!currentUser)return;
-  const init=(currentUser.firstName[0]||'?').toUpperCase();
-  document.getElementById('headerAvatar').textContent=init;
-  document.getElementById('headerName').textContent=currentUser.firstName;
   document.getElementById('headerWelcomeName').textContent='Welcome, '+currentUser.firstName;
   updateOnboardingGreeting(currentUser.firstName);
   updateHeaderWelcome();
