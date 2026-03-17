@@ -1605,6 +1605,17 @@ function pingGoogleSitemap() {
 }
 setTimeout(pingGoogleSitemap, 5000); // 5s after startup
 
+app.get('/og-image.png', (req, res) => {
+  const p = path.join(__dirname, 'og-image.png');
+  if (fs.existsSync(p)) {
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.sendFile(p);
+  } else {
+    res.status(404).send('Not found');
+  }
+});
+
 app.get('*', (req, res) => {
   const indexPath = path.join(__dirname, 'index.html');
   if (fs.existsSync(indexPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(indexPath); }
