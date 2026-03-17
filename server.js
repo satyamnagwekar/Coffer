@@ -141,6 +141,8 @@ async function initDB() {
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen TIMESTAMPTZ`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_method TEXT DEFAULT 'email'`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS weekly_email_opt_out BOOLEAN DEFAULT FALSE`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS weekly_email_sent_at TIMESTAMPTZ`);
 
   if (webpush && VAPID_PUBLIC && VAPID_PRIVATE) {
     webpush.setVapidDetails(VAPID_EMAIL, VAPID_PUBLIC, VAPID_PRIVATE);
@@ -1025,6 +1027,294 @@ app.post('/api/auth/google', authLimiter, async (req, res) => {
 });
 
 // ─────────────────────────────────────────
+//  WEEKLY EMAIL OPT-OUT
+// ─────────────────────────────────────────
+app.get('/api/auth/unsubscribe-weekly', async (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.status(400).send('Invalid link.');
+  try {
+    // token is userId signed with JWT_SECRET
+    const payload = require('jsonwebtoken').verify(token, JWT_SECRET);
+    await q('UPDATE users SET weekly_email_opt_out=TRUE WHERE id=$1', [payload.userId]);
+    res.type('html').send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Unsubscribed</title>
+    <style>body{font-family:Georgia,serif;background:#FAF7F2;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+    .box{text-align:center;color:#8B6914;max-width:380px;padding:32px}
+    h2{font-weight:300;letter-spacing:.15em;font-size:22px;margin-bottom:12px}
+    p{font-family:Arial,sans-serif;font-size:13px;color:#aaa;line-height:1.7}</style></head>
+    <body><div class="box"><h2>MYAURUM</h2>
+    <p>You have been unsubscribed from weekly portfolio emails.</p>
+    <p style="margin-top:16px"><a href="${APP_URL}" style="color:#B8860B;text-decoration:none">Return to MyAurum →</a></p>
+    </div></body></html>`);
+  } catch(e) {
+    res.status(400).send('Link is invalid or has expired.');
+  }
+});
+
+// ─────────────────────────────────────────
+//  WEEKLY DIGEST EMAIL
+// ─────────────────────────────────────────
+const INDIA_FACTOR_WEEKLY = (10 / 31.1035) * 1.15 * 1.03;
+
+function formatVal(val, isMCX, sym) {
+  if (isMCX) return '₹' + Math.round(val).toLocaleString('en-IN');
+  return sym + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+async function sendWeeklyDigests() {
+  console.log('[weekly] Starting weekly digest run…');
+  const jwt = require('jsonwebtoken');
+
+  // Get last Monday's price snapshot (7 days ago, closest record)
+  let lastWeekPrices = null;
+  try {
+    const lw = await q(`
+      SELECT gold, silver
+      FROM price_history
+      WHERE recorded_at BETWEEN NOW() - INTERVAL '8 days' AND NOW() - INTERVAL '6 days'
+      ORDER BY ABS(EXTRACT(EPOCH FROM (recorded_at - (NOW() - INTERVAL '7 days'))))
+      LIMIT 1
+    `);
+    if (lw.rows[0]) lastWeekPrices = lw.rows[0];
+  } catch(e) { console.warn('[weekly] Could not fetch last week prices:', e.message); }
+
+  // Get all users with active holdings who haven't opted out
+  const users = await q(`
+    SELECT u.id, u.email, u.first_name, u.last_name, u.country, u.weekly_email_opt_out
+    FROM users u
+    WHERE u.weekly_email_opt_out IS NOT TRUE
+    AND EXISTS (
+      SELECT 1 FROM items i WHERE i.user_id = u.id AND i.sold = FALSE AND i.gifted IS NOT TRUE
+    )
+  `);
+
+  console.log(`[weekly] Sending to ${users.rows.length} users`);
+  let sent = 0, skipped = 0;
+
+  for (const user of users.rows) {
+    try {
+      // Get user's active items
+      const itemsRes = await q(
+        'SELECT * FROM items WHERE user_id=$1 AND sold=FALSE AND (gifted IS NOT TRUE)',
+        [user.id]
+      );
+      const activeItems = itemsRes.rows;
+      if (!activeItems.length) { skipped++; continue; }
+
+      // Determine currency/benchmark from country
+      const isIndia = (user.country || '').toLowerCase() === 'india';
+      const isMCX = isIndia;
+      const currency = isIndia ? 'INR' : 'USD';
+      const sym = isIndia ? '₹' : '$';
+      const bLabel = isIndia ? 'MCX' : 'COMEX';
+      const rates = { INR: priceCache.usd_inr, AED: priceCache.usd_aed, EUR: priceCache.usd_eur, GBP: priceCache.usd_gbp, USD: 1 };
+
+      // Compute per-metal values
+      const metalData = {};
+      for (const item of activeItems) {
+        const m = item.metal;
+        if (!metalData[m]) metalData[m] = { grams: 0, valueDisp: 0 };
+        const oz = item.grams * item.purity / 31.1035;
+        const spotUSD = m === 'gold' ? priceCache.gold : m === 'platinum' ? (priceCache.platinum||980) : priceCache.silver;
+        let val;
+        if (isMCX && m !== 'platinum') {
+          val = oz * priceCache.gold * (m === 'gold' ? 1 : 0) * INDIA_FACTOR_WEEKLY * 31.1035 / 10;
+          // Redo properly
+          val = (item.grams * item.purity / 10) * (m === 'gold' ? priceCache.gold : priceCache.silver) * priceCache.usd_inr * 1.15 * 1.03;
+        } else {
+          val = oz * spotUSD * (rates[currency] || 1);
+        }
+        metalData[m].grams += item.grams;
+        metalData[m].valueDisp += val;
+      }
+
+      const totalValue = Object.values(metalData).reduce((s, m) => s + m.valueDisp, 0);
+
+      // Dominant metal
+      const dominantMetal = Object.entries(metalData).sort((a,b) => b[1].valueDisp - a[1].valueDisp)[0][0];
+
+      // Week-on-week portfolio change
+      let changeVal = null, changePct = null;
+      if (lastWeekPrices) {
+        let lastTotal = 0;
+        for (const item of activeItems) {
+          const m = item.metal;
+          const oz = item.grams * item.purity / 31.1035;
+          const lastSpot = m === 'gold' ? lastWeekPrices.gold : lastWeekPrices.silver;
+          let lastVal;
+          if (isMCX && m !== 'platinum') {
+            lastVal = (item.grams * item.purity / 10) * lastSpot * priceCache.usd_inr * 1.15 * 1.03;
+          } else {
+            lastVal = oz * lastSpot * (rates[currency] || 1);
+          }
+          lastTotal += lastVal;
+        }
+        if (lastTotal > 0) {
+          changeVal = totalValue - lastTotal;
+          changePct = (changeVal / lastTotal) * 100;
+        }
+      }
+
+      // Metal spot change this week
+      const metalSpotChange = {};
+      if (lastWeekPrices) {
+        metalSpotChange.gold = ((priceCache.gold - lastWeekPrices.gold) / lastWeekPrices.gold) * 100;
+        metalSpotChange.silver = ((priceCache.silver - lastWeekPrices.silver) / lastWeekPrices.silver) * 100;
+      }
+
+      // Spot strings
+      const goldSpotStr = isMCX
+        ? `₹${Math.round(priceCache.gold * priceCache.usd_inr * INDIA_FACTOR_WEEKLY).toLocaleString('en-IN')}/10g (MCX)`
+        : `$${priceCache.gold.toFixed(2)}/oz (COMEX)`;
+      const silverSpotStr = isMCX
+        ? `₹${Math.round(priceCache.silver * priceCache.usd_inr * INDIA_FACTOR_WEEKLY).toLocaleString('en-IN')}/10g (MCX)`
+        : `$${priceCache.silver.toFixed(2)}/oz (COMEX)`;
+
+      // Timestamp
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+      const timeStr = now.toLocaleTimeString('en-IN', { hour:'numeric', minute:'2-digit', hour12:true, timeZone:'Asia/Kolkata' });
+      const asOf = `${dateStr}, ${timeStr} IST`;
+
+      // Subject
+      let subject = 'Your vault this week';
+      if (changePct !== null) {
+        const sign = changePct >= 0 ? 'up' : 'down';
+        subject = `Your vault this week — ${sign} ${Math.abs(changePct).toFixed(1)}%`;
+      }
+
+      // Unsubscribe token
+      const unsubToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '90d' });
+      const unsubUrl = `${APP_URL}/api/auth/unsubscribe-weekly?token=${unsubToken}`;
+
+      // Build metal sections — dominant first
+      const metalOrder = Object.keys(metalData).sort((a,b) =>
+        metalData[b].valueDisp - metalData[a].valueDisp
+      );
+
+      const metalLabels = { gold: 'GOLD', silver: 'SILVER', platinum: 'PLATINUM' };
+      const metalEmoji = { gold: '🥇', silver: '🥈', platinum: '⬜' };
+
+      const metalSectionsHTML = metalOrder.map(m => {
+        const d = metalData[m];
+        const valStr = formatVal(d.valueDisp, isMCX, sym);
+        const gramsStr = d.grams.toFixed(2) + 'g';
+        const spotStr = m === 'gold' ? goldSpotStr : m === 'silver' ? silverSpotStr : '';
+        const wkChange = metalSpotChange[m];
+        const wkStr = wkChange !== undefined
+          ? `<span style="color:${wkChange >= 0 ? '#2ECC8A' : '#E05C5C'}">${wkChange >= 0 ? '+' : ''}${wkChange.toFixed(1)}% this week</span>`
+          : '';
+        return `
+          <tr><td colspan="2" style="padding:16px 0 6px">
+            <span style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8B6914;font-family:Arial,sans-serif">${metalEmoji[m]} ${metalLabels[m] || m.toUpperCase()}</span>
+          </td></tr>
+          <tr>
+            <td style="font-family:Georgia,serif;font-size:20px;font-weight:300;color:#2C2410;padding:0 0 4px">${valStr}</td>
+            <td style="text-align:right;font-size:12px;color:#8B6914;padding:0 0 4px">${gramsStr}</td>
+          </tr>
+          ${spotStr ? `<tr><td colspan="2" style="font-size:11px;color:#999;padding:0 0 2px">Spot: ${spotStr} ${wkStr}</td></tr>` : ''}
+        `;
+      }).join('');
+
+      const changeHTML = changePct !== null ? `
+        <tr><td colspan="2" style="padding:4px 0 2px">
+          <span style="font-size:13px;color:${changeVal >= 0 ? '#2ECC8A' : '#E05C5C'};font-family:Arial,sans-serif">
+            ${changeVal >= 0 ? '+' : ''}${formatVal(Math.abs(changeVal), isMCX, sym)} &nbsp;
+            (${changeVal >= 0 ? '+' : '−'}${Math.abs(changePct).toFixed(1)}% this week)
+          </span>
+        </td></tr>
+      ` : `<tr><td colspan="2" style="padding:4px 0 2px;font-size:11px;color:#999;font-family:Arial,sans-serif">First snapshot — change data from next week</td></tr>`;
+
+      const html = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F5F0E8;font-family:Georgia,serif">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0E8;padding:40px 16px">
+<tr><td align="center">
+<table role="presentation" width="100%" style="max-width:520px">
+  <tr><td style="background:#1A1508;padding:24px 32px;text-align:center;border-radius:16px 16px 0 0">
+    <p style="margin:0;font-family:Georgia,serif;font-size:28px;font-weight:300;letter-spacing:.24em;color:#F0B429">MYAURUM</p>
+    <p style="margin:6px 0 0;font-size:10px;color:#907030;letter-spacing:.2em;text-transform:uppercase">Weekly Portfolio Update</p>
+  </td></tr>
+  <tr><td style="background:#FDFAF5;padding:28px 32px 8px;border-left:1px solid #DDD5C0;border-right:1px solid #DDD5C0">
+    <p style="margin:0 0 4px;font-size:11px;color:#999;font-family:Arial,sans-serif;letter-spacing:.04em">${asOf}</p>
+    <p style="margin:0 0 20px;font-size:14px;color:#2C2410">Hi ${user.first_name},</p>
+    <table role="presentation" width="100%" style="border:1px solid #E8E0D0;border-radius:10px;overflow:hidden;margin-bottom:24px">
+      <tr style="background:#F5EDD0"><td colspan="2" style="padding:12px 16px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8B6914;font-family:Arial,sans-serif">Portfolio Total</td></tr>
+      <tr style="background:#FDFAF5">
+        <td style="padding:12px 16px;font-family:Georgia,serif;font-size:28px;font-weight:300;color:#2C2410">${formatVal(totalValue, isMCX, sym)}</td>
+        <td style="padding:12px 16px;text-align:right"></td>
+      </tr>
+      <tr style="background:#FDFAF5"><td colspan="2" style="padding:0 16px 12px">${changeHTML.replace(/<tr>|<\/tr>/g,'').replace(/<td[^>]*>/g,'<span style="display:block">').replace(/<\/td>/g,'</span>')}</td></tr>
+    </table>
+    <table role="presentation" width="100%" style="border-collapse:collapse">
+      ${metalSectionsHTML}
+    </table>
+  </td></tr>
+  <tr><td style="background:#FDFAF5;padding:20px 32px 28px;border-left:1px solid #DDD5C0;border-right:1px solid #DDD5C0;text-align:center">
+    <a href="${APP_URL}" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#D4A017);color:#0c0a06;text-decoration:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:14px 32px;border-radius:8px;font-weight:600">Open your vault &rarr;</a>
+  </td></tr>
+  <tr><td style="background:#F0EBE0;padding:18px 32px;border:1px solid #DDD5C0;border-top:none;border-radius:0 0 16px 16px">
+    <p style="margin:0 0 8px;font-size:10px;color:#BBB;line-height:1.85;font-family:Arial,sans-serif">
+      Prices are indicative spot rates. MyAurum is a personal record tool, not a financial advisor. Values will differ from jeweller buyback prices. Portfolio change is calculated against last Monday's spot prices.
+    </p>
+    <p style="margin:0;font-size:10px;font-family:Arial,sans-serif">
+      <a href="${unsubUrl}" style="color:#B8860B;text-decoration:none">Unsubscribe from weekly emails</a>
+      &nbsp;·&nbsp;
+      <a href="${APP_URL}" style="color:#B8860B;text-decoration:none">myaurum.app</a>
+    </p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>`;
+
+      // Plain text
+      const changeText = changePct !== null
+        ? `Change: ${changeVal >= 0 ? '+' : ''}${formatVal(Math.abs(changeVal), isMCX, sym)} (${changeVal >= 0 ? '+' : '-'}${Math.abs(changePct).toFixed(1)}%)`
+        : 'First snapshot — change data from next week';
+
+      const metalText = metalOrder.map(m => {
+        const d = metalData[m];
+        const wkChange = metalSpotChange[m];
+        const wkStr = wkChange !== undefined ? ` · spot ${wkChange >= 0 ? '+' : ''}${wkChange.toFixed(1)}% this week` : '';
+        const spotStr = m === 'gold' ? goldSpotStr : m === 'silver' ? silverSpotStr : '';
+        return `${(metalLabels[m]||m).toUpperCase()}: ${formatVal(d.valueDisp, isMCX, sym)} · ${d.grams.toFixed(2)}g${spotStr ? '\nSpot: ' + spotStr + wkStr : ''}`;
+      }).join('\n\n');
+
+      const text = [
+        `Hi ${user.first_name},`,
+        '',
+        `Your MyAurum vault · ${asOf}`,
+        '',
+        `PORTFOLIO TOTAL: ${formatVal(totalValue, isMCX, sym)}`,
+        changeText,
+        '',
+        metalText,
+        '',
+        APP_URL,
+        '',
+        '---',
+        'Prices are indicative spot rates. MyAurum is a personal record tool, not a financial advisor.',
+        `Unsubscribe: ${unsubUrl}`,
+      ].join('\n');
+
+      await sendEmail({ to: user.email, subject, html, text });
+      await q('UPDATE users SET weekly_email_sent_at=NOW() WHERE id=$1', [user.id]);
+      sent++;
+      console.log(`[weekly] Sent to ${user.email}`);
+
+      // Small delay to avoid rate limiting
+      await new Promise(r => setTimeout(r, 200));
+
+    } catch(e) {
+      console.error(`[weekly] Failed for user ${user.id}:`, e.message);
+      skipped++;
+    }
+  }
+
+  console.log(`[weekly] Done — sent: ${sent}, skipped: ${skipped}`);
+}
+
+// ─────────────────────────────────────────
 //  PRICE HISTORY
 // ─────────────────────────────────────────
 app.get('/api/prices/history', async (req, res) => {
@@ -1329,6 +1619,12 @@ initDB()
   .then(r => {
     if (r.rows[0]) priceCache = r.rows[0];
     cron.schedule('*/5 * * * *', refreshPrices);
+
+    // Weekly digest — Monday 8:00am IST = 02:30 UTC
+    cron.schedule('30 2 * * 1', async () => {
+      try { await sendWeeklyDigests(); }
+      catch(e) { console.error('[weekly] Cron error:', e.message); }
+    });
 
     // Daily cleanup — expired tokens
     cron.schedule('0 3 * * *', async () => {
