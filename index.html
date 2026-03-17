@@ -3581,7 +3581,18 @@ function generateHoldingsStatement(){
   if(!active.length){alert('No active holdings to include in statement.');return;}
 
   const ownerName = currentUser ? `${currentUser.firstName} ${currentUser.lastName}`.trim() : '—';
-  const today = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const _now = new Date();
+  const _dateStr = _now.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const _timeStr = _now.toLocaleTimeString([],{hour:'numeric',minute:'2-digit',hour12:true});
+  const _tz = (() => {
+    try {
+      const tzFull = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      // Try to get short abbreviation (e.g. IST, GMT+5:30, EST)
+      const abbr = _now.toLocaleTimeString('en-US',{timeZoneName:'short'}).split(' ').pop();
+      return abbr || tzFull;
+    } catch(_){ return ''; }
+  })();
+  const today = `${_dateStr}, ${_timeStr}${_tz?' '+_tz:''}`;
   const isMCX = benchmark === 'MCX';
   const bLabel = BENCHMARK_LABELS[benchmark] || benchmark;
   const sym = SYMBOLS[currency] || '$';
