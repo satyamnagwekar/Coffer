@@ -1578,6 +1578,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="profile-section-title">Actions</div>
         <button class="btn-profile-action btn-edit-profile" onclick="openEditProfile()">✏ Edit Profile</button>
         <button class="btn-profile-action" onclick="exportSuccessionPDF()" style="background:rgba(192,132,252,.06);border:1px solid rgba(192,132,252,.2);color:#c084fc;border-radius:8px;padding:13px 16px;font-size:13px;font-family:'Jost',sans-serif;letter-spacing:.04em;cursor:pointer;width:100%;margin-bottom:10px;text-align:left">📄 Export Succession PDF</button>
+        <button class="btn-profile-action" onclick="generateHoldingsStatement()" style="background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.25);color:var(--brand);border-radius:8px;padding:13px 16px;font-size:13px;font-family:'Jost',sans-serif;letter-spacing:.04em;cursor:pointer;width:100%;margin-bottom:10px;text-align:left">🗒 Holdings Statement <span style="font-size:11px;opacity:.6;display:block;margin-top:2px;font-weight:400">Print-ready · save as PDF from your browser</span></button>
         <button class="btn-profile-action btn-logout" onclick="doLogout()">Sign Out</button>
       </div>
 
@@ -3570,6 +3571,163 @@ function exportSuccessionPDF(){
   a.click();
   URL.revokeObjectURL(url);
   showToast('Succession document downloaded — open in browser and print as PDF','ok',5000);
+}
+
+// ══════════════════════════════════════════
+// HOLDINGS STATEMENT
+// ══════════════════════════════════════════
+function generateHoldingsStatement(){
+  const active = items.filter(i => !i.sold && !i.gifted);
+  if(!active.length){alert('No active holdings to include in statement.');return;}
+
+  const ownerName = currentUser ? `${currentUser.firstName} ${currentUser.lastName}`.trim() : '—';
+  const today = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const isMCX = benchmark === 'MCX';
+  const bLabel = BENCHMARK_LABELS[benchmark] || benchmark;
+  const sym = SYMBOLS[currency] || '$';
+  const INDIA_FACTOR = (10/31.1035)*1.15*1.03;
+
+  // Spot reference line
+  const goldSpotStr = isMCX
+    ? '₹'+Math.round(prices.gold*rates.INR*INDIA_FACTOR).toLocaleString('en-IN')+'/10g (MCX incl. duty+GST)'
+    : sym+(prices.gold*(rates[currency]||1)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'/oz ('+bLabel+')';
+
+  // Group by metal
+  const metals = ['gold','silver','platinum'];
+  const metalLabels = {gold:'Gold',silver:'Silver',platinum:'Platinum'};
+  const typeLabels = {jewellery:'Jewellery',coin_bar:'Coin / Bar',raw:'Raw / Unrefined'};
+
+  let tableHTML = '';
+  let grandTotal = 0;
+
+  metals.forEach(metal => {
+    const group = active.filter(i => i.metal === metal);
+    if(!group.length) return;
+
+    const groupTotal = group.reduce((s,i) => s + spotDisplayValue(i.metal,i.grams,i.purity), 0);
+    const groupGrams = group.reduce((s,i) => s + i.grams, 0);
+    grandTotal += groupTotal;
+
+    const rows = group.map(item => {
+      const val = spotDisplayValue(item.metal, item.grams, item.purity);
+      const valStr = isMCX
+        ? '₹'+Math.round(val).toLocaleString('en-IN')
+        : sym+val.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+      const purityLabel = item.gradeName.split(' — ')[0];
+      const heldBy = item.heldBy && item.heldBy.trim() ? item.heldBy.trim() : 'Self';
+      return `<tr>
+        <td>${item.name.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</td>
+        <td>${typeLabels[item.type]||item.type}</td>
+        <td>${purityLabel}</td>
+        <td style="text-align:right">${item.grams.toFixed(2)}g</td>
+        <td>${heldBy.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</td>
+        <td style="text-align:right;font-weight:600">${valStr}</td>
+      </tr>`;
+    }).join('');
+
+    const totalValStr = isMCX
+      ? '₹'+Math.round(groupTotal).toLocaleString('en-IN')
+      : sym+groupTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+
+    tableHTML += `
+      <tr class="metal-header">
+        <td colspan="6">${metalLabels[metal].toUpperCase()}</td>
+      </tr>
+      ${rows}
+      <tr class="subtotal">
+        <td colspan="3">Total ${metalLabels[metal]}</td>
+        <td style="text-align:right">${groupGrams.toFixed(2)}g</td>
+        <td></td>
+        <td style="text-align:right">${totalValStr}</td>
+      </tr>`;
+  });
+
+  const grandStr = isMCX
+    ? '₹'+Math.round(grandTotal).toLocaleString('en-IN')
+    : sym+grandTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MyAurum Holdings Statement — ${ownerName}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Georgia,serif;background:#FDFAF5;color:#2C2410;padding:40px 48px;max-width:860px;margin:0 auto}
+  .header{border-bottom:2px solid #B8860B;padding-bottom:20px;margin-bottom:28px}
+  .brand{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#8B6914;margin-bottom:6px}
+  .doc-title{font-size:26px;font-weight:300;color:#2C2410;letter-spacing:.06em;margin-bottom:16px}
+  .meta{display:flex;gap:40px;font-size:12px;color:#5a4a1a;line-height:1.8}
+  .meta-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8B6914;display:block}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:4px}
+  th{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8B6914;padding:8px 10px;border-bottom:1px solid #D4C490;text-align:left;font-weight:600}
+  th:last-child,th:nth-child(4){text-align:right}
+  td{padding:9px 10px;border-bottom:1px solid #EDE8DA;vertical-align:top;color:#2C2410}
+  tr.metal-header td{background:#F5EDD0;font-size:10px;letter-spacing:.14em;color:#8B6914;font-family:'Jost',Arial,sans-serif;font-weight:600;padding:6px 10px;border-bottom:none;border-top:12px solid #FDFAF5}
+  tr.metal-header:first-of-type td{border-top:none}
+  tr.subtotal td{background:#FAF5E8;font-size:11px;font-weight:600;color:#5a4a1a;padding:8px 10px;border-bottom:2px solid #D4C490}
+  .grand-total{margin-top:20px;border-top:2px solid #B8860B;padding-top:14px;display:flex;justify-content:space-between;align-items:baseline}
+  .grand-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8B6914}
+  .grand-value{font-size:24px;font-weight:300;color:#2C2410;font-family:Georgia,serif}
+  .footer{margin-top:32px;padding-top:16px;border-top:1px solid #D4C490;font-size:10px;color:#999;line-height:1.8;display:flex;justify-content:space-between}
+  .spot-ref{margin-top:20px;font-size:11px;color:#8B6914;background:#F5EDD0;padding:10px 14px;border-radius:6px;line-height:1.7}
+  @media print{
+    body{background:#fff;padding:28px 32px}
+    tr.metal-header:first-of-type td{border-top:none}
+    @page{margin:20mm 18mm}
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="brand">MyAurum · Precious Metals Ledger</div>
+  <div class="doc-title">Holdings Statement</div>
+  <div class="meta">
+    <div><span class="meta-label">Name</span>${ownerName.replace(/&/g,'&amp;')}</div>
+    <div><span class="meta-label">As of</span>${today}</div>
+    <div><span class="meta-label">Currency</span>${currency}</div>
+    <div><span class="meta-label">Benchmark</span>${bLabel}</div>
+  </div>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Type</th>
+      <th>Purity</th>
+      <th>Weight</th>
+      <th>Held By</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${tableHTML}
+  </tbody>
+</table>
+
+<div class="grand-total">
+  <span class="grand-label">Portfolio Total</span>
+  <span class="grand-value">${grandStr}</span>
+</div>
+
+<div class="spot-ref">
+  Gold spot reference: ${goldSpotStr} · as of ${today}
+</div>
+
+<div class="footer">
+  <span>Generated by MyAurum · myaurum.app</span>
+  <span>Personal record — not a certified valuation. Values are live-spot estimates.</span>
+</div>
+</body>
+</html>`;
+
+  const w = window.open('','_blank');
+  if(!w){alert('Please allow popups for myaurum.app to generate the statement.');return;}
+  w.document.write(html);
+  w.document.close();
+  setTimeout(()=>w.print(), 400);
 }
 
 function exportData(){
