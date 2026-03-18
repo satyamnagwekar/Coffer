@@ -567,7 +567,7 @@ async function sendWelcomeEmail(email, firstName) {
     <p style="margin:6px 0 0;font-size:10px;color:#907030;letter-spacing:.2em;text-transform:uppercase">Precious Metals Ledger</p>
   </td></tr>
   <tr><td style="background:#FDFAF5;padding:36px 40px;border-left:1px solid #DDD5C0;border-right:1px solid #DDD5C0">
-    <p style="margin:0 0 20px;font-size:15px;color:#2C2410;line-height:1.7;font-family:Georgia,serif">Hi ${firstName},</p>
+    <p style="margin:0 0 20px;font-size:15px;color:#2C2410;line-height:1.7;font-family:Arial,sans-serif">Hi ${firstName},</p>
     <p style="margin:0 0 16px;font-size:14px;color:#4a3a1a;line-height:1.85;font-family:Arial,sans-serif">Indian families hold more physical gold than any other community on earth. Jewellery bought over decades. Coins received as gifts. Bars passed down from parents. All of it sitting in lockers and drawers, often without a clear record of what it is or what it is worth today.</p>
     <p style="margin:0 0 16px;font-size:14px;color:#4a3a1a;line-height:1.85;font-family:Arial,sans-serif">And it travels. To Dubai, to London, to Toronto, to Sydney. The gold moves with the family. The documentation rarely does.</p>
     <p style="margin:0 0 24px;font-size:14px;color:#4a3a1a;line-height:1.85;font-family:Arial,sans-serif">That is the gap MyAurum fills. Not because tracking live prices is exciting, but because one day, when you are settling an estate, writing a will, or simply trying to answer your children's questions, you will want a record that actually exists.</p>
@@ -581,14 +581,15 @@ async function sendWelcomeEmail(email, firstName) {
       <a href="${APP_URL}" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#D4A017);color:#0c0a06;text-decoration:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:15px 36px;border-radius:8px;font-weight:600;font-family:Arial,sans-serif">Add Your First Holding &rarr;</a>
     </div>
     <p style="margin:0 0 8px;font-size:13px;color:#4a3a1a;line-height:1.7;font-family:Arial,sans-serif">Once you have done that, the rest builds naturally.</p>
-    <p style="margin:0 0 24px;font-size:13px;color:#4a3a1a;line-height:1.7;font-family:Arial,sans-serif">One more thing — if you would like to understand exactly how we protect your data, we have written a plain-English explanation of every security measure in place. No jargon, no vague assurances. <a href="${APP_URL}/security" style="color:#B8860B;text-decoration:none;font-weight:500">Read it here →</a></p>
+    <p style="margin:0 0 24px;font-size:13px;color:#4a3a1a;line-height:1.7;font-family:Arial,sans-serif">One more thing — if you would like to understand exactly how we protect your data, including your precious holdings, we have written a plain-English explanation of every security measure in place. No jargon, no vague assurances. <a href="${APP_URL}/security" style="color:#B8860B;text-decoration:none;font-weight:500">Read it here →</a></p>
     <p style="margin:0 0 24px;font-size:13px;color:#4a3a1a;line-height:1.7;font-family:Arial,sans-serif">If something is unclear or not working the way you expect, just reply to this email. I read every one.</p>
     <p style="margin:0 0 2px;font-size:13px;color:#2C2410;font-weight:600;font-family:Arial,sans-serif">Satyam</p>
     <p style="margin:0;font-size:12px;color:#8B6914;font-family:Arial,sans-serif">Founder, MyAurum</p>
   </td></tr>
   <tr><td style="background:#F0EBE0;padding:16px 40px;border:1px solid #DDD5C0;border-top:none;border-radius:0 0 16px 16px">
-    <p style="margin:0;font-size:10px;color:#BBB;line-height:1.85;font-family:Arial,sans-serif">MyAurum is free up to 25 holdings. No credit card, no catch.<br>
-    <a href="${APP_URL}" style="color:#B8860B;text-decoration:none">myaurum.app</a></p>
+    <p style="margin:0 0 6px;font-size:10px;color:#AAA;line-height:1.85;font-family:Arial,sans-serif">MyAurum is free up to 25 holdings. No credit card, no catch. &nbsp;·&nbsp; <a href="${APP_URL}" style="color:#B8860B;text-decoration:none">myaurum.app</a></p>
+    <p style="margin:0;font-size:10px;color:#CCC;line-height:1.7;font-family:Arial,sans-serif">&copy; 2026 MyAurum. All rights reserved. &nbsp;·&nbsp; Registered in India &nbsp;·&nbsp; <a href="${APP_URL}/privacy" style="color:#B8860B;text-decoration:none">Privacy Policy</a></p>
+    <p style="margin:6px 0 0;font-size:10px;color:#CCC;line-height:1.7;font-family:Arial,sans-serif">MyAurum is a personal record tool, not a financial product. Values shown are indicative estimates based on live spot prices and do not constitute financial advice.</p>
   </td></tr>
 </table>
 </td></tr>
@@ -719,9 +720,11 @@ async function sendMilestone20Email(email, firstName, verifyUrl) {
     ${ctaBlock}
     <p style="margin:0;font-size:13px;color:#4a3a1a;line-height:1.7">If something is not working the way you expect, reply to this email. I read every one.</p>
   </td></tr>
-  <tr><td style="background:#F0EBE0;padding:20px 40px;border:1px solid #DDD5C0;border-top:none;border-radius:0 0 16px 16px">
-    <p style="margin:0 0 4px;font-size:13px;color:#2C2410;font-weight:600">Satyam</p>
-    <p style="margin:0;font-size:12px;color:#8B6914">Founder, MyAurum</p>
+  <tr><td style="background:#F0EBE0;padding:16px 40px;border:1px solid #DDD5C0;border-top:none;border-radius:0 0 16px 16px">
+    <p style="margin:0 0 6px;font-size:13px;color:#2C2410;font-weight:600;font-family:Arial,sans-serif">Satyam</p>
+    <p style="margin:0 0 10px;font-size:12px;color:#8B6914;font-family:Arial,sans-serif">Founder, MyAurum</p>
+    <p style="margin:0 0 4px;font-size:10px;color:#AAA;line-height:1.7;font-family:Arial,sans-serif">&copy; 2026 MyAurum. All rights reserved. &nbsp;&middot;&nbsp; Registered in India &nbsp;&middot;&nbsp; <a href="${APP_URL}/privacy" style="color:#B8860B;text-decoration:none">Privacy Policy</a></p>
+    <p style="margin:0;font-size:10px;color:#CCC;line-height:1.7;font-family:Arial,sans-serif">MyAurum is a personal record tool, not a financial product. Values shown are indicative estimates based on live spot prices and do not constitute financial advice.</p>
   </td></tr>
 </table>
 </td></tr>
@@ -1411,12 +1414,13 @@ async function sendWeeklyDigests() {
     <a href="${APP_URL}" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#D4A017);color:#0c0a06;text-decoration:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:14px 32px;border-radius:8px;font-weight:600">Open your vault &rarr;</a>
   </td></tr>
   <tr><td style="background:#F0EBE0;padding:18px 32px;border:1px solid #DDD5C0;border-top:none;border-radius:0 0 16px 16px">
-    <p style="margin:0 0 8px;font-size:10px;color:#BBB;line-height:1.85;font-family:Arial,sans-serif">
+    <p style="margin:0 0 6px;font-size:10px;color:#BBB;line-height:1.85;font-family:Arial,sans-serif">
       Prices are indicative spot rates. MyAurum is a personal record tool, not a financial advisor. Values will differ from jeweller buyback prices. Portfolio change is calculated against last Monday's spot prices.
     </p>
+    <p style="margin:0 0 6px;font-size:10px;color:#CCC;line-height:1.7;font-family:Arial,sans-serif">&copy; 2026 MyAurum. All rights reserved. &nbsp;&middot;&nbsp; Registered in India &nbsp;&middot;&nbsp; <a href="${APP_URL}/privacy" style="color:#B8860B;text-decoration:none">Privacy Policy</a></p>
     <p style="margin:0;font-size:10px;font-family:Arial,sans-serif">
       <a href="${unsubUrl}" style="color:#B8860B;text-decoration:none">Unsubscribe from weekly emails</a>
-      &nbsp;·&nbsp;
+      &nbsp;&middot;&nbsp;
       <a href="${APP_URL}" style="color:#B8860B;text-decoration:none">myaurum.app</a>
     </p>
   </td></tr>
