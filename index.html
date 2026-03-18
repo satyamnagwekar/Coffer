@@ -1533,6 +1533,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   <div class="content-panel" id="panelProfile">
     <div class="profile-panel">
 
+      <div style="display:flex;justify-content:flex-end;padding:4px 0 0">
+        <button onclick="openSettings()" style="background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:18px;padding:4px 8px;line-height:1;opacity:.6;transition:opacity .2s" title="Settings">⚙</button>
+      </div>
+
       <div class="profile-header" id="profileHeader">
         <!-- populated by JS -->
       </div>
@@ -1597,14 +1601,43 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <button class="btn-profile-action btn-logout" onclick="doLogout()">Sign Out</button>
       </div>
 
-      <div class="profile-section" style="border-bottom:none">
-        <div class="profile-section-title" style="color:var(--red-dim)">Danger Zone</div>
-        <div class="field-note" style="margin-bottom:12px">Deleting your account will permanently erase all your MyAurum data and cannot be undone.</div>
-        <button class="btn-danger-full" onclick="deleteAccount()">Delete My Account &amp; All Data</button>
-      </div>
-
     </div>
   </div><!-- /panelProfile -->
+
+  <!-- ── SETTINGS MODAL ── -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <div class="modal-title">Settings</div>
+        <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
+      </div>
+      <div style="padding:0 20px 24px">
+
+        <!-- 2FA -->
+        <div style="margin-bottom:24px">
+          <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px;font-weight:500">Security</div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+            <div>
+              <div style="font-size:13px;color:var(--text);font-weight:500;margin-bottom:3px">Two-factor authentication</div>
+              <div style="font-size:11px;color:var(--text-dim);line-height:1.6" id="twoFADesc">A 6-digit code is sent to your email each time you sign in.</div>
+            </div>
+            <button id="twoFAToggleBtn" onclick="toggleTwoFA()" style="flex-shrink:0;padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:11px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;color:var(--text-dim);transition:all .2s;white-space:nowrap">Enable</button>
+          </div>
+          <div id="twoFANote" style="display:none;margin-top:8px;font-size:11px;color:#B8A070;padding:8px 12px;background:rgba(184,134,11,.06);border-radius:6px;line-height:1.6">Verify your email address before enabling two-factor authentication. <a href="#" id="verifyNowLink" onclick="sendVerifyNow(event)" style="color:#B8860B;text-decoration:underline;cursor:pointer">Send verification email →</a></div>
+        </div>
+
+        <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
+
+        <!-- Danger Zone -->
+        <div>
+          <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--red-dim);margin-bottom:12px;font-weight:500">Danger Zone</div>
+          <div style="font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:12px">Deleting your account permanently erases all your MyAurum data and cannot be undone.</div>
+          <button class="btn-danger-full" onclick="deleteAccount()">Delete My Account &amp; All Data</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
 
   <div class="fab-wrap" id="fabWrap">
     <div class="fab-label">Add holding</div>
@@ -2280,6 +2313,8 @@ async function doRegister(){
   }
 }
 
+let _pending2FAUserId = null;
+
 async function doLogin(){
   const email=document.getElementById('loginEmail').value.trim().toLowerCase();
   const pw=document.getElementById('loginPassword').value;
@@ -2290,6 +2325,12 @@ async function doLogin(){
   btn.disabled=true;btn.textContent='Opening…';
   try{
     const data=await api('POST','/auth/login',{email,password:pw});
+    if(data.requires2FA){
+      _pending2FAUserId=data.userId;
+      btn.disabled=false;btn.textContent='Open MyAurum →';
+      showOTPOverlay();
+      return;
+    }
     setToken(data.token);
     loginUser(data.user);
   }catch(e){
@@ -2297,6 +2338,102 @@ async function doLogin(){
     showMsg('loginMsg',e.message,'error');
   }
 }
+
+function showOTPOverlay(){
+  const o=document.getElementById('otpOverlay');
+  o.style.display='flex';
+  document.getElementById('otpCode').value='';
+  document.getElementById('otpMsg').textContent='';
+  setTimeout(()=>document.getElementById('otpCode').focus(),100);
+}
+
+function hideOTPOverlay(){
+  document.getElementById('otpOverlay').style.display='none';
+  _pending2FAUserId=null;
+}
+
+async function verifyOTP(){
+  const code=document.getElementById('otpCode').value.trim();
+  if(!code||code.length!==6){return showMsg('otpMsg','Please enter the 6-digit code.','error')}
+  const btn=document.getElementById('otpBtn');
+  btn.disabled=true;btn.textContent='Verifying…';
+  try{
+    const data=await api('POST','/auth/verify-otp',{userId:_pending2FAUserId,code});
+    hideOTPOverlay();
+    setToken(data.token);
+    loginUser(data.user);
+  }catch(e){
+    btn.disabled=false;btn.textContent='Verify →';
+    showMsg('otpMsg',e.message,'error');
+  }
+}
+
+function openSettings(){
+  if(!currentUser)return;
+  // Render 2FA toggle state
+  const btn=document.getElementById('twoFAToggleBtn');
+  const note=document.getElementById('twoFANote');
+  const desc=document.getElementById('twoFADesc');
+  if(!currentUser.emailVerified){
+    btn.textContent='Enable';
+    btn.style.opacity='.4';
+    btn.style.pointerEvents='none';
+    note.style.display='block';
+  } else if(currentUser.twoFactorEnabled){
+    btn.textContent='Disable';
+    btn.style.opacity='1';
+    btn.style.pointerEvents='auto';
+    btn.style.background='rgba(224,92,92,.08)';
+    btn.style.borderColor='rgba(224,92,92,.3)';
+    btn.style.color='var(--red)';
+    note.style.display='none';
+    desc.textContent='A 6-digit code is sent to your email each time you sign in. Currently active.';
+  } else {
+    btn.textContent='Enable';
+    btn.style.opacity='1';
+    btn.style.pointerEvents='auto';
+    btn.style.background='transparent';
+    btn.style.borderColor='var(--border)';
+    btn.style.color='var(--text-dim)';
+    note.style.display='none';
+    desc.textContent='A 6-digit code is sent to your email each time you sign in.';
+  }
+  document.getElementById('settingsModal').classList.add('open');
+}
+
+async function sendVerifyNow(e){
+  e.preventDefault();
+  const link=document.getElementById('verifyNowLink');
+  link.textContent='Sending…';
+  try{
+    await api('POST','/auth/resend-verification',{});
+    link.textContent='Sent — check your inbox';
+    link.style.pointerEvents='none';
+    showToast('Verification email sent — check your inbox','ok',4000);
+  }catch(err){
+    link.textContent='Send verification email →';
+    showToast('Could not send email — try again','error');
+  }
+}
+
+async function toggleTwoFA(){
+  if(!currentUser)return;
+  const enabling=!currentUser.twoFactorEnabled;
+  const confirmMsg=enabling
+    ? 'Enable two-factor authentication? A code will be sent to your email each time you sign in.'
+    : 'Disable two-factor authentication? Your account will only require a password to sign in.';
+  if(!confirm(confirmMsg))return;
+  try{
+    await api('POST', enabling?'/auth/2fa/enable':'/auth/2fa/disable',{});
+    currentUser.twoFactorEnabled=enabling;
+    showToast(enabling?'Two-factor authentication enabled':'Two-factor authentication disabled','ok',3000);
+    closeModal('settingsModal');
+  }catch(e){
+    showToast(e.message,'error');
+  }
+}
+
+
 
 async function loginUser(user){
   currentUser=user;
@@ -4260,6 +4397,23 @@ function handleUnauthorised(){
     <button id="forgotBtn" class="btn-auth" onclick="doForgot()">Send Reset Link →</button>
     <div style="text-align:center;margin-top:10px">
       <button onclick="hideForgotForm()" style="background:none;border:none;color:#BBB;font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.06em">← Back to sign in</button>
+    </div>
+  </div>
+</div>
+
+<div id="otpOverlay" style="display:none;position:fixed;inset:0;background:rgba(245,240,232,0.97);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:#fff;border:1px solid #DDD5C0;border-radius:14px;padding:28px 24px;width:300px;box-shadow:0 4px 24px rgba(0,0,0,.1)">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#B8860B;letter-spacing:.2em;margin-bottom:4px">MyAurum</div>
+    <div style="font-size:11px;color:#999;letter-spacing:.18em;text-transform:uppercase;margin-bottom:16px">Verify Identity</div>
+    <p style="font-size:12px;color:#888;line-height:1.7;margin-bottom:16px">We have sent a 6-digit code to your registered email. It expires in 10 minutes.</p>
+    <div id="otpMsg"></div>
+    <div class="af" style="margin-bottom:14px">
+      <label>Verification Code</label>
+      <input type="text" id="otpCode" placeholder="000000" maxlength="6" autocomplete="one-time-code" inputmode="numeric" style="letter-spacing:.2em;font-size:18px;text-align:center" onkeydown="if(event.key==='Enter')verifyOTP()">
+    </div>
+    <button id="otpBtn" class="btn-auth" onclick="verifyOTP()">Verify →</button>
+    <div style="text-align:center;margin-top:10px">
+      <button onclick="hideOTPOverlay()" style="background:none;border:none;color:#BBB;font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.06em">← Back to sign in</button>
     </div>
   </div>
 </div>
