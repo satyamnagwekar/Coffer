@@ -1795,16 +1795,6 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           </div>
         </div>
 
-        <div class="field">
-          <div class="field-label-row"><label>Photos</label><span class="field-hint">optional · receipt, item, certificate</span></div>
-          <div id="photosGrid" class="photos-grid" style="display:none"></div>
-          <div id="photoUploadArea" class="receipt-upload">
-            <input type="file" id="photoFile" accept="image/*" onchange="handlePhotoUpload(this)">
-            <div class="u-icon">📷</div>
-            <div class="u-label">Tap to attach photos</div>
-            <div class="u-sub">Receipt · actual item · certificate · max 3 photos · stored on device only</div>
-          </div>
-        </div>
         <div class="field" id="makingChargeField">
           <div class="field-label-row">
             <label>Making Charges</label>
@@ -1850,7 +1840,20 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="pnl-row total"><div class="pnl-key">Unrealised G/L</div><div class="pnl-val hi" id="pnlGain">—</div></div>
       </div>
 
-      <div style="display:flex;align-items:flex-start;gap:7px;background:rgba(139,105,20,.05);border-radius:6px;padding:9px 11px;margin-bottom:10px">
+      <div class="form-divider" style="margin:16px 0 14px">
+        <div class="form-divider-line"></div>
+        <div class="form-divider-text">Photos <span style="font-size:10px;color:var(--text-dim);font-weight:400;letter-spacing:0">· optional</span></div>
+        <div class="form-divider-line"></div>
+      </div>
+      <div id="photosGrid" class="photos-grid" style="display:none"></div>
+      <div id="photoUploadArea" class="receipt-upload">
+        <input type="file" id="photoFile" accept="image/*" onchange="handlePhotoUpload(this)">
+        <div class="u-icon">📷</div>
+        <div class="u-label">Tap to attach photos</div>
+        <div class="u-sub">Photograph the item, hallmark, or certificate · max 3 photos</div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:7px;background:rgba(139,105,20,.05);border-radius:6px;padding:9px 11px;margin-top:14px;margin-bottom:10px">
         <span style="font-size:13px;flex-shrink:0;margin-top:1px;opacity:.6">ℹ</span>
         <span style="font-size:11px;color:var(--text-dim);line-height:1.65;font-family:'Jost',sans-serif">Value shown is an indicative estimate based on declared weight and purity at live spot prices. Actual resale may differ due to physical condition, dust or carbon accumulation, embedded stones, and prevailing market conditions.</span>
       </div>
