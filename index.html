@@ -1044,7 +1044,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         </div>
       </div>
 
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <!-- NO ADS + How it works -->
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px">
         <div class="free-badge"><span class="dot"></span>No ads · No data sharing · Ever</div>
         <button onclick="document.getElementById('howToDropdown').style.display=document.getElementById('howToDropdown').style.display==='none'?'block':'none'" style="background:linear-gradient(135deg,#B8860B,#D4A017);border:none;border-radius:20px;padding:7px 16px;font-size:13px;color:#fff;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.08em;font-weight:500">How it works ▾</button>
       </div>
@@ -1118,11 +1119,13 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div style="font-size:11px;color:#888070;line-height:1.8">MyAurum is free and carries no advertising. Your portfolio data is never sold, shared, or used to target you. Ever.</div>
         </div>
 
-        <div style="text-align:center;padding:24px 16px;border:1px solid rgba(184,134,11,.18);border-radius:12px;background:#fff">
-          <div style="font-size:26px;margin-bottom:10px">🏛</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#2C2410;font-weight:300;margin-bottom:8px">Built by a real person.</div>
-          <div style="font-size:11px;color:#888070;line-height:1.8">Built and maintained by Satyam Nagwekar, Mumbai. Trademark filed. Not a faceless product — a tool built out of personal necessity.</div>
-        </div>
+        <a href="/security" target="_blank" style="text-decoration:none">
+          <div style="text-align:center;padding:24px 16px;border:2px solid #B8860B;border-radius:12px;background:#fff;transition:background .2s" onmouseover="this.style.background='rgba(184,134,11,.04)'" onmouseout="this.style.background='#fff'">
+            <div style="font-size:26px;margin-bottom:10px">🔐</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#8B6914;font-weight:400;margin-bottom:8px;letter-spacing:.04em">Bank-grade encryption.</div>
+            <div style="font-size:11px;color:#888070;line-height:1.8">Sensitive holding data is AES-256-GCM encrypted before it reaches our database. Passwords are hashed and unreadable — even to us. <span style="color:#B8860B">How we protect you →</span></div>
+          </div>
+        </a>
 
         <div style="text-align:center;padding:24px 16px;border:1px solid rgba(184,134,11,.18);border-radius:12px;background:#fff">
           <div style="font-size:26px;margin-bottom:10px">📊</div>
@@ -1568,20 +1571,36 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <div class="profile-section">
         <div class="profile-section-title">Security</div>
         <div class="profile-row">
-          <div class="profile-key">Password</div>
-          <div class="profile-val muted">••••••••</div>
+          <div class="profile-key">Password storage</div>
+          <div class="profile-val muted" style="font-size:11px">bcrypt · cost factor 12</div>
         </div>
         <div class="profile-row">
-          <div class="profile-key">Holdings storage</div>
-          <div class="profile-val muted" style="font-size:11px">This device only</div>
+          <div class="profile-key">Holdings data</div>
+          <div class="profile-val muted" style="font-size:11px">AES-256-GCM encrypted</div>
         </div>
         <div class="profile-row">
-          <div class="profile-key">Account data</div>
-          <div class="profile-val muted" style="font-size:11px">Encrypted on server</div>
+          <div class="profile-key">Data in transit</div>
+          <div class="profile-val muted" style="font-size:11px">TLS 1.2+</div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-key">Infrastructure</div>
+          <div class="profile-val muted" style="font-size:11px">Railway · AWS · encrypted at rest</div>
         </div>
         <div class="profile-row">
           <div class="profile-key">Data sharing</div>
           <div class="profile-val muted" style="font-size:11px;color:var(--green)">None — ever</div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-key">Two-factor auth</div>
+          <div class="profile-val muted" id="secTwoFAStatus" style="font-size:11px">—</div>
+        </div>
+        <div style="margin-top:14px;padding:14px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">
+          <div style="font-size:11px;color:var(--text-dim);line-height:1.85">
+            <p style="margin:0 0 10px"><strong style="color:var(--text)">How your data is protected</strong></p>
+            <p style="margin:0 0 8px">Your password is hashed using bcrypt (cost factor 12) and is never stored in readable form — not even we can retrieve it. Sensitive holding fields (item names, purity grades, notes, held-by names, nominee names) are encrypted at the application layer using AES-256-GCM before being written to the database. Each field uses a unique random initialisation vector, and the authentication tag prevents tampering. Even with direct database access, this data cannot be read without the encryption key, which is stored separately.</p>
+            <p style="margin:0 0 8px">All communication between your device and our servers uses TLS. Our database runs on Railway's infrastructure backed by AWS, where storage volumes are encrypted at rest by default.</p>
+            <p style="margin:0">Login endpoints are rate-limited to mitigate brute-force attempts. Session tokens (JWTs) expire after 30 days. Optional two-factor authentication via email OTP is available in Settings for users who want an additional login verification step.</p>
+          </div>
         </div>
       </div>
 
@@ -2589,6 +2608,21 @@ function refreshProfile(){
   document.getElementById('statItems').textContent=active;
   document.getElementById('statSold').textContent=sold;
   document.getElementById('statValue').textContent=portVal;
+
+  // 2FA status in security section
+  const twoFAEl = document.getElementById('secTwoFAStatus');
+  if(twoFAEl){
+    if(!currentUser.emailVerified){
+      twoFAEl.textContent='Email unverified';
+      twoFAEl.style.color='var(--text-dim)';
+    } else if(currentUser.twoFactorEnabled){
+      twoFAEl.textContent='Enabled';
+      twoFAEl.style.color='var(--green)';
+    } else {
+      twoFAEl.textContent='Not enabled';
+      twoFAEl.style.color='var(--text-dim)';
+    }
+  }
 
   // Plan section
   const activeCount=items.filter(i=>!i.sold&&!i.gifted).length;
@@ -4607,19 +4641,54 @@ window.onerror = (msg, src, line, col, err) => {
 
 </script>
 <div id="privacyOverlay" style="display:none;position:fixed;inset:0;background:rgba(245,240,232,.97);z-index:1000;align-items:flex-start;justify-content:center;overflow-y:auto;padding:32px 20px">
-  <div style="max-width:560px;width:100%;background:#fff;border:1px solid #DDD5C0;border-radius:16px;padding:28px 24px;box-shadow:0 4px 24px rgba(0,0,0,.08)">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+  <div style="max-width:600px;width:100%;background:#fff;border:1px solid #DDD5C0;border-radius:16px;padding:32px 28px;box-shadow:0 4px 24px rgba(0,0,0,.08)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
       <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#8B6914;letter-spacing:.1em">Privacy Policy</div>
       <button onclick="document.getElementById('privacyOverlay').style.display='none'" style="background:none;border:1px solid #DDD5C0;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;color:#888;display:flex;align-items:center;justify-content:center">×</button>
     </div>
-    <div style="font-size:11px;color:#555;line-height:1.9;display:flex;flex-direction:column;gap:14px">
-      <p><strong style="color:#2C2410">What we collect</strong><br>MyAurum stores only what you choose to enter: your name, email, and the holding details you add. We do not collect behavioural data, track usage patterns, or build profiles.</p>
-      <p><strong style="color:#2C2410">Where it lives</strong><br>Your holdings data is stored on your device in your browser's local storage. Only your account credentials (name, email, password hash) are held on our servers — nothing about your portfolio, its contents, values, or history is ever transmitted to any server or third party.</p>
-      <p><strong style="color:#2C2410">No ads, ever</strong><br>MyAurum is free to use and carries no advertising. Your financial data will never be sold, shared, or used to target you. The product exists to serve you — not to monetise your information.</p>
-      <p><strong style="color:#2C2410">Third parties</strong><br>We use a third-party market data feed solely to retrieve live gold and silver spot prices. No personal data is transmitted to this service. No other third-party services receive your data.</p>
-      <p><strong style="color:#2C2410">Data deletion</strong><br>You can delete your account and all associated data at any time from the Profile tab. Holdings stored in your browser are erased when you clear your browser data or uninstall the app.</p>
-      <p><strong style="color:#2C2410">Contact</strong><br>Questions about your data? Write to us at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="08787a617e696b71486b676e6e6d7a26697878">[email&#160;protected]</a></p>
-      <p style="color:#999;font-size:10px">Last updated: January 2025 · MyAurum, Mumbai, India</p>
+    <div style="font-size:12px;color:#555;line-height:1.95;display:flex;flex-direction:column;gap:18px">
+
+      <p><strong style="color:#2C2410;font-size:13px">1. What we collect</strong><br>
+      MyAurum stores only what you choose to enter: your name, email address, age, country, and the holding details you add — item names, metal type, purity, weight, purchase price, purchase date, nominated heirs, and any notes you attach. We do not collect behavioural analytics, device fingerprints, location data, or usage patterns. We do not build profiles. There is no advertising SDK, no tracking pixel, and no third-party analytics running in this application.</p>
+
+      <p><strong style="color:#2C2410;font-size:13px">2. Where your data lives</strong><br>
+      Your account and all holdings data are stored on a PostgreSQL database hosted on Railway's infrastructure, which runs on Amazon Web Services (AWS). AWS encrypts storage volumes at rest by default. Data in transit between your device and our servers is encrypted using TLS 1.2 or higher. We do not store anything in your browser's local storage or on your device beyond a session token.</p>
+
+      <p><strong style="color:#2C2410;font-size:13px">3. How we protect your data</strong><br>
+      Passwords are hashed using bcrypt with a cost factor of 12 — they are never stored in readable form, and we cannot retrieve your password. Sensitive holding fields — item names, purity grades, notes, held-by names, nominee names — are encrypted at the application layer using AES-256-GCM before being written to the database. This means that even direct database access would not expose this information in readable form without the encryption key, which is stored separately from the data. Authentication tokens (JWTs) expire after 30 days. Login endpoints are rate-limited to mitigate brute-force attempts. Optional two-factor authentication via email OTP is available for users who want an additional layer of login security.</p>
+
+      <p><strong style="color:#2C2410;font-size:13px">4. No ads. No data sharing. Ever.</strong><br>
+      MyAurum carries no advertising. Your data is never sold, rented, or shared with third parties for commercial purposes. We do not use your financial data to target you with anything. The product exists to serve you — not to monetise your information. This is a categorical commitment, not a policy subject to revision for commercial convenience.</p>
+
+      <p><strong style="color:#2C2410;font-size:13px">5. Third-party services</strong><br>
+      We use the following external services, each with a narrow and specific purpose:</p>
+      <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px">
+        <li><strong style="color:#2C2410">Metals price APIs</strong> — to retrieve live gold, silver, and platinum spot prices. No personal data is transmitted.</li>
+        <li><strong style="color:#2C2410">Resend</strong> — to deliver transactional emails (verification, password reset, weekly digest). Your email address is transmitted to Resend solely for delivery. Resend does not receive any holdings data.</li>
+        <li><strong style="color:#2C2410">Google OAuth</strong> — if you choose to sign in with Google. We receive only your name and email address. No data is shared back with Google.</li>
+        <li><strong style="color:#2C2410">Railway / AWS</strong> — infrastructure hosting. Your data resides on their servers subject to their security standards.</li>
+        <li><strong style="color:#2C2410">Sentry</strong> — for application error monitoring. Error reports contain technical stack traces and may include sanitised request metadata, but never your holdings data or personal identifiers.</li>
+      </ul>
+
+      <p><strong style="color:#2C2410;font-size:13px">6. Email communications</strong><br>
+      If you provide an email address, we may send transactional emails: account verification, password resets, a milestone notification at 20 holdings, and an optional weekly portfolio digest. The weekly digest can be disabled at any time via the unsubscribe link in each email. We do not send promotional or marketing emails.</p>
+
+      <p><strong style="color:#2C2410;font-size:13px">7. Data retention and deletion</strong><br>
+      Your data is retained for as long as your account is active. You can permanently delete your account and all associated data at any time from Profile → Settings → Danger Zone. Deletion is immediate and irreversible. Backups are retained for up to 30 days on Railway's infrastructure before expiring.</p>
+
+      <p><strong style="color:#2C2410;font-size:13px">8. No KYC. No financial regulation.</strong><br>
+      MyAurum is a personal record-keeping tool. It is not a financial product, a brokerage, a payment service, or a regulated financial instrument. We do not require identity documents, PAN, Aadhaar, or any government-issued identification. We have no visibility into your financial accounts and no ability to initiate transactions on your behalf.</p>
+
+      <p><strong style="color:#2C2410;font-size:13px">9. Children</strong><br>
+      MyAurum is not intended for use by persons under 18 years of age. We do not knowingly collect data from minors.</p>
+
+      <p><strong style="color:#2C2410;font-size:13px">10. Changes to this policy</strong><br>
+      If we make material changes to this policy, we will notify users by email and update the date below. We will not retroactively reduce the privacy protections described here without explicit consent.</p>
+
+      <p><strong style="color:#2C2410;font-size:13px">11. Contact</strong><br>
+      For privacy-related questions or data requests, write to us at <a href="mailto:privacy@myaurum.app" style="color:#B8860B;text-decoration:none">privacy@myaurum.app</a>. We will respond within 5 business days.</p>
+
+      <p style="color:#999;font-size:10px;border-top:1px solid #EEE;padding-top:12px;margin-top:4px">Last updated: March 2026 · MyAurum, Mumbai, India · Registered under UDYAM</p>
     </div>
   </div>
 </div>
