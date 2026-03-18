@@ -143,6 +143,17 @@ async function initDB() {
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_method TEXT DEFAULT 'email'`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS weekly_email_opt_out BOOLEAN DEFAULT FALSE`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS weekly_email_sent_at TIMESTAMPTZ`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE`);
+  await q(`
+    CREATE TABLE IF NOT EXISTS otp_tokens (
+      id         SERIAL PRIMARY KEY,
+      user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      code       TEXT NOT NULL,
+      expires_at TIMESTAMPTZ NOT NULL,
+      used       BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
 
   if (webpush && VAPID_PUBLIC && VAPID_PRIVATE) {
     webpush.setVapidDetails(VAPID_EMAIL, VAPID_PUBLIC, VAPID_PRIVATE);
@@ -323,11 +334,81 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
     if (!u.email_verified) {
       await q('UPDATE users SET email_verified=TRUE WHERE id=$1', [u.id]);
     }
+    // 2FA check — if enabled, send OTP and return challenge
+    if (u.two_factor_enabled) {
+      const crypto = require('crypto');
+      const code = String(Math.floor(100000 + Math.random() * 900000));
+      const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+      await q('UPDATE otp_tokens SET used=TRUE WHERE user_id=$1 AND used=FALSE', [u.id]);
+      await q('INSERT INTO otp_tokens (user_id, code, expires_at) VALUES ($1,$2,$3)', [u.id, code, expires]);
+      setImmediate(async () => {
+        try {
+          await sendEmail({
+            to: u.email,
+            subject: 'Your MyAurum login code',
+            html: `<div style="font-family:monospace;max-width:480px;margin:0 auto;padding:32px;background:#F5F0E8;border-radius:12px">
+              <div style="font-size:24px;font-weight:300;color:#B8860B;letter-spacing:0.2em;margin-bottom:20px">MYAURUM</div>
+              <p style="color:#2C2410;font-size:14px;line-height:1.8">Hi ${u.first_name},</p>
+              <p style="color:#555;font-size:13px;line-height:1.8">Your login verification code is:</p>
+              <div style="text-align:center;margin:28px 0">
+                <div style="font-family:'Courier New',monospace;font-size:36px;font-weight:600;letter-spacing:0.3em;color:#B8860B;background:#F5EDD8;padding:20px 32px;border-radius:10px;display:inline-block">${code}</div>
+              </div>
+              <p style="color:#AAA;font-size:11px;line-height:1.7">This code expires in 10 minutes. If you did not attempt to sign in, ignore this email.</p>
+            </div>`,
+            text: `Your MyAurum login code: ${code}\n\nExpires in 10 minutes.`,
+          });
+        } catch(e) { console.error('[2fa] OTP email failed:', e.message); }
+      });
+      return res.json({ requires2FA: true, userId: u.id });
+    }
     await q('UPDATE users SET last_seen=NOW(), auth_method=$2 WHERE id=$1', [u.id, 'email']);
     const token = jwt.sign({ userId:u.id, email:u.email }, JWT_SECRET, { expiresIn:'30d' });
     res.json({ token, user:{ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:true } });
   } catch(e) { console.error(e); res.status(500).json({ error:'Server error' }); }
 });
+
+// OTP verification — second step of 2FA login
+app.post('/api/auth/verify-otp', authLimiter, async (req, res) => {
+  const { userId, code } = req.body;
+  if (!userId || !code) return res.status(400).json({ error: 'Missing fields' });
+  try {
+    const r = await q(
+      'SELECT * FROM otp_tokens WHERE user_id=$1 AND code=$2 AND used=FALSE AND expires_at > NOW()',
+      [userId, code.trim()]
+    );
+    const otp = r.rows[0];
+    if (!otp) return res.status(401).json({ error: 'Invalid or expired code' });
+    await q('UPDATE otp_tokens SET used=TRUE WHERE id=$1', [otp.id]);
+    const ur = await q('SELECT * FROM users WHERE id=$1', [userId]);
+    const u = ur.rows[0];
+    if (!u) return res.status(404).json({ error: 'User not found' });
+    await q('UPDATE users SET last_seen=NOW() WHERE id=$1', [u.id]);
+    const token = jwt.sign({ userId: u.id, email: u.email }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, user: { id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:true } });
+  } catch(e) { console.error(e); res.status(500).json({ error: 'Server error' }); }
+});
+
+// Enable 2FA
+app.post('/api/auth/2fa/enable', requireAuth, async (req, res) => {
+  try {
+    const r = await q('SELECT * FROM users WHERE id=$1', [req.user.userId]);
+    const u = r.rows[0];
+    if (!u) return res.status(404).json({ error: 'User not found' });
+    if (!u.email_verified) return res.status(403).json({ error: 'Please verify your email before enabling two-factor authentication' });
+    await q('UPDATE users SET two_factor_enabled=TRUE WHERE id=$1', [u.id]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+// Disable 2FA
+app.post('/api/auth/2fa/disable', requireAuth, async (req, res) => {
+  try {
+    await q('UPDATE users SET two_factor_enabled=FALSE WHERE id=$1', [req.user.userId]);
+    await q('UPDATE otp_tokens SET used=TRUE WHERE user_id=$1 AND used=FALSE', [req.user.userId]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: 'Server error' }); }
+});
+
 
 app.get('/api/auth/me', requireAuth, async (req, res) => {
   try {
@@ -335,7 +416,7 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
     const u = r.rows[0];
     if (!u) return res.status(404).json({ error:'User not found' });
     await q('UPDATE users SET last_seen=NOW() WHERE id=$1', [u.id]);
-    res.json({ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:!!u.email_verified });
+    res.json({ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:!!u.email_verified, twoFactorEnabled:!!u.two_factor_enabled });
   } catch(e) { res.status(500).json({ error:'Server error' }); }
 });
 
