@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security — MyAurum</title>
+<meta name="description" content="How MyAurum protects your data. A plain-English explanation of every security measure in place.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Jost', sans-serif;
+    background: #F5F0E8;
+    color: #2C2410;
+    min-height: 100vh;
+    padding: 0;
+  }
+  .header {
+    background: #F5F0E8;
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 300;
+    letter-spacing: .22em;
+    color: #8B6914;
+    text-decoration: none;
+  }
+  .header-back {
+    font-size: 11px;
+    letter-spacing: .1em;
+    color: #B8A070;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color .2s;
+  }
+  .header-back:hover { color: #8B6914; }
+  .hero {
+    background: #F5F0E8;
+    padding: 48px 32px 56px;
+    text-align: center;
+    border-bottom: 1px solid rgba(184,134,11,.2);
+  }
+  .hero-label {
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: #6B4F10;
+    margin-bottom: 12px;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 40px;
+    font-weight: 300;
+    color: #2C2410;
+    letter-spacing: .06em;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+  .hero-sub {
+    font-size: 14px;
+    color: #B8A070;
+    line-height: 1.7;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .content {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 56px 32px 80px;
+  }
+  .section {
+    margin-bottom: 48px;
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: #8B6914;
+    margin-bottom: 14px;
+    letter-spacing: .04em;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(184,134,11,.2);
+  }
+  .section p {
+    font-size: 14px;
+    color: #4a3a1a;
+    line-height: 1.9;
+    margin-bottom: 12px;
+  }
+  .section p:last-child { margin-bottom: 0; }
+  .intro {
+    font-size: 15px;
+    color: #2C2410;
+    line-height: 1.9;
+    margin-bottom: 48px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid rgba(184,134,11,.15);
+  }
+  .pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px 0 0;
+  }
+  .pill {
+    font-size: 11px;
+    letter-spacing: .08em;
+    color: #8B6914;
+    background: rgba(184,134,11,.08);
+    border: 1px solid rgba(184,134,11,.2);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-family: 'Jost', sans-serif;
+  }
+  .cta-section {
+    background: #F0EBE0;
+    border: 1px solid rgba(184,134,11,.25);
+    border-radius: 14px;
+    padding: 36px 32px;
+    text-align: center;
+    margin-top: 56px;
+  }
+  .cta-section p {
+    font-size: 14px;
+    color: #6B4F10;
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .cta-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #B8860B, #D4A017);
+    color: #0c0a06;
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-family: 'Jost', sans-serif;
+  }
+  .footer {
+    text-align: center;
+    padding: 24px 32px;
+    border-top: 1px solid rgba(184,134,11,.2);
+    background: #F5F0E8;
+    font-size: 11px;
+    color: #B8A070;
+    letter-spacing: .04em;
+    line-height: 1.8;
+  }
+  .footer a { color: #B8860B; text-decoration: none; }
+  @media (max-width: 600px) {
+    .hero { padding: 36px 20px 44px; }
+    .hero-title { font-size: 30px; }
+    .content { padding: 40px 20px 60px; }
+    .header { padding: 16px 20px; }
+    .cta-section { padding: 28px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="/" class="logo">MYAURUM</a>
+  <a href="/" class="header-back">← Back to app</a>
+</div>
+
+<div class="hero">
+  <div class="hero-label">Trust &amp; Security</div>
+  <div class="hero-title">Your data is safe with us</div>
+  <div class="hero-sub">A plain-English explanation of every security measure we have built into MyAurum — and why we built it.</div>
+</div>
+
+<div class="content">
+
+  <p class="intro">We built MyAurum for families who hold gold across generations — which means we understand, better than most, what it means to be trusted with something private. The security of your data is not an afterthought. It is built into every layer of how MyAurum works.</p>
+
+  <div class="section">
+    <div class="section-title">Your password is yours alone</div>
+    <p>When you create an account, your password is immediately transformed using bcrypt — a one-way hashing algorithm designed to be computationally expensive to reverse. What we store is not your password but a mathematical fingerprint of it. We cannot read it, recover it, or hand it to anyone. If you forget your password, the only option is to reset it — because the original does not exist in any readable form in our systems.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Your holdings are encrypted before they reach our database</div>
+    <p>Every sensitive field in your vault — item names, purity grades, the names of people who hold your gold, nominee details, and any notes you attach — is encrypted at the application layer before it is written to our database. We use AES-256-GCM, the same standard used by financial institutions and government agencies worldwide.</p>
+    <p>Each piece of data is encrypted with a unique initialisation vector and authenticated with a cryptographic tag that detects any tampering. The encryption key is stored entirely separately from the data it protects. This means that even if someone were to gain direct access to our database, they would see nothing but unreadable ciphertext. The data and the key to read it are never in the same place.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Everything travels over an encrypted connection</div>
+    <p>All communication between your device and MyAurum's servers uses TLS — Transport Layer Security — which ensures that your data cannot be intercepted or read in transit. This is the same protocol that protects online banking and financial transactions.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Our infrastructure is enterprise-grade</div>
+    <p>MyAurum runs on enterprise cloud infrastructure where storage volumes are encrypted at rest by default. Your data is protected not just in transit but at the infrastructure layer as well — meaning it is encrypted even when it is sitting idle on disk.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">We do not share your data with anyone</div>
+    <p>There are no advertisers, no data brokers, no analytics companies, and no third parties with access to your holdings. Nothing about what you hold, what it is worth, or who it belongs to ever leaves our system. This is not a policy subject to revision for commercial convenience — it is a categorical commitment.</p>
+    <p>MyAurum has no advertising model. We have no financial incentive to share your data because our business model does not depend on it.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">You can add a second layer of protection</div>
+    <p>For users who want additional login security, MyAurum offers optional two-factor authentication. When enabled, a six-digit code is sent to your registered email address each time you sign in. Your password alone is not sufficient — a valid code is required to open your vault. Two-factor authentication can be enabled at any time from Profile → Settings.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">We limit and monitor login attempts</div>
+    <p>Our login endpoints enforce rate limiting, which means that automated attempts to guess your password are detected and blocked before they can cause harm. Session tokens expire after 30 days, after which you are required to sign in again. This limits the window of exposure if a device is ever lost or compromised.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">You are always in control</div>
+    <p>You can delete your account and every piece of data associated with it at any time from Profile → Settings → Danger Zone. Deletion is immediate and permanent. We retain no copies, no backups specific to your account, and no residual records.</p>
+    <p>MyAurum requires no identity documents, no PAN, no Aadhaar, and no government-issued identification of any kind. We have no visibility into your financial accounts and no ability to initiate transactions on your behalf. What you share with us is only what you choose to enter.</p>
+  </div>
+
+  <div class="pill-row">
+    <span class="pill">AES-256-GCM encryption</span>
+    <span class="pill">bcrypt password hashing</span>
+    <span class="pill">TLS in transit</span>
+    <span class="pill">Encrypted at rest</span>
+    <span class="pill">Optional 2FA</span>
+    <span class="pill">Rate-limited logins</span>
+    <span class="pill">No ads · No data sharing</span>
+    <span class="pill">No KYC</span>
+  </div>
+
+  <div class="cta-section">
+    <p>Questions about your data or how we handle security? Reply to any email from us or write directly to <a href="mailto:privacy@myaurum.app" style="color:#F0B429;text-decoration:none">privacy@myaurum.app</a>. We will respond within 5 business days.</p>
+    <a href="/" class="cta-btn">Open MyAurum →</a>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>© 2026 MyAurum. All rights reserved. · <a href="/privacy">Privacy Policy</a> · <a href="/terms">Terms of Use</a></p>
+  <p style="margin-top:4px;opacity:.6">MyAurum is a personal record tool, not a financial product. Registered in India.</p>
+</div>
+
+</body>
+</html>
