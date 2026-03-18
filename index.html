@@ -272,6 +272,16 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .nav-tab{flex:1;padding:12px 4px;border:none;background:transparent;color:var(--text-dim);font-family:'Jost',sans-serif;font-size:14px;letter-spacing:.04em;cursor:pointer;transition:all .2s;text-transform:uppercase;position:relative}
 .nav-tab.active{color:var(--brand)}
 .nav-tab.active::after{content:'';position:absolute;bottom:0;left:15%;right:15%;height:2px;background:var(--brand);border-radius:2px 2px 0 0}
+.nav-tab .nav-icon{font-size:18px;display:block;margin-bottom:2px}
+.nav-tab .nav-label{font-size:10px;letter-spacing:.06em}
+
+@media (min-width:640px){
+  body{background:var(--bg2)}
+  .app-screen{max-width:500px;margin:0 auto;box-shadow:0 0 0 0.5px var(--border),0 8px 40px rgba(0,0,0,.08);border-radius:0;min-height:100vh;background:var(--bg)}
+  .header{border-radius:0}
+  .nav-tab .nav-icon{font-size:20px}
+  .nav-tab{padding:14px 4px}
+}
 
 /* Currency bar */
 .currency-bar{display:flex;gap:6px;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;align-items:center}
@@ -677,7 +687,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .btn-auth{padding:15px}
   .header{padding:10px 12px;gap:8px}
   .logo{font-size:26px}
-  .nav-tab{font-size:12px;padding:14px 2px}
+  .nav-tab{font-size:10px;padding:12px 2px}
+  .nav-tab .nav-icon{font-size:16px}
   .currency-bar{padding:8px 12px;gap:5px}
   .summary-card{margin:10px 10px;padding:18px 16px}
   .summary-value{font-size:40px}
@@ -1278,10 +1289,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
   <!-- Nav -->
   <div class="nav-tabs">
-    <button class="nav-tab active" id="navMyAurum" onclick="setNavTab('vault',this)">🏛 MyAurum</button>
-    <button class="nav-tab" id="navChart" onclick="setNavTab('chart',this)">📊 Chart</button>
-    <button class="nav-tab" id="navAlerts" onclick="setNavTab('alerts',this)">🔔 Alerts</button>
-    <button class="nav-tab" id="navProfile" onclick="setNavTab('profile',this)">👤 Profile</button>
+    <button class="nav-tab active" id="navMyAurum" onclick="setNavTab('vault',this)"><span class="nav-icon">🏛</span><span class="nav-label">MyAurum</span></button>
+    <button class="nav-tab" id="navChart" onclick="setNavTab('chart',this)"><span class="nav-icon">📊</span><span class="nav-label">Chart</span></button>
+    <button class="nav-tab" id="navAlerts" onclick="setNavTab('alerts',this)"><span class="nav-icon">🔔</span><span class="nav-label">Alerts</span></button>
+    <button class="nav-tab" id="navProfile" onclick="setNavTab('profile',this)"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></button>
   </div>
 
   <!-- ── MYAURUM PANEL ── -->
