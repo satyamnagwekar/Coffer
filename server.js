@@ -581,6 +581,7 @@ async function sendWelcomeEmail(email, firstName) {
       <a href="${APP_URL}" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#D4A017);color:#0c0a06;text-decoration:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:15px 36px;border-radius:8px;font-weight:600;font-family:Arial,sans-serif">Add Your First Holding &rarr;</a>
     </div>
     <p style="margin:0 0 8px;font-size:13px;color:#4a3a1a;line-height:1.7;font-family:Arial,sans-serif">Once you have done that, the rest builds naturally.</p>
+    <p style="margin:0 0 24px;font-size:13px;color:#4a3a1a;line-height:1.7;font-family:Arial,sans-serif">One more thing — if you would like to understand exactly how we protect your data, we have written a plain-English explanation of every security measure in place. No jargon, no vague assurances. <a href="${APP_URL}/security" style="color:#B8860B;text-decoration:none;font-weight:500">Read it here →</a></p>
     <p style="margin:0 0 24px;font-size:13px;color:#4a3a1a;line-height:1.7;font-family:Arial,sans-serif">If something is unclear or not working the way you expect, just reply to this email. I read every one.</p>
     <p style="margin:0 0 2px;font-size:13px;color:#2C2410;font-weight:600;font-family:Arial,sans-serif">Satyam</p>
     <p style="margin:0;font-size:12px;color:#8B6914;font-family:Arial,sans-serif">Founder, MyAurum</p>
@@ -608,6 +609,8 @@ async function sendWelcomeEmail(email, firstName) {
     APP_URL,
     '',
     'Once you have done that, the rest builds naturally.',
+    '',
+    `One more thing — if you would like to understand exactly how we protect your data, we have written a plain-English explanation of every security measure in place. No jargon, no vague assurances.\n${APP_URL}/security`,
     '',
     'If something is unclear or not working the way you expect, just reply to this email. I read every one.',
     '',
@@ -1543,6 +1546,12 @@ app.get('/terms', (req, res) => {
   const termsPath = path.join(__dirname, 'terms.html');
   if (fs.existsSync(termsPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(termsPath); }
   else res.status(404).send('Terms not found');
+});
+
+app.get('/security', (req, res) => {
+  const p = path.join(__dirname, 'security.html');
+  if (fs.existsSync(p)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(p); }
+  else res.redirect('/');
 });
 
 // ─────────────────────────────────────────
