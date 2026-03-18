@@ -276,19 +276,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .nav-tab .nav-label{font-size:10px;letter-spacing:.06em}
 
 @media (min-width:640px){
-  body{background:var(--bg2)}
-  #desktopWrap{
-    width:80%;
-    max-width:900px;
-    margin:0 auto;
-    background:var(--bg);
-    box-shadow:0 0 0 0.5px var(--border),0 4px 32px rgba(0,0,0,.06);
-    min-height:100vh;
-    position:relative;
-  }
   .nav-tab .nav-icon{font-size:20px}
   .nav-tab{padding:14px 4px}
-  .header{position:sticky}
 }
 
 /* Currency bar */
@@ -4604,14 +4593,7 @@ async function subscribePush(){
 window.addEventListener('DOMContentLoaded',()=>{
   checkResetToken();
   checkVerifyToken();
-  // Desktop wrapper — contains sticky header + nav within 80% column
-  if(window.innerWidth >= 640){
-    const wrap = document.createElement('div');
-    wrap.id = 'desktopWrap';
-    const appScreen = document.getElementById('appScreen');
-    appScreen.parentNode.insertBefore(wrap, appScreen);
-    wrap.appendChild(appScreen);
-  }
+
 });
 
 // Global error reporting to Sentry
