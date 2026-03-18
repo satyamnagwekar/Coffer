@@ -22,6 +22,9 @@ try { webpush = require('web-push'); } catch(e) { console.warn('[webpush] web-pu
 
 const PORT        = process.env.PORT || 3000;
 const JWT_SECRET  = process.env.JWT_SECRET || 'mya_9$Kp2#xL8nRvTw4@Yz6bNjHcFsUeGdK3mXpA7!';
+const ENCRYPT_KEY = process.env.ENCRYPTION_KEY
+  ? Buffer.from(process.env.ENCRYPTION_KEY, 'hex')
+  : (() => { console.warn('[security] ENCRYPTION_KEY not set — using derived fallback. Set this in Railway variables.'); return require('crypto').scryptSync(JWT_SECRET, 'myaurum-salt-v1', 32); })();
 const GOOGLE_CLIENT_ID     = process.env.GOOGLE_CLIENT_ID     || '826792551094-s9dg885quvbfd04ocaohnkp1ar8jvm5h.apps.googleusercontent.com';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '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';
 const RESEND_KEY  = process.env.RESEND_API_KEY || process.env.MY_RESEND_KEY || 're_C6LyyCaZ_DWMmyNgHbcSdSAFpKxtoAyhR';
@@ -284,8 +287,72 @@ function itemToClient(r) {
     purity:r.purity, grams:r.grams, notes:r.notes||'', purchaseDate:r.purchase_date||'',
     pricePaid:r.price_paid, pricePaidCurrency:r.price_paid_curr||'USD', pricePaidUSD:r.price_paid_usd,
     receipt:r.receipt||null, sold:!!r.sold, sellPrice:r.sell_price, sellCurrency:r.sell_currency,
-    sellPriceUSD:r.sell_price_usd, sellDate:r.sell_date||'', sellNotes:r.sell_notes||'', addedAt:r.added_at };
+    sellPriceUSD:r.sell_price_usd, sellDate:r.sell_date||'', sellNotes:r.sell_notes||'', addedAt:r.added_at,
+    heldBy:r.held_by||'', nominee:r.nominee||'', makingCharge:r.making_charge||null,
+    makingChargeCurrency:r.making_charge_currency||null, goldCostBasisUSD:r.gold_cost_basis_usd||null,
+    gifted:!!r.gifted, giftedTo:r.gifted_to||'', giftedAt:r.gifted_at||'', photos:r.photos||null };
 }
+
+// ─────────────────────────────────────────
+//  FIELD-LEVEL ENCRYPTION (AES-256-GCM)
+// ─────────────────────────────────────────
+const crypto = require('crypto');
+const ENC_PREFIX = 'enc:v1:';
+
+function encryptField(text) {
+  if (!text || typeof text !== 'string') return text;
+  if (text.startsWith(ENC_PREFIX)) return text; // already encrypted
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', ENCRYPT_KEY, iv);
+  const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return ENC_PREFIX + Buffer.concat([iv, tag, encrypted]).toString('base64');
+}
+
+function decryptField(text) {
+  if (!text || typeof text !== 'string') return text;
+  if (!text.startsWith(ENC_PREFIX)) return text; // plaintext legacy value
+  try {
+    const buf = Buffer.from(text.slice(ENC_PREFIX.length), 'base64');
+    const iv  = buf.slice(0, 12);
+    const tag = buf.slice(12, 28);
+    const enc = buf.slice(28);
+    const decipher = crypto.createDecipheriv('aes-256-gcm', ENCRYPT_KEY, iv);
+    decipher.setAuthTag(tag);
+    return decipher.update(enc) + decipher.final('utf8');
+  } catch(e) {
+    console.error('[decrypt] Failed to decrypt field:', e.message);
+    return text; // return as-is rather than crash
+  }
+}
+
+// Encrypt sensitive fields before DB write
+function encryptItem(payload) {
+  return {
+    ...payload,
+    name:      payload.name      ? encryptField(payload.name)      : payload.name,
+    notes:     payload.notes     ? encryptField(payload.notes)     : payload.notes,
+    held_by:   payload.held_by   ? encryptField(payload.held_by)   : payload.held_by,
+    nominee:   payload.nominee   ? encryptField(payload.nominee)   : payload.nominee,
+    grade_name:payload.grade_name? encryptField(payload.grade_name): payload.grade_name,
+    sell_notes:payload.sell_notes? encryptField(payload.sell_notes): payload.sell_notes,
+  };
+}
+
+// Decrypt sensitive fields after DB read — update itemToClient to decrypt
+function decryptRow(r) {
+  return {
+    ...r,
+    name:       decryptField(r.name),
+    notes:      decryptField(r.notes),
+    held_by:    decryptField(r.held_by),
+    nominee:    decryptField(r.nominee),
+    grade_name: decryptField(r.grade_name),
+    sell_notes: decryptField(r.sell_notes),
+  };
+}
+
+
 
 function alertToClient(r) {
   return { id:r.id, clientId:r.client_id, metal:r.metal, dir:r.direction, price:r.price,
@@ -911,7 +978,7 @@ app.get('/api/prices', async (req, res) => {
 //  ITEMS
 // ─────────────────────────────────────────
 app.get('/api/items', requireAuth, async (req, res) => {
-  try { const r = await q('SELECT * FROM items WHERE user_id=$1 ORDER BY added_at DESC', [req.user.userId]); res.json(r.rows.map(itemToClient)); }
+  try { const r = await q('SELECT * FROM items WHERE user_id=$1 ORDER BY added_at DESC', [req.user.userId]); res.json(r.rows.map(row => itemToClient(decryptRow(row)))); }
   catch(e) { res.status(500).json({ error:'Server error' }); }
 });
 
@@ -920,9 +987,12 @@ app.post('/api/items', requireAuth, async (req, res) => {
   try {
     const r = await q(`INSERT INTO items (user_id,client_id,name,metal,type,grade_name,purity,grams,notes,purchase_date,price_paid,price_paid_curr,price_paid_usd,receipt,added_at)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING *`,
-      [req.user.userId, d.clientId||null, d.name, d.metal, d.type, d.gradeName, d.purity, d.grams,
-       d.notes||null, d.purchaseDate||null, d.pricePaid||null, d.pricePaidCurrency||'USD', d.pricePaidUSD||null, d.receipt||null, d.addedAt||new Date().toISOString()]);
-    res.status(201).json(itemToClient(r.rows[0]));
+      [req.user.userId, d.clientId||null,
+       encryptField(d.name), d.metal, d.type, encryptField(d.gradeName), d.purity, d.grams,
+       d.notes?encryptField(d.notes):null, d.purchaseDate||null,
+       d.pricePaid||null, d.pricePaidCurrency||'USD', d.pricePaidUSD||null,
+       d.receipt||null, d.addedAt||new Date().toISOString()]);
+    res.status(201).json(itemToClient(decryptRow(r.rows[0])));
   } catch(e) { console.error(e); res.status(500).json({ error:'Server error' }); }
 });
 
@@ -932,11 +1002,13 @@ app.put('/api/items/:id', requireAuth, async (req, res) => {
     const exists = await q('SELECT id FROM items WHERE id=$1 AND user_id=$2', [req.params.id, req.user.userId]);
     if (!exists.rows.length) return res.status(404).json({ error:'Item not found' });
     const r = await q(`UPDATE items SET name=$1,metal=$2,type=$3,grade_name=$4,purity=$5,grams=$6,notes=$7,purchase_date=$8,price_paid=$9,price_paid_curr=$10,price_paid_usd=$11,receipt=$12,sold=$13,sell_price=$14,sell_currency=$15,sell_price_usd=$16,sell_date=$17,sell_notes=$18,updated_at=NOW() WHERE id=$19 AND user_id=$20 RETURNING *`,
-      [d.name, d.metal, d.type, d.gradeName, d.purity, d.grams, d.notes||null, d.purchaseDate||null,
+      [encryptField(d.name), d.metal, d.type, encryptField(d.gradeName), d.purity, d.grams,
+       d.notes?encryptField(d.notes):null, d.purchaseDate||null,
        d.pricePaid||null, d.pricePaidCurrency||'USD', d.pricePaidUSD||null, d.receipt||null, !!d.sold,
-       d.sellPrice||null, d.sellCurrency||null, d.sellPriceUSD||null, d.sellDate||null, d.sellNotes||null,
+       d.sellPrice||null, d.sellCurrency||null, d.sellPriceUSD||null, d.sellDate||null,
+       d.sellNotes?encryptField(d.sellNotes):null,
        req.params.id, req.user.userId]);
-    res.json(itemToClient(r.rows[0]));
+    res.json(itemToClient(decryptRow(r.rows[0])));
   } catch(e) { console.error(e); res.status(500).json({ error:'Server error' }); }
 });
 
@@ -955,13 +1027,15 @@ app.post('/api/items/sync', requireAuth, async (req, res) => {
     for (const d of items) {
       await q(`INSERT INTO items (user_id,client_id,name,metal,type,grade_name,purity,grams,notes,purchase_date,price_paid,price_paid_curr,price_paid_usd,receipt,sold,sell_price,sell_currency,sell_price_usd,sell_date,sell_notes,added_at)
         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21) ON CONFLICT DO NOTHING`,
-        [req.user.userId, d.clientId||null, d.name, d.metal, d.type, d.gradeName, d.purity, d.grams, d.notes||null,
-         d.purchaseDate||null, d.pricePaid||null, d.pricePaidCurrency||'USD', d.pricePaidUSD||null, d.receipt||null,
-         !!d.sold, d.sellPrice||null, d.sellCurrency||null, d.sellPriceUSD||null, d.sellDate||null, d.sellNotes||null,
-         d.addedAt||new Date().toISOString()]);
+        [req.user.userId, d.clientId||null,
+         encryptField(d.name), d.metal, d.type, encryptField(d.gradeName), d.purity, d.grams,
+         d.notes?encryptField(d.notes):null, d.purchaseDate||null,
+         d.pricePaid||null, d.pricePaidCurrency||'USD', d.pricePaidUSD||null, d.receipt||null,
+         !!d.sold, d.sellPrice||null, d.sellCurrency||null, d.sellPriceUSD||null, d.sellDate||null,
+         d.sellNotes?encryptField(d.sellNotes):null, d.addedAt||new Date().toISOString()]);
     }
     const r = await q('SELECT * FROM items WHERE user_id=$1 ORDER BY added_at DESC', [req.user.userId]);
-    res.json(r.rows.map(itemToClient));
+    res.json(r.rows.map(row => itemToClient(decryptRow(row))));
   } catch(e) { console.error(e); res.status(500).json({ error:'Server error' }); }
 });
 
@@ -1478,7 +1552,6 @@ const ADMIN_PASS = process.env.ADMIN_PASS || 'myaurum_admin_2026';
 const ADMIN_IP   = process.env.ADMIN_IP   || '103.156.212.177';
 const ADMIN_SLUG = process.env.ADMIN_SLUG || 'dash-4f8a2e91c3b7';
 const ADMIN_COOKIE = 'mya_adm';
-const crypto = require('crypto');
 
 function adminToken() {
   return crypto.createHmac('sha256', JWT_SECRET).update(ADMIN_PASS).digest('hex');
@@ -1726,6 +1799,33 @@ initDB()
         console.log(`[cleanup] Deleted ${r1.rowCount} reset tokens, ${r2.rowCount} verify tokens`);
       } catch(e) { console.error('[cleanup] Token cleanup failed:', e.message); }
     });
+    // One-time migration — encrypt existing plaintext rows
+    setImmediate(async () => {
+      try {
+        const rows = await q('SELECT id, name, grade_name, notes, held_by, nominee, sell_notes FROM items');
+        let migrated = 0;
+        for (const row of rows.rows) {
+          const updates = {};
+          if (row.name && !row.name.startsWith(ENC_PREFIX)) updates.name = encryptField(row.name);
+          if (row.grade_name && !row.grade_name.startsWith(ENC_PREFIX)) updates.grade_name = encryptField(row.grade_name);
+          if (row.notes && !row.notes.startsWith(ENC_PREFIX)) updates.notes = encryptField(row.notes);
+          if (row.held_by && !row.held_by.startsWith(ENC_PREFIX)) updates.held_by = encryptField(row.held_by);
+          if (row.nominee && !row.nominee.startsWith(ENC_PREFIX)) updates.nominee = encryptField(row.nominee);
+          if (row.sell_notes && !row.sell_notes.startsWith(ENC_PREFIX)) updates.sell_notes = encryptField(row.sell_notes);
+          if (Object.keys(updates).length) {
+            const fields = Object.keys(updates).map((k,i) => `${k}=$${i+2}`).join(',');
+            const vals = Object.values(updates);
+            await q(`UPDATE items SET ${fields} WHERE id=$1`, [row.id, ...vals]);
+            migrated++;
+          }
+        }
+        if (migrated > 0) console.log(`[encryption] Migrated ${migrated} plaintext rows to encrypted storage`);
+        else console.log('[encryption] All rows already encrypted');
+      } catch(e) {
+        console.error('[encryption] Migration error:', e.message);
+      }
+    });
+
     refreshPrices().catch(console.error);
     app.listen(PORT, () => console.log(`\n🏛  MyAurum running on port ${PORT} (PostgreSQL)\n`));
   })
