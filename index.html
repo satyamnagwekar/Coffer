@@ -1730,7 +1730,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <div class="field">
         <div class="field-label-row"><label>Purity / Grade</label><span class="field-hint">Select below</span></div>
         <div class="grade-grid" id="gradeGrid"></div>
-        <div style="border-left:2px solid rgba(184,134,11,.4);padding:8px 12px;background:rgba(184,134,11,.04);border-radius:0 6px 6px 0;margin-top:8px">
+        <div id="purityHint" style="border-left:2px solid rgba(184,134,11,.4);padding:8px 12px;background:rgba(184,134,11,.04);border-radius:0 6px 6px 0;margin-top:8px">
           <div style="font-size:11px;font-weight:500;color:#8B6914;margin-bottom:3px;letter-spacing:.04em;font-family:'Jost',sans-serif">Not sure of the purity?</div>
           <div style="font-size:11px;color:var(--text-dim);line-height:1.65;font-family:'Jost',sans-serif">Older family jewellery is typically 22K. Coins and bars are usually 24K (999). If unsure, 22K is a safe default for jewellery. You can always update this later.</div>
         </div>
@@ -3072,6 +3072,8 @@ function renderGradeGrid(){
       <span class="purity">${g.label}</span><span class="label">${(g.purity*100).toFixed(1)}%</span>
     </button>`).join('');
   if(selectedGrade&&GRADE_NOTES[selectedGrade.label])document.getElementById('gradeNote').textContent=GRADE_NOTES[selectedGrade.label];
+  const ph = document.getElementById('purityHint');
+  if(ph) ph.style.display = selectedMetal === 'gold' ? 'block' : 'none';
 }
 
 function renderTypeGrid(){
