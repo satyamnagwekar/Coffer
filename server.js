@@ -159,6 +159,7 @@ async function initDB() {
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS premium_expires_at TIMESTAMPTZ`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS razorpay_subscription_id TEXT`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS razorpay_customer_id TEXT`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS vault_notes TEXT`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE`);
 
   // Items table — columns added after initial schema
@@ -1579,6 +1580,45 @@ app.get('/terms', (req, res) => {
   const termsPath = path.join(__dirname, 'terms.html');
   if (fs.existsSync(termsPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(termsPath); }
   else res.status(404).send('Terms not found');
+});
+
+// ─────────────────────────────────────────
+//  VAULT NOTES (ENCRYPTED)
+// ─────────────────────────────────────────
+
+app.get('/api/vault-notes', requireAuth, async (req, res) => {
+  try {
+    const r = await q('SELECT vault_notes FROM users WHERE id=$1', [req.user.userId]);
+    const raw = r.rows[0]?.vault_notes;
+    if (!raw) return res.json({ notes: [] });
+    const decrypted = decryptField(raw);
+    const notes = JSON.parse(decrypted);
+    res.json({ notes });
+  } catch(e) {
+    console.error('[vault-notes] GET error:', e.message);
+    res.json({ notes: [] });
+  }
+});
+
+app.post('/api/vault-notes', requireAuth, async (req, res) => {
+  const { notes } = req.body;
+  if (!Array.isArray(notes) || notes.length > 10) {
+    return res.status(400).json({ error: 'Invalid notes — max 10 entries' });
+  }
+  // Validate each entry
+  for (const n of notes) {
+    if (!n.label || typeof n.label !== 'string' || !n.value || typeof n.value !== 'string') {
+      return res.status(400).json({ error: 'Each note must have a label and value' });
+    }
+  }
+  try {
+    const encrypted = encryptField(JSON.stringify(notes));
+    await q('UPDATE users SET vault_notes=$1 WHERE id=$2', [encrypted, req.user.userId]);
+    res.json({ ok: true });
+  } catch(e) {
+    console.error('[vault-notes] POST error:', e.message);
+    res.status(500).json({ error: 'Could not save notes' });
+  }
 });
 
 // ─────────────────────────────────────────
