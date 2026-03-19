@@ -1917,10 +1917,10 @@ app.get('/sitemap.xml', (req, res) => {
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>${base}/terms</loc>
+    <loc>${base}/security</loc>
     <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>${base}/privacy</loc>
@@ -1928,22 +1928,23 @@ app.get('/sitemap.xml', (req, res) => {
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
+  <url>
+    <loc>${base}/terms</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
 </urlset>`;
   res.setHeader('Content-Type', 'application/xml');
   res.setHeader('Cache-Control', 'public, max-age=86400');
   res.send(xml);
 });
 
-// Ping Google Search Console on startup (non-blocking)
-function pingGoogleSitemap() {
-  const url = 'https://www.google.com/ping?sitemap=https%3A%2F%2Fmyaurum.app%2Fsitemap.xml';
-  https.get(url, (r) => {
-    console.log(`[sitemap] Google ping: ${r.statusCode}`);
-  }).on('error', (e) => {
-    console.log(`[sitemap] Google ping failed: ${e.message}`);
-  });
-}
-setTimeout(pingGoogleSitemap, 5000); // 5s after startup
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain').send(
+    `User-agent: *\nAllow: /\nDisallow: /share/\nDisallow: /api/\n\nSitemap: https://myaurum.app/sitemap.xml`
+  );
+});
 
 app.get('/og-image.png', (req, res) => {
   const p = path.join(__dirname, 'og-image.png');
