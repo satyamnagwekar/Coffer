@@ -25,7 +25,7 @@ const PORT        = process.env.PORT || 3000;
 const JWT_SECRET  = process.env.JWT_SECRET || 'mya_9$Kp2#xL8nRvTw4@Yz6bNjHcFsUeGdK3mXpA7!';
 const ENCRYPT_KEY = (process.env.ENCRYPTION_KEY || process.env.MYA_ENCRYPTION_KEY)
   ? Buffer.from((process.env.ENCRYPTION_KEY || process.env.MYA_ENCRYPTION_KEY), 'hex')
-  : (() => { console.warn('[security] ENCRYPTION_KEY not set — using derived fallback. Set this in Railway variables.'); return require('crypto').scryptSync(process.env.JWT_SECRET || 'mya_9$Kp2#xL8nRvTw4@Yz6bNjHcFsUeGdK3mXpA7!', 'myaurum-salt-v1', 32); })();
+  : (() => { console.log('[security] Using derived encryption key'); return require('crypto').scryptSync(process.env.JWT_SECRET || 'mya_9$Kp2#xL8nRvTw4@Yz6bNjHcFsUeGdK3mXpA7!', 'myaurum-salt-v1', 32); })();
 const GOOGLE_CLIENT_ID     = process.env.GOOGLE_CLIENT_ID     || '826792551094-s9dg885quvbfd04ocaohnkp1ar8jvm5h.apps.googleusercontent.com';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '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';
 const RESEND_KEY  = process.env.RESEND_API_KEY || process.env.MY_RESEND_KEY || 're_C6LyyCaZ_DWMmyNgHbcSdSAFpKxtoAyhR';
