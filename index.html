@@ -2560,17 +2560,42 @@ async function loadVaultNotes(){
   renderVaultNotes();
 }
 
+let _vaultNotesRevealed = false;
+let _vaultNotesTimer = null;
+
+function revealVaultNotes(){
+  _vaultNotesRevealed = true;
+  renderVaultNotes();
+  clearTimeout(_vaultNotesTimer);
+  _vaultNotesTimer = setTimeout(() => {
+    _vaultNotesRevealed = false;
+    renderVaultNotes();
+  }, 60000);
+}
+
 function renderVaultNotes(){
   const sec = document.getElementById('vaultNotesSection');
   if(!sec) return;
-  const rows = vaultNotes.map((n, i) => `
-    <div class="profile-row" style="align-items:flex-start">
-      <div class="profile-key" style="font-size:11px;padding-top:2px">${n.label.replace(/</g,'&lt;')}</div>
-      <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
-        <div class="profile-val" style="text-align:right;word-break:break-word;max-width:180px">${n.value.replace(/</g,'&lt;')}</div>
-        <button onclick="deleteVaultNote(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:14px;padding:0;line-height:1;flex-shrink:0">×</button>
-      </div>
-    </div>`).join('');
+
+  const rows = vaultNotes.map((n, i) => {
+    const displayVal = _vaultNotesRevealed
+      ? `<span style="word-break:break-word;max-width:180px;display:inline-block">${n.value.replace(/</g,'&lt;')}</span>`
+      : `<span style="letter-spacing:.1em;color:var(--text-dim);user-select:none">••••••••</span>`;
+    return `
+      <div class="profile-row" style="align-items:flex-start">
+        <div class="profile-key" style="font-size:11px;padding-top:2px">${n.label.replace(/</g,'&lt;')}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
+          <div class="profile-val" style="text-align:right">${displayVal}</div>
+          <button onclick="deleteVaultNote(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:14px;padding:0;line-height:1;flex-shrink:0">×</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  const revealBtn = vaultNotes.length > 0
+    ? _vaultNotesRevealed
+      ? `<div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;font-family:'Jost',sans-serif">Visible for 60 seconds · <button onclick="_vaultNotesRevealed=false;clearTimeout(_vaultNotesTimer);renderVaultNotes()" style="background:none;border:none;color:var(--text-dim);font-size:10px;font-family:'Jost',sans-serif;cursor:pointer;padding:0;text-decoration:underline">Hide now</button></div>`
+      : `<button onclick="revealVaultNotes()" style="margin-bottom:10px;padding:7px 16px;background:transparent;border:1px solid var(--border);border-radius:20px;font-size:11px;font-family:'Jost',sans-serif;color:var(--text-dim);cursor:pointer;letter-spacing:.04em">👁 Reveal notes</button><br>`
+    : '';
 
   sec.innerHTML = `
     <div class="profile-section-title" style="display:flex;justify-content:space-between;align-items:center">
@@ -2578,6 +2603,7 @@ function renderVaultNotes(){
       <span style="font-size:10px;color:var(--text-dim);font-weight:400;letter-spacing:.04em;text-transform:none">${vaultNotes.length}/10 · encrypted</span>
     </div>
     <div style="font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:12px">Store locker numbers, bank details, lawyer contacts. Encrypted before leaving your device.</div>
+    ${revealBtn}
     ${rows}
     ${vaultNotes.length < 10 ? `
     <div style="display:flex;gap:8px;margin-top:12px">
@@ -3056,6 +3082,7 @@ function setNavTab(tab,btn){
   document.getElementById('fabWrap').style.display=tab==='vault'?'flex':'none';
   sessionStorage.setItem('myaurum_tab', tab);
   if(tab==='profile')refreshProfile();
+  else { _vaultNotesRevealed=false; clearTimeout(_vaultNotesTimer); }
   if(tab==='chart'){updateChartPanel();renderHistoryChart()}
   if(tab==='alerts'){refreshAlertsPanel()}
 }
