@@ -1627,7 +1627,22 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <button onclick="openSettings()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text-dim);border-radius:20px;padding:11px 0;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;width:30%;text-align:center">⚙ Settings</button>
           <button onclick="exportSuccessionPDF()" style="background:rgba(192,132,252,.06);border:1px solid rgba(192,132,252,.2);color:#c084fc;border-radius:20px;padding:11px 0;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;width:30%;text-align:center">📄 Succession PDF</button>
           <button onclick="generateHoldingsStatement()" style="background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.25);color:var(--brand);border-radius:20px;padding:11px 0;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;width:30%;text-align:center">🗒 Holdings Statement</button>
+          <button onclick="openSharePanel()" style="background:rgba(46,204,138,.06);border:1px solid rgba(46,204,138,.25);color:var(--green);border-radius:20px;padding:11px 0;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;width:30%;text-align:center">🔗 Share Portfolio</button>
           <button onclick="doLogout()" style="background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:20px;padding:11px 0;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;width:30%;text-align:center">Sign Out</button>
+        </div>
+
+        <!-- Share panel -->
+        <div id="sharePanel" style="display:none;margin-top:20px;padding:16px;background:var(--bg2);border-radius:12px;border:1px solid var(--border)">
+          <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:6px;letter-spacing:.04em;font-family:'Jost',sans-serif">Share your live portfolio</div>
+          <div style="font-size:11px;color:var(--text-dim);line-height:1.75;margin-bottom:14px;font-family:'Jost',sans-serif">A private link that shows your current holdings and live values — always up to date. Share it with a spouse, adult child, CA, or estate planner. No login required to view.<br><br>If something were to happen to you unexpectedly, the people who matter most will know exactly what your family holds and what it is worth — without having to search for a document that may already be out of date.</div>
+          <div id="shareLinkBox" style="display:none;margin-bottom:10px">
+            <div style="display:flex;gap:8px;align-items:center">
+              <input id="shareLinkInput" type="text" readonly style="flex:1;font-size:11px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text-dim);font-family:'Jost',sans-serif">
+              <button onclick="copyShareLink()" style="padding:8px 14px;background:var(--brand);color:#FDF8F0;border:none;border-radius:6px;font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;white-space:nowrap;letter-spacing:.04em">Copy</button>
+            </div>
+            <button onclick="revokeShareLink()" style="margin-top:8px;background:transparent;border:none;color:var(--red);font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;padding:0;letter-spacing:.04em">Revoke link</button>
+          </div>
+          <button id="generateShareBtn" onclick="generateShareLink()" style="width:100%;padding:10px;background:var(--brand);color:#FDF8F0;border:none;border-radius:8px;font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.06em">Generate share link</button>
         </div>
       </div>
 
@@ -2426,6 +2441,50 @@ async function verifyOTP(){
   }
 }
 
+function openSharePanel(){
+  const panel = document.getElementById('sharePanel');
+  if(!panel) return;
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+async function generateShareLink(){
+  const btn = document.getElementById('generateShareBtn');
+  btn.textContent = 'Generating…'; btn.disabled = true;
+  try {
+    const data = await api('POST', '/share/generate', {});
+    document.getElementById('shareLinkInput').value = data.url;
+    document.getElementById('shareLinkBox').style.display = 'block';
+    document.getElementById('generateShareBtn').style.display = 'none';
+  } catch(e) {
+    showToast('Could not generate link — try again', 'error');
+    btn.textContent = 'Generate share link'; btn.disabled = false;
+  }
+}
+
+function copyShareLink(){
+  const input = document.getElementById('shareLinkInput');
+  navigator.clipboard.writeText(input.value).then(() => {
+    showToast('Link copied to clipboard', 'ok', 3000);
+  }).catch(() => {
+    input.select();
+    showToast('Select and copy the link manually', 'ok', 3000);
+  });
+}
+
+async function revokeShareLink(){
+  if(!confirm('This will deactivate the current share link. Anyone who has it will no longer be able to view your portfolio. Continue?')) return;
+  try {
+    await api('POST', '/share/revoke', {});
+    document.getElementById('shareLinkBox').style.display = 'none';
+    document.getElementById('generateShareBtn').style.display = 'block';
+    document.getElementById('generateShareBtn').textContent = 'Generate new link';
+    document.getElementById('generateShareBtn').disabled = false;
+    showToast('Share link revoked', 'ok', 3000);
+  } catch(e) {
+    showToast('Could not revoke link — try again', 'error');
+  }
+}
+
 function openSettings(){
   if(!currentUser)return;
   // Render 2FA toggle state
@@ -2663,7 +2722,7 @@ function refreshProfile(){
       <div style="height:4px;background:rgba(139,105,20,.12);border-radius:2px;overflow:hidden">
         <div style="height:100%;width:${capPct}%;background:var(--brand);border-radius:2px;transition:width .4s"></div>
       </div>
-      ${activeCount>=20?`<div style="font-size:11px;color:var(--brand);margin-top:8px;line-height:1.6">You're approaching the 25-holding limit. A ₹600/year plan will be available soon — existing users will be grandfathered.</div>`:''}
+      ${activeCount>=20?`<div style="font-size:11px;color:var(--brand);margin-top:8px;line-height:1.6">You are approaching the 25-holding limit. MyAurum Premium is coming — reply to your welcome email to be first in line when it launches.</div>`:''}
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer" onclick="openUpgradeModal()">
       <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text);margin-bottom:10px">Premium <span style="font-size:13px;color:var(--brand)">— coming soon</span></div>
@@ -3207,7 +3266,7 @@ async function addItem(){
   if(!selectedGrade){showMsg('addItemMsg','Please select a purity grade.','error');return}
   // Soft cap at 20, hard block at 25
   const activeCount=items.filter(i=>!i.sold&&!i.gifted).length;
-  if(activeCount>=25){showMsg('addItemMsg','You have reached the 25-holding limit. This limit will become a paid tier in a future update — it will not affect existing users.','error');return}
+  if(activeCount>=25){showMsg('addItemMsg','You have reached the 25-holding limit. MyAurum Premium is coming — unlimited holdings, advanced succession tools, and more. Reply to your welcome email to be first in line.','error');return}
   const grams=toGrams(weight,unit);
   const mcAmt=parseFloat(document.getElementById('makingCharge').value)||0;
   const hasMC=document.getElementById('hasMakingCharge').checked&&mcAmt>0;
