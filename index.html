@@ -1371,6 +1371,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <button id="groupToggleBtn" onclick="toggleGroupedView()" style="font-size:11px;color:var(--brand);background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'Jost',sans-serif;letter-spacing:.04em">By Person ↕</button>
     </div>
 
+    <!-- Purchase price nudge -->
+    <div id="pricePaidNudge" style="display:none;margin:0 14px 10px;padding:10px 14px;background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.2);border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div style="font-size:11px;color:#6B4F10;line-height:1.6;font-family:'Jost',sans-serif"><span id="nudgeCount"></span> holding<span id="nudgePlural"></span> without a purchase price. <span style="opacity:.8">Add them to see your real gain.</span></div>
+      <button onclick="dismissNudge()" style="background:none;border:none;color:#B8A070;font-size:16px;cursor:pointer;flex-shrink:0;padding:0;line-height:1">×</button>
+    </div>
+
     <div class="filter-bar">
       <button class="filter-btn active" onclick="setFilter('all',this)">All Types</button>
       <button class="filter-btn" onclick="setFilter('jewellery',this)">💍 Jewellery</button>
@@ -1642,7 +1648,13 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
             </div>
             <button onclick="revokeShareLink()" style="margin-top:8px;background:transparent;border:none;color:var(--red);font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;padding:0;letter-spacing:.04em">Revoke link</button>
           </div>
-          <button id="generateShareBtn" onclick="generateShareLink()" style="width:100%;padding:10px;background:var(--brand);color:#FDF8F0;border:none;border-radius:8px;font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.06em">Generate share link</button>
+          <div id="shareGenerateSection">
+            <div style="background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.2);border-radius:8px;padding:14px;text-align:center">
+              <div style="font-size:13px;color:var(--brand);font-family:'Cormorant Garamond',serif;font-weight:400;letter-spacing:.04em;margin-bottom:4px">MyAurum Premium</div>
+              <div style="font-size:11px;color:var(--text-dim);line-height:1.65;margin-bottom:12px;font-family:'Jost',sans-serif">Live portfolio sharing is a premium feature. Premium is coming soon — unlimited holdings, share links, and advanced succession tools.</div>
+              <button onclick="premiumWaitlist()" style="padding:9px 20px;background:var(--brand);color:#FDF8F0;border:none;border-radius:20px;font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.06em">Join the waitlist →</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2447,6 +2459,12 @@ function openSharePanel(){
   panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
 }
 
+function premiumWaitlist(){
+  // Open email to join waitlist
+  window.location.href = 'mailto:satyam@myaurum.app?subject=MyAurum%20Premium%20Waitlist&body=Hi%20Satyam%2C%20I%27d%20like%20to%20join%20the%20waitlist%20for%20MyAurum%20Premium.';
+  showToast('Opening your email app…', 'ok', 3000);
+}
+
 async function generateShareLink(){
   const btn = document.getElementById('generateShareBtn');
   btn.textContent = 'Generating…'; btn.disabled = true;
@@ -2639,7 +2657,6 @@ function updateHeaderWelcome(){
   if(hasItems){
     const total = fmtDisp(items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0));
     const count = items.filter(i=>!i.sold&&!i.gifted).length;
-    // Find the most recently updated holding date
     const dates = items.filter(i=>!i.sold&&!i.gifted).map(i=>i.updatedAt||i.purchaseDate).filter(Boolean).sort().reverse();
     const lastDate = dates.length ? new Date(dates[0]).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}) : null;
     sub.textContent = total + ' across ' + count + ' holding' + (count!==1?'s':'') + (lastDate ? '. Last updated ' + lastDate + '.' : '.');
@@ -2647,6 +2664,24 @@ function updateHeaderWelcome(){
   } else {
     strip.style.display = 'none';
   }
+  // Purchase price nudge
+  if(!sessionStorage.getItem('nudgeDismissed')){
+    const noPriceCount = items.filter(i=>!i.sold&&!i.gifted&&!i.pricePaid).length;
+    const nudge = document.getElementById('pricePaidNudge');
+    if(nudge && noPriceCount > 0){
+      nudge.style.display = 'flex';
+      document.getElementById('nudgeCount').textContent = noPriceCount;
+      document.getElementById('nudgePlural').textContent = noPriceCount !== 1 ? 's' : '';
+    } else if(nudge){
+      nudge.style.display = 'none';
+    }
+  }
+}
+
+function dismissNudge(){
+  sessionStorage.setItem('nudgeDismissed', '1');
+  const nudge = document.getElementById('pricePaidNudge');
+  if(nudge) nudge.style.display = 'none';
 }
 
 function refreshProfile(){
