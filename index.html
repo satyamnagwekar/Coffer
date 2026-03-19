@@ -2544,6 +2544,75 @@ async function revokeShareLink(){
 }
 
 // ══════════════════════════════════════════
+// VAULT NOTES
+// ══════════════════════════════════════════
+let vaultNotes = [];
+
+async function loadVaultNotes(){
+  const sec = document.getElementById('vaultNotesSection');
+  if(!sec) return;
+  try {
+    const data = await api('GET', '/vault-notes');
+    vaultNotes = data.notes || [];
+  } catch(e) {
+    vaultNotes = [];
+  }
+  renderVaultNotes();
+}
+
+function renderVaultNotes(){
+  const sec = document.getElementById('vaultNotesSection');
+  if(!sec) return;
+  const rows = vaultNotes.map((n, i) => `
+    <div class="profile-row" style="align-items:flex-start">
+      <div class="profile-key" style="font-size:11px;padding-top:2px">${n.label.replace(/</g,'&lt;')}</div>
+      <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
+        <div class="profile-val" style="text-align:right;word-break:break-word;max-width:180px">${n.value.replace(/</g,'&lt;')}</div>
+        <button onclick="deleteVaultNote(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:14px;padding:0;line-height:1;flex-shrink:0">×</button>
+      </div>
+    </div>`).join('');
+
+  sec.innerHTML = `
+    <div class="profile-section-title" style="display:flex;justify-content:space-between;align-items:center">
+      <span>Vault Notes</span>
+      <span style="font-size:10px;color:var(--text-dim);font-weight:400;letter-spacing:.04em;text-transform:none">${vaultNotes.length}/10 · encrypted</span>
+    </div>
+    <div style="font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:12px">Store locker numbers, bank details, lawyer contacts. Encrypted before leaving your device.</div>
+    ${rows}
+    ${vaultNotes.length < 10 ? `
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <input id="vaultNoteLabel" type="text" placeholder="Label (e.g. Bank locker)" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg3);color:var(--text);font-family:'Jost',sans-serif">
+      <input id="vaultNoteValue" type="text" placeholder="Value (e.g. HDFC Bandra, #247)" style="flex:2;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg3);color:var(--text);font-family:'Jost',sans-serif">
+      <button onclick="addVaultNote()" style="padding:8px 14px;background:var(--brand);color:#FDF8F0;border:none;border-radius:6px;font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0">Add</button>
+    </div>` : `<div style="font-size:11px;color:var(--text-dim);margin-top:8px">Maximum 10 notes reached.</div>`}`;
+}
+
+async function addVaultNote(){
+  const label = document.getElementById('vaultNoteLabel')?.value.trim();
+  const value = document.getElementById('vaultNoteValue')?.value.trim();
+  if(!label || !value){ showToast('Please enter both a label and a value.', 'error'); return; }
+  vaultNotes.push({ label, value });
+  try {
+    await api('POST', '/vault-notes', { notes: vaultNotes });
+    renderVaultNotes();
+  } catch(e) {
+    vaultNotes.pop();
+    showToast('Could not save note — try again.', 'error');
+  }
+}
+
+async function deleteVaultNote(i){
+  const removed = vaultNotes.splice(i, 1);
+  try {
+    await api('POST', '/vault-notes', { notes: vaultNotes });
+    renderVaultNotes();
+  } catch(e) {
+    vaultNotes.splice(i, 0, removed[0]);
+    showToast('Could not delete note — try again.', 'error');
+  }
+}
+
+// ══════════════════════════════════════════
 // PREMIUM / PAYMENTS
 // ══════════════════════════════════════════
 function openUpgradeModal(){
@@ -2824,6 +2893,8 @@ function refreshProfile(){
     const d = new Date(currentUser.joinedAt);
     if(!isNaN(d)) joined = d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
   } catch(e) {}
+  // Load vault notes
+  loadVaultNotes();
   document.getElementById('profileHeader').innerHTML=`
     <div style="display:flex;align-items:center;gap:16px;position:relative;z-index:1">
       <div class="profile-avatar">${currentUser.firstName[0].toUpperCase()}</div>
@@ -2906,6 +2977,7 @@ function refreshProfile(){
       </div>
       <div style="font-size:12px;color:var(--text-dim);line-height:1.8">
         ✦ Unlimited holdings<br>
+        ✦ Share live portfolio with family<br>
         ✦ Grouped P&amp;L by person (Held By)<br>
         ✦ Nominee tracking per holding<br>
         ✦ Succession PDF export<br>
