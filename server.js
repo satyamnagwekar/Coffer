@@ -1,4 +1,5 @@
 'use strict'; // v6 - welcome email, removed login verify gate
+// build: 2026-03-19
 console.log('[env-debug]', Object.keys(process.env).filter(k => k.includes('ENCRYPT') || k.includes('DATABASE')));
 const express  = require('express');
 const { Pool } = require('pg');
