@@ -37,6 +37,11 @@ const VAPID_EMAIL  = process.env.VAPID_EMAIL || 'mailto:admin@myaurum.app';
 const _DB_URL = process.env.MYA_DATABASE_URL || process.env.DATABASE_URL || 'postgresql://postgres:cSANKPNApcPSSBMfqJkyeLAhUWrgcOwd@turntable.proxy.rlwy.net:36567/railway';
 console.log('[config] DATABASE_URL:', _DB_URL !== 'postgresql://postgres:cSANKPNApcPSSBMfqJkyeLAhUWrgcOwd@turntable.proxy.rlwy.net:36567/railway' ? _DB_URL.slice(0, 40) + '...' : 'using hardcoded fallback (ok)');
 
+const RZP_KEY_ID      = process.env.RAZORPAY_KEY_ID      || 'rzp_test_placeholder';
+const RZP_KEY_SECRET  = process.env.RAZORPAY_KEY_SECRET  || 'placeholder_secret';
+const RZP_PLAN_ID     = process.env.RAZORPAY_PLAN_ID     || 'plan_placeholder';
+const RZP_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || 'webhook_placeholder';
+
 const pool = new Pool({
   connectionString: _DB_URL,
   ssl: { rejectUnauthorized: false },
@@ -149,6 +154,11 @@ async function initDB() {
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS weekly_email_opt_out BOOLEAN DEFAULT FALSE`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS weekly_email_sent_at TIMESTAMPTZ`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS share_token TEXT`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_premium BOOLEAN DEFAULT FALSE`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS premium_since TIMESTAMPTZ`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS premium_expires_at TIMESTAMPTZ`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS razorpay_subscription_id TEXT`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS razorpay_customer_id TEXT`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE`);
 
   // Items table — columns added after initial schema
@@ -501,7 +511,8 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
     const u = r.rows[0];
     if (!u) return res.status(404).json({ error:'User not found' });
     await q('UPDATE users SET last_seen=NOW() WHERE id=$1', [u.id]);
-    res.json({ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:!!u.email_verified, twoFactorEnabled:!!u.two_factor_enabled });
+    const isPremium = !!u.is_premium && (!u.premium_expires_at || new Date(u.premium_expires_at) > new Date());
+    res.json({ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:!!u.email_verified, twoFactorEnabled:!!u.two_factor_enabled, isPremium, premiumExpiresAt:u.premium_expires_at||null, razorpaySubscriptionId:u.razorpay_subscription_id||null });
   } catch(e) { res.status(500).json({ error:'Server error' }); }
 });
 
@@ -1569,6 +1580,169 @@ app.get('/terms', (req, res) => {
   if (fs.existsSync(termsPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(termsPath); }
   else res.status(404).send('Terms not found');
 });
+
+// ─────────────────────────────────────────
+//  RAZORPAY PAYMENTS
+// ─────────────────────────────────────────
+
+// Create subscription
+app.post('/api/payment/create-subscription', requireAuth, async (req, res) => {
+  if (RZP_KEY_ID === 'rzp_test_placeholder') {
+    return res.status(503).json({ error: 'Payment gateway not configured yet. Please check back soon.' });
+  }
+  try {
+    const userRes = await q('SELECT * FROM users WHERE id=$1', [req.user.userId]);
+    const u = userRes.rows[0];
+    if (!u) return res.status(404).json({ error: 'User not found' });
+    if (u.is_premium && u.premium_expires_at && new Date(u.premium_expires_at) > new Date()) {
+      return res.status(400).json({ error: 'Already a premium member' });
+    }
+
+    // Create or retrieve Razorpay customer
+    let customerId = u.razorpay_customer_id;
+    if (!customerId) {
+      const custResp = await razorpayRequest('POST', '/customers', {
+        name: `${u.first_name} ${u.last_name}`.trim(),
+        email: u.email,
+        fail_existing: 0,
+      });
+      customerId = custResp.id;
+      await q('UPDATE users SET razorpay_customer_id=$1 WHERE id=$2', [customerId, u.id]);
+    }
+
+    // Create subscription
+    const sub = await razorpayRequest('POST', '/subscriptions', {
+      plan_id: RZP_PLAN_ID,
+      customer_notify: 1,
+      quantity: 1,
+      total_count: 12, // up to 12 years
+      customer_id: customerId,
+      addons: [],
+      notes: { user_id: String(u.id), email: u.email },
+    });
+
+    res.json({
+      subscriptionId: sub.id,
+      keyId: RZP_KEY_ID,
+      name: 'MyAurum Premium',
+      description: '₹600/year · Cancel anytime · Access continues until period end',
+      prefill: { name: `${u.first_name} ${u.last_name}`.trim(), email: u.email },
+    });
+  } catch(e) {
+    console.error('[payment] create-subscription error:', e.message);
+    res.status(500).json({ error: 'Could not create subscription. Please try again.' });
+  }
+});
+
+// Verify payment after checkout
+app.post('/api/payment/verify', requireAuth, async (req, res) => {
+  const { razorpay_payment_id, razorpay_subscription_id, razorpay_signature } = req.body;
+  try {
+    const crypto = require('crypto');
+    const expected = crypto.createHmac('sha256', RZP_KEY_SECRET)
+      .update(`${razorpay_payment_id}|${razorpay_subscription_id}`)
+      .digest('hex');
+    if (expected !== razorpay_signature) {
+      return res.status(400).json({ error: 'Payment verification failed' });
+    }
+    const expires = new Date();
+    expires.setFullYear(expires.getFullYear() + 1);
+    await q(`UPDATE users SET is_premium=TRUE, premium_since=NOW(), premium_expires_at=$1, razorpay_subscription_id=$2 WHERE id=$3`,
+      [expires, razorpay_subscription_id, req.user.userId]);
+    console.log(`[payment] Premium activated for user ${req.user.userId}`);
+    res.json({ ok: true, premiumExpiresAt: expires });
+  } catch(e) {
+    console.error('[payment] verify error:', e.message);
+    res.status(500).json({ error: 'Verification failed' });
+  }
+});
+
+// Cancel subscription
+app.post('/api/payment/cancel', requireAuth, async (req, res) => {
+  try {
+    const userRes = await q('SELECT * FROM users WHERE id=$1', [req.user.userId]);
+    const u = userRes.rows[0];
+    if (!u?.razorpay_subscription_id) return res.status(400).json({ error: 'No active subscription found' });
+    if (RZP_KEY_ID !== 'rzp_test_placeholder') {
+      await razorpayRequest('POST', `/subscriptions/${u.razorpay_subscription_id}/cancel`, { cancel_at_cycle_end: 1 });
+    }
+    // Access continues until premium_expires_at — just stop auto-renew
+    await q('UPDATE users SET razorpay_subscription_id=NULL WHERE id=$1', [req.user.userId]);
+    console.log(`[payment] Subscription cancelled for user ${req.user.userId}`);
+    res.json({ ok: true, message: 'Subscription cancelled. Your premium access continues until the end of your current billing period.' });
+  } catch(e) {
+    console.error('[payment] cancel error:', e.message);
+    res.status(500).json({ error: 'Could not cancel subscription. Please try again.' });
+  }
+});
+
+// Razorpay webhook
+app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  try {
+    const crypto = require('crypto');
+    const sig = req.headers['x-razorpay-signature'];
+    const expected = crypto.createHmac('sha256', RZP_WEBHOOK_SECRET).update(req.body).digest('hex');
+    if (expected !== sig) return res.status(400).send('Invalid signature');
+
+    const event = JSON.parse(req.body.toString());
+    const { event: eventType, payload } = event;
+
+    if (eventType === 'subscription.charged') {
+      const sub = payload.subscription.entity;
+      const userId = sub.notes?.user_id;
+      if (userId) {
+        const expires = new Date();
+        expires.setFullYear(expires.getFullYear() + 1);
+        await q('UPDATE users SET is_premium=TRUE, premium_expires_at=$1 WHERE id=$2', [expires, userId]);
+        console.log(`[webhook] subscription.charged — user ${userId} renewed until ${expires.toISOString()}`);
+      }
+    } else if (eventType === 'subscription.cancelled' || eventType === 'subscription.halted') {
+      const sub = payload.subscription.entity;
+      const userId = sub.notes?.user_id;
+      if (userId) {
+        // Don't revoke immediately — let premium_expires_at handle it
+        await q('UPDATE users SET razorpay_subscription_id=NULL WHERE id=$1', [userId]);
+        console.log(`[webhook] ${eventType} — user ${userId} subscription ended`);
+      }
+    }
+    res.json({ ok: true });
+  } catch(e) {
+    console.error('[webhook] error:', e.message);
+    res.status(500).send('Error');
+  }
+});
+
+// Razorpay API helper
+function razorpayRequest(method, path, body) {
+  return new Promise((resolve, reject) => {
+    const auth = Buffer.from(`${RZP_KEY_ID}:${RZP_KEY_SECRET}`).toString('base64');
+    const data = JSON.stringify(body || {});
+    const opts = {
+      hostname: 'api.razorpay.com',
+      path: `/v1${path}`,
+      method,
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(data),
+      },
+    };
+    const req = https.request(opts, r => {
+      let buf = '';
+      r.on('data', d => buf += d);
+      r.on('end', () => {
+        try {
+          const parsed = JSON.parse(buf);
+          if (r.statusCode >= 400) reject(new Error(parsed.error?.description || `HTTP ${r.statusCode}`));
+          else resolve(parsed);
+        } catch(e) { reject(e); }
+      });
+    });
+    req.on('error', reject);
+    req.write(data);
+    req.end();
+  });
+}
 
 // ─────────────────────────────────────────
 //  LIVE PORTFOLIO SHARE LINK
