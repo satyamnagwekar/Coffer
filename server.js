@@ -148,6 +148,21 @@ async function initDB() {
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS weekly_email_sent_at TIMESTAMPTZ`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS share_token TEXT`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE`);
+
+  // Items table — columns added after initial schema
+  await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS held_by TEXT`);
+  await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS nominee TEXT`);
+  await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS making_charge REAL`);
+  await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS making_charge_currency TEXT`);
+  await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS gold_cost_basis_usd REAL`);
+  await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS photos TEXT`);
+  await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS gifted BOOLEAN DEFAULT FALSE`);
+  await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS gifted_to TEXT`);
+  await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS gifted_at TEXT`);
+  await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS gift_notes TEXT`);
+  await q(`ALTER TABLE items DROP CONSTRAINT IF EXISTS items_metal_check`);
+  await q(`ALTER TABLE items ADD CONSTRAINT items_metal_check CHECK (metal IN ('gold','silver','platinum'))`);
+
   await q(`
     CREATE TABLE IF NOT EXISTS otp_tokens (
       id         SERIAL PRIMARY KEY,
@@ -1585,7 +1600,7 @@ app.get('/share/:token', async (req, res) => {
     const u = r.rows[0];
     if (!u) return res.status(404).send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>MyAurum</title></head><body style="font-family:Georgia,serif;background:#F5F0E8;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#2C2410;text-align:center"><div><div style="font-size:22px;letter-spacing:.2em;color:#8B6914;margin-bottom:12px">MYAURUM</div><p style="color:#888">This portfolio link is no longer active.</p><a href="/" style="color:#B8860B;text-decoration:none;font-size:13px">Visit myaurum.app →</a></div></body></html>`);
 
-    const itemsRes = await q('SELECT * FROM items WHERE user_id=$1 AND sold=FALSE AND (gifted IS NOT TRUE) ORDER BY added_at DESC', [u.id]);
+    const itemsRes = await q('SELECT * FROM items WHERE user_id=$1 AND sold=FALSE AND (gifted IS NOT TRUE OR gifted IS NULL) ORDER BY added_at DESC', [u.id]);
     const items = itemsRes.rows.map(r => itemToClient(decryptRow(r)));
 
     // Get latest prices
