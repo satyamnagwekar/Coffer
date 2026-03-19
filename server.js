@@ -146,6 +146,7 @@ async function initDB() {
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_method TEXT DEFAULT 'email'`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS weekly_email_opt_out BOOLEAN DEFAULT FALSE`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS weekly_email_sent_at TIMESTAMPTZ`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS share_token TEXT`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE`);
   await q(`
     CREATE TABLE IF NOT EXISTS otp_tokens (
@@ -1550,6 +1551,161 @@ app.get('/terms', (req, res) => {
   const termsPath = path.join(__dirname, 'terms.html');
   if (fs.existsSync(termsPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(termsPath); }
   else res.status(404).send('Terms not found');
+});
+
+// ─────────────────────────────────────────
+//  LIVE PORTFOLIO SHARE LINK
+// ─────────────────────────────────────────
+
+// Generate or retrieve share token
+app.post('/api/share/generate', requireAuth, async (req, res) => {
+  try {
+    const r = await q('SELECT share_token FROM users WHERE id=$1', [req.user.userId]);
+    let token = r.rows[0]?.share_token;
+    if (!token) {
+      token = require('crypto').randomBytes(24).toString('hex');
+      await q('UPDATE users SET share_token=$1 WHERE id=$2', [token, req.user.userId]);
+    }
+    res.json({ token, url: `${APP_URL}/share/${token}` });
+  } catch(e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+// Revoke share token
+app.post('/api/share/revoke', requireAuth, async (req, res) => {
+  try {
+    await q('UPDATE users SET share_token=NULL WHERE id=$1', [req.user.userId]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+// Serve read-only portfolio view
+app.get('/share/:token', async (req, res) => {
+  try {
+    const r = await q('SELECT * FROM users WHERE share_token=$1', [req.params.token]);
+    const u = r.rows[0];
+    if (!u) return res.status(404).send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>MyAurum</title></head><body style="font-family:Georgia,serif;background:#F5F0E8;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#2C2410;text-align:center"><div><div style="font-size:22px;letter-spacing:.2em;color:#8B6914;margin-bottom:12px">MYAURUM</div><p style="color:#888">This portfolio link is no longer active.</p><a href="/" style="color:#B8860B;text-decoration:none;font-size:13px">Visit myaurum.app →</a></div></body></html>`);
+
+    const itemsRes = await q('SELECT * FROM items WHERE user_id=$1 AND sold=FALSE AND (gifted IS NOT TRUE) ORDER BY added_at DESC', [u.id]);
+    const items = itemsRes.rows.map(r => itemToClient(decryptRow(r)));
+
+    // Get latest prices
+    const gold = priceCache.gold || 0;
+    const silver = priceCache.silver || 0;
+    const usdInr = priceCache.usd_inr || 83;
+    const INDIA_FACTOR = (10/31.1035)*1.15*1.03;
+
+    const isMCX = (u.country||'').toLowerCase() === 'india';
+    const sym = isMCX ? '₹' : '$';
+
+    function spotVal(metal, grams, purity) {
+      const oz = grams * purity / 31.1035;
+      if (isMCX && metal !== 'platinum') {
+        return (grams * purity / 10) * (metal === 'gold' ? gold : silver) * usdInr * 1.15 * 1.03;
+      }
+      return oz * (metal === 'gold' ? gold : metal === 'silver' ? silver : (priceCache.platinum||980));
+    }
+
+    function fmtVal(v) {
+      if (isMCX) return '₹' + Math.round(v).toLocaleString('en-IN');
+      return '$' + v.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+
+    const total = items.reduce((s,i) => s + spotVal(i.metal, i.grams, i.purity), 0);
+    const now = new Date();
+    const asOf = now.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}) + ', ' +
+      now.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'}) + ' IST';
+
+    const metalGroups = {};
+    items.forEach(item => {
+      if (!metalGroups[item.metal]) metalGroups[item.metal] = [];
+      metalGroups[item.metal].push(item);
+    });
+
+    const metalOrder = ['gold','silver','platinum'];
+    const metalLabels = {gold:'Gold',silver:'Silver',platinum:'Platinum'};
+
+    let tableRows = '';
+    metalOrder.forEach(metal => {
+      if (!metalGroups[metal]) return;
+      tableRows += `<tr><td colspan="4" style="background:#F5EDD0;font-size:10px;letter-spacing:.14em;color:#8B6914;font-weight:600;padding:7px 12px;text-transform:uppercase">${metalLabels[metal]}</td></tr>`;
+      metalGroups[metal].forEach(item => {
+        const v = spotVal(item.metal, item.grams, item.purity);
+        tableRows += `<tr style="border-bottom:1px solid #EDE8DA">
+          <td style="padding:10px 12px;font-size:13px;color:#2C2410">${item.name}</td>
+          <td style="padding:10px 12px;font-size:12px;color:#8B6914;text-align:center">${item.gradeName.split(' — ')[0]}</td>
+          <td style="padding:10px 12px;font-size:12px;color:#555;text-align:center">${item.grams.toFixed(2)}g</td>
+          <td style="padding:10px 12px;font-size:13px;color:#2C2410;font-weight:500;text-align:right">${fmtVal(v)}</td>
+        </tr>`;
+      });
+    });
+
+    res.type('html').send(`<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${u.first_name}'s Portfolio — MyAurum</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Jost',sans-serif;background:#F5F0E8;color:#2C2410;min-height:100vh}
+.header{background:#1A1508;padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:.22em;color:#F0B429;text-decoration:none}
+.badge{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#6B4F10;background:rgba(184,134,11,.15);padding:4px 10px;border-radius:10px}
+.hero{padding:32px 24px 24px;max-width:680px;margin:0 auto}
+.owner{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:#2C2410;margin-bottom:4px}
+.asof{font-size:11px;color:#B8A070;letter-spacing:.04em}
+.total-card{background:#fff;border:1px solid #DDD5C0;border-radius:12px;padding:20px 24px;margin:20px 0;display:flex;justify-content:space-between;align-items:center}
+.total-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8B6914}
+.total-val{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:#2C2410}
+.content{max-width:680px;margin:0 auto;padding:0 24px 48px}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #DDD5C0;border-radius:12px;overflow:hidden}
+.footer{text-align:center;padding:24px;font-size:10px;color:#B8A070;line-height:1.8}
+.footer a{color:#B8860B;text-decoration:none}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#4CAF50;display:inline-block;margin-right:5px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@media(max-width:600px){.total-val{font-size:26px}.hero{padding:24px 16px 16px}.content{padding:0 16px 40px}}
+</style>
+</head><body>
+<div class="header">
+  <a href="/" class="logo">MYAURUM</a>
+  <span class="badge"><span class="live-dot"></span>Live portfolio</span>
+</div>
+<div class="hero">
+  <div class="owner">${u.first_name} ${u.last_name}'s Holdings</div>
+  <div class="asof">As of ${asOf} &nbsp;·&nbsp; ${isMCX ? 'MCX benchmark' : 'COMEX benchmark'}</div>
+  <div class="total-card">
+    <div>
+      <div class="total-label">Portfolio Value</div>
+      <div class="total-val">${fmtVal(total)}</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#B8A070;margin-bottom:4px">${items.length} holding${items.length!==1?'s':''}</div>
+      <div style="font-size:11px;color:#8B6914">Prices update live</div>
+    </div>
+  </div>
+</div>
+<div class="content">
+  <table>
+    <thead><tr style="border-bottom:2px solid #DDD5C0">
+      <th style="padding:10px 12px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8B6914;text-align:left;font-weight:500">Item</th>
+      <th style="padding:10px 12px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8B6914;text-align:center;font-weight:500">Purity</th>
+      <th style="padding:10px 12px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8B6914;text-align:center;font-weight:500">Weight</th>
+      <th style="padding:10px 12px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8B6914;text-align:right;font-weight:500">Value</th>
+    </tr></thead>
+    <tbody>${tableRows}</tbody>
+  </table>
+  <div style="margin-top:14px;font-size:11px;color:#B8A070;line-height:1.7;text-align:center">
+    Values are indicative estimates at live spot prices. Not financial advice.
+  </div>
+</div>
+<div class="footer">
+  <p>This portfolio is shared via MyAurum &nbsp;·&nbsp; <a href="/">myaurum.app</a></p>
+  <p style="margin-top:4px;opacity:.7">© 2026 MyAurum. All rights reserved. &nbsp;·&nbsp; <a href="/privacy">Privacy Policy</a></p>
+</div>
+</body></html>`);
+  } catch(e) {
+    console.error('[share]', e.message);
+    res.status(500).send('Something went wrong.');
+  }
 });
 
 app.get('/security', (req, res) => {
