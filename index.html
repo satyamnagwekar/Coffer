@@ -560,11 +560,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .perf-val.silver-c{color:var(--silver-bright)}
 
 /* History chart */
-.history-chart-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px;overflow:hidden}
+.history-chart-wrap{background:#1C2128;border:1px solid #2D3340;border-radius:var(--radius);padding:12px;margin-bottom:10px;overflow:hidden}
 .history-legend{display:flex;align-items:center;gap:14px;padding:0 4px;margin-bottom:8px}
 .hl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.gold-dot{background:var(--gold-bright)}
-.silver-dot{background:var(--silver)}
+.gold-dot{background:#F0B429}
+.silver-dot{background:rgba(120,180,230,.9)}
 .hl-lbl{font-size:11px;color:var(--text-dim)}
 .history-note{font-size:11px;color:var(--text-dim);text-align:center;padding:4px 0 8px}
 
@@ -3959,7 +3959,7 @@ function drawHistoryCanvas(rows){
   const W=canvas.width=canvas.parentElement.offsetWidth-24||320;
   const H=180;canvas.height=H;ctx.clearRect(0,0,W,H);
   if(!rows||!rows.length){
-    ctx.fillStyle='rgba(106,96,64,.5)';ctx.font='11px Jost,sans-serif';ctx.textAlign='center';
+    ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='11px Jost,sans-serif';ctx.textAlign='center';
     ctx.fillText('No history yet — check back after prices update',W/2,H/2);
     document.getElementById('historyNote').textContent='Price snapshots recorded every 5 minutes · builds up over time';
     return;
@@ -3977,14 +3977,14 @@ function drawHistoryCanvas(rows){
   const pad={t:16,b:24,l:8,r:8};
   const pw=W-pad.l-pad.r,ph=H-pad.t-pad.b;
   const xp=i=>pad.l+(i/n)*pw,yp=v=>pad.t+ph-(((v-minV)/(maxV-minV))*ph);
-  ctx.strokeStyle='rgba(46,42,24,.5)';ctx.lineWidth=1;
+  ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=1;
   [0,.25,.5,.75,1].forEach(f=>{const y=pad.t+ph*f;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke()});
   ctx.beginPath();sH.forEach((v,i)=>{i===0?ctx.moveTo(xp(i),yp(v)):ctx.lineTo(xp(i),yp(v))});
-  ctx.strokeStyle='rgba(90,140,190,.85)';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle='rgba(120,180,230,.9)';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
   ctx.beginPath();gH.forEach((v,i)=>{i===0?ctx.moveTo(xp(i),yp(v)):ctx.lineTo(xp(i),yp(v))});
-  ctx.strokeStyle='#B8860B';ctx.lineWidth=2.5;ctx.stroke();
-  ctx.beginPath();ctx.arc(xp(n),yp(gH[n]),4,0,2*Math.PI);ctx.fillStyle='#B8860B';ctx.fill();
-  ctx.fillStyle='rgba(106,96,64,.7)';ctx.font='9px Jost,sans-serif';ctx.textAlign='left';
+  ctx.strokeStyle='#F0B429';ctx.lineWidth=2.5;ctx.stroke();
+  ctx.beginPath();ctx.arc(xp(n),yp(gH[n]),4,0,2*Math.PI);ctx.fillStyle='#F0B429';ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='9px Jost,sans-serif';ctx.textAlign='left';
   const oldest=new Date(rows[0].recorded_at).toLocaleDateString([],{month:'short',day:'numeric'});
   ctx.fillText(oldest,pad.l,H-4);ctx.fillText('Today',W-pad.r-30,H-4);
   const days=rows.length>1?Math.round((new Date(rows[rows.length-1].recorded_at)-new Date(rows[0].recorded_at))/(86400000)):0;
