@@ -4631,9 +4631,7 @@ function _coreUpdatePriceDisplay(){
                     currency==='GBP'||currency==='EUR' ? ['LBMA','COMEX'] :
                     currency==='AED' ? ['DGCX','COMEX'] :
                     ['COMEX','LBMA'];
-    tog.innerHTML = options.map(b=>
-      `<button class="benchmark-btn${benchmark===b?' active':''}" data-b="${b}" onclick="setBenchmark('${b}')">${b}</button>`
-    ).join('');
+    tog.innerHTML = options.map(b=>`<button class="benchmark-btn${benchmark===b?' active':''}" data-b="${b}" onclick="setBenchmark('${b}')">${BENCHMARK_LABELS[b]||b}</button>`).join('');
   }
 
   if(isMCX){
