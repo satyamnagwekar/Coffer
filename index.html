@@ -1058,7 +1058,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           </div>
           <div>
             <div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:#2C2410;margin-bottom:6px">② See live value</div>
-            <div style="font-size:13px;color:#666;line-height:1.7">Prices update every 5 minutes from global spot markets, adjusted for import duty and GST. Your total in rupees, right now.</div>
+            <div style="font-size:13px;color:#666;line-height:1.7">Prices update every 5 minutes from global spot markets, MCX-aligned estimates. Your total in rupees, right now.</div>
           </div>
           <div>
             <div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:#2C2410;margin-bottom:6px">③ Track your gain</div>
@@ -1135,7 +1135,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div style="text-align:center;padding:24px 16px;border:1px solid rgba(184,134,11,.18);border-radius:12px;background:#fff">
           <div style="font-size:26px;margin-bottom:10px">📊</div>
           <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#2C2410;font-weight:300;margin-bottom:8px">Live MCX-aligned prices.</div>
-          <div style="font-size:11px;color:#888070;line-height:1.8">Prices sourced from global spot markets, updated every 5 minutes, adjusted for 15% import duty and 3% GST for Indian users.</div>
+          <div style="font-size:11px;color:#888070;line-height:1.8">Prices sourced from global spot markets, updated every 5 minutes, MCX-aligned estimates for Indian users.</div>
         </div>
 
         <div style="text-align:center;padding:24px 16px;border:1px solid rgba(184,134,11,.18);border-radius:12px;background:#fff">
@@ -1289,7 +1289,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <button id="headerStripBtn" onclick="openAddModal()" style="padding:8px 20px;background:var(--brand);color:#FDF8F0;border:none;border-radius:7px;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;letter-spacing:.06em;cursor:pointer;white-space:nowrap;flex-shrink:0">+ Add First Holding</button>
     </div>
     </div>
-    <div id="inrDutyNote" style="display:none;font-size:11px;color:var(--text-dim);text-align:right;padding:2px 16px 4px;letter-spacing:.04em;opacity:0.7">incl. 15% import duty + 3% GST</div>
+    <div id="inrDutyNote" style="display:none;font-size:11px;color:var(--text-dim);text-align:right;padding:2px 16px 4px;letter-spacing:.04em;opacity:0.7">MCX-aligned estimate</div>
   </div>
 
   <!-- Nav -->
@@ -1497,7 +1497,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div class="sq-price" id="alertSilverPrice">—</div>
         </div>
       </div>
-      <div id="alertDutyNote" style="display:none;font-size:11px;color:var(--text-dim);text-align:center;padding:2px 0 6px;letter-spacing:.04em;opacity:0.7">incl. 15% import duty + 3% GST</div>
+      <div id="alertDutyNote" style="display:none;font-size:11px;color:var(--text-dim);text-align:center;padding:2px 0 6px;letter-spacing:.04em;opacity:0.7">MCX-aligned estimate</div>
       <div class="alert-form-card">
         <div class="alert-form-title">New Alert</div>
         <div class="field-row" style="margin-bottom:10px">
@@ -2246,10 +2246,10 @@ let rates={USD:1,INR:83.5,AED:3.67,EUR:0.92,GBP:0.79};
 let currency='INR';
 
 // Benchmark: 'MCX' | 'COMEX' | 'LBMA' | 'DGCX'
-// MCX = Indian domestic (includes 15% import duty + 3% GST, priced per 10g)
+// MCX = Indian domestic (COMEX × INR × 1.035, priced per 10g)
 // COMEX/LBMA/DGCX = international spot (per oz, raw USD × rate) — numbers nearly identical, labels differ
 let benchmark='MCX';
-const BENCHMARK_LABELS={MCX:'MCX',COMEX:'COMEX',LBMA:'LBMA',DGCX:'DGCX'};
+const BENCHMARK_LABELS={MCX:'INR',COMEX:'COMEX',LBMA:'LBMA',DGCX:'DGCX'};
 const CURRENCY_DEFAULT_BENCHMARK={INR:'MCX',USD:'COMEX',GBP:'LBMA',EUR:'LBMA',AED:'DGCX'};
 function setBenchmark(b){
   benchmark=b;
@@ -3135,7 +3135,7 @@ function metalValueUSD(metal,grams,purity){return toOz(grams*purity)*(metal==='g
 // Platinum has no MCX import premium — uses raw spot × rate
 function spotDisplayValue(metal,grams,purity){
   const usd=metalValueUSD(metal,grams,purity);
-  if(benchmark==='MCX'&&metal!=='platinum') return usd*rates.INR*1.15*1.03;
+  if(benchmark==='MCX'&&metal!=='platinum') return usd*rates.INR*1.035;
   return usd*(rates[currency]||1);
 }
 
@@ -3147,7 +3147,7 @@ function costBasisDisplay(item){
   if(!cbUSD) return null;
   if(benchmark==='MCX'&&item.metal!=='platinum'){
     // cbUSD is raw USD cost basis. Convert to MCX-equivalent INR.
-    return cbUSD*rates.INR*1.15*1.03;
+    return cbUSD*rates.INR*1.035;
   }
   return cbUSD*(rates[currency]||1);
 }
@@ -3209,7 +3209,7 @@ function renderList(){
     if(vaultEmpty){
       const sym = SYMBOLS[currency]||'$';
       const isINR = currency==='INR';
-      const INDIA_FACTOR = (10/31.1035)*1.15*1.03;
+      const INDIA_FACTOR = (10/31.1035)*1.035;
       const goldDisp = isINR
         ? '₹'+Math.round(prices.gold*rates.INR*INDIA_FACTOR).toLocaleString('en-IN')+' /10g'
         : sym+( prices.gold*(rates[currency]||1) ).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+' /oz';
@@ -3434,7 +3434,7 @@ function updatePreview(){
   document.getElementById('valuePreview').textContent=fmtDisp(sD);
   if(pR>0){
     const paidUSD=toUSD(pR,pC);
-    const cbD=benchmark==='MCX'&&selectedMetal!=='platinum'?paidUSD*rates.INR*1.15*1.03:paidUSD*(rates[currency]||1);
+    const cbD=benchmark==='MCX'&&selectedMetal!=='platinum'?paidUSD*rates.INR*1.035:paidUSD*(rates[currency]||1);
     const gain=sD-cbD,pct=cbD>0?(gain/cbD)*100:0,s=gain>=0?'+':'';
     document.getElementById('pnlPaid').textContent=fmtCurr(pR,pC);
     document.getElementById('pnlSpot').textContent=fmtDisp(sD);
@@ -3764,9 +3764,9 @@ function openDetail(idx){
   if(item.notes)acqRows.push(['Notes',escHtml(item.notes)]);
   if(item.heldBy)acqRows.push(['Held By',escHtml(item.heldBy)]);
   if(item.nominee)acqRows.push(['Nominee',`<span style="color:#c084fc">${escHtml(item.nominee)}</span>`]);
-  const spotLabel = isMCX&&item.metal!=='platinum' ? 'Spot (MCX /10g)' : `Spot (${bLabel} /oz)`;
+  const spotLabel = isMCX&&item.metal!=='platinum' ? 'Spot (INR /10g)' : `Spot (${bLabel} /oz)`;
   const spotDisp = isMCX&&item.metal!=='platinum'
-    ? '₹'+Math.round((item.metal==='gold'?prices.gold:prices.silver)*rates.INR*1.15*1.03).toLocaleString('en-IN')
+    ? '₹'+Math.round((item.metal==='gold'?prices.gold:prices.silver)*rates.INR*1.035).toLocaleString('en-IN')
     : (SYMBOLS[currency]||'$')+((item.metal==='gold'?prices.gold:item.metal==='platinum'?prices.platinum:prices.silver)*(rates[currency]||1)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
   const valRows=[
     [spotLabel, spotDisp],
@@ -3816,12 +3816,12 @@ function openDetail(idx){
       if(!item.gifted)return '';
       const costB=item.goldCostBasisUSD||item.pricePaidUSD;
       let gRow='';
-      if(item.giftGainUSD!=null){const gD=item.giftGainUSD*(benchmark==='MCX'&&item.metal!=='platinum'?rates.INR*1.15*1.03:rates[currency]||1);const cbD=costBasisDisplay(item);const p=cbD?(gD/cbD)*100:0,s=gD>=0?'+':'';gRow=`<div class="detail-row"><div class="detail-key">Gain given away</div><div class="detail-val ${gD>=0?'pos':'neg'}">${s}${fmtDisp(Math.abs(gD))} (${s}${Math.abs(p).toFixed(1)}%)</div></div>`;}
+      if(item.giftGainUSD!=null){const gD=item.giftGainUSD*(benchmark==='MCX'&&item.metal!=='platinum'?rates.INR*1.035:rates[currency]||1);const cbD=costBasisDisplay(item);const p=cbD?(gD/cbD)*100:0,s=gD>=0?'+':'';gRow=`<div class="detail-row"><div class="detail-key">Gain given away</div><div class="detail-val ${gD>=0?'pos':'neg'}">${s}${fmtDisp(Math.abs(gD))} (${s}${Math.abs(p).toFixed(1)}%)</div></div>`;}
       return `<div class="detail-section"><div class="detail-section-title">Gift Record</div>
         <div class="detail-row"><div class="detail-key">Date Gifted</div><div class="detail-val">${item.giftDate||'—'}</div></div>
         ${item.giftTo?`<div class="detail-row"><div class="detail-key">Gifted To</div><div class="detail-val">${escHtml(item.giftTo)}</div></div>`:''}
         ${item.giftNotes?`<div class="detail-row"><div class="detail-key">Occasion</div><div class="detail-val">${escHtml(item.giftNotes)}</div></div>`:''}
-        <div class="detail-row"><div class="detail-key">Value at Gift</div><div class="detail-val">${item.giftValueUSD?fmtDisp(item.giftValueUSD*(benchmark==='MCX'&&item.metal!=='platinum'?rates.INR*1.15*1.03:rates[currency]||1)):'—'}</div></div>
+        <div class="detail-row"><div class="detail-key">Value at Gift</div><div class="detail-val">${item.giftValueUSD?fmtDisp(item.giftValueUSD*(benchmark==='MCX'&&item.metal!=='platinum'?rates.INR*1.035:rates[currency]||1)):'—'}</div></div>
         ${gRow}</div>`;
     })()}
     <div class="detail-actions">${editBtn}${actionBtn}</div>
@@ -3928,7 +3928,7 @@ function renderPerfGrid(){
   grid.innerHTML=active.map(item=>{
     const sD=spotDisplayValue(item.metal,item.grams,item.purity);
     const isINR=currency==='INR';
-    const INDIA_FACTOR=(10/31.1035)*1.15*1.03;
+    const INDIA_FACTOR=(10/31.1035)*1.035;
     const rate=rates[currency]||1;
     const sym=SYMBOLS[currency]||'$';
     const rawSpot=item.metal==='gold'?prices.gold:item.metal==='platinum'?prices.platinum:prices.silver;
@@ -3966,7 +3966,7 @@ function drawHistoryCanvas(rows){
   }
   const sym = SYMBOLS[currency] || '$';
   const isINR = currency === 'INR';
-  const INDIA_FACTOR = (10/31.1035)*1.15*1.03;
+  const INDIA_FACTOR = (10/31.1035)*1.035;
   const rate = rates[currency] || 1;
   const convertGold = v => isINR ? Math.round(v * rates.INR * INDIA_FACTOR) : v * rate;
   const gH = rows.map(r => convertGold(r.gold));
@@ -4172,11 +4172,11 @@ function generateHoldingsStatement(){
   const isMCX = benchmark === 'MCX';
   const bLabel = BENCHMARK_LABELS[benchmark] || benchmark;
   const sym = SYMBOLS[currency] || '$';
-  const INDIA_FACTOR = (10/31.1035)*1.15*1.03;
+  const INDIA_FACTOR = (10/31.1035)*1.035;
 
   // Spot reference line
   const goldSpotStr = isMCX
-    ? '₹'+Math.round(prices.gold*rates.INR*INDIA_FACTOR).toLocaleString('en-IN')+'/10g (MCX incl. duty+GST)'
+    ? '₹'+Math.round(prices.gold*rates.INR*INDIA_FACTOR).toLocaleString('en-IN')+'/10g (INR est.)'
     : sym+(prices.gold*(rates[currency]||1)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'/oz ('+bLabel+')';
 
   // Group by metal
@@ -4485,7 +4485,7 @@ function updateAlertCurrencyUI(){
   const input = document.getElementById('alertPrice');
   const sym = SYMBOLS[c] || c;
   if(c === 'INR'){
-    label.textContent = 'Target Price (INR / 10g · MCX)';
+    label.textContent = 'Target Price (INR / 10g)';
     input.placeholder = 'e.g. 96000';
     input.step = '100';
   } else {
@@ -4504,7 +4504,7 @@ async function addAlert(){
   if(!priceRaw||priceRaw<=0){alert('Please enter a valid target price.');return}
 
   // Normalise to USD/oz for comparison — INR/10g → USD/oz, other currencies → USD/oz
-  const INDIA_FACTOR=(10/31.1035)*1.15*1.03;
+  const INDIA_FACTOR=(10/31.1035)*1.035;
   const priceUSD = priceCurrency==='INR'
     ? priceRaw / (rates.INR * INDIA_FACTOR)
     : (rates[priceCurrency] ? priceRaw / rates[priceCurrency] : priceRaw);
@@ -4542,7 +4542,7 @@ function renderAlertsList(){
     const triggered=a.dir==='above'?spot>=a.price:spot<=a.price;
     const statusTxt=a.fired||triggered?'⚡ Triggered':'👁 Watching';
     const statusCls=a.fired||triggered?'fired':'watching';
-    const INDIA_FACTOR=(10/31.1035)*1.15*1.03;
+    const INDIA_FACTOR=(10/31.1035)*1.035;
     const sym = SYMBOLS[a.priceCurrency] || '$';
     let priceDisplay,spotDisplay;
     if(a.priceCurrency==='INR'){
@@ -4585,7 +4585,7 @@ async function checkAlerts(){
 
 function fireNotification(a,spot){
   const title=`MyAurum Alert — ${a.metal==='gold'?'Gold':'Silver'} ${a.dir==='above'?'↑':'↓'}`;
-  const INDIA_FACTOR=(10/31.1035)*1.15*1.03;
+  const INDIA_FACTOR=(10/31.1035)*1.035;
   const sym=SYMBOLS[a.priceCurrency]||'$';
   let spotStr,targetStr;
   if(a.priceCurrency==='INR'){
@@ -4633,8 +4633,8 @@ function _coreUpdatePriceDisplay(){
     const goldINR10g   = prices.gold   * rates.INR * INDIA_FACTOR;
     const silverINR10g = prices.silver * rates.INR * INDIA_FACTOR;
     const platINR10g   = prices.platinum * rates.INR * (10/31.1035);
-    document.getElementById('goldSpotLabel').textContent   = 'GOLD /10g (MCX)';
-    document.getElementById('silverSpotLabel').textContent = 'SILVER /10g (MCX)';
+    document.getElementById('goldSpotLabel').textContent   = 'GOLD /10g (INR)';
+    document.getElementById('silverSpotLabel').textContent = 'SILVER /10g (INR)';
     document.getElementById('platinumSpotLabel').textContent = 'PLAT /10g';
     document.getElementById('goldSpot').textContent   = '₹' + Math.round(goldINR10g).toLocaleString('en-IN');
     document.getElementById('silverSpot').textContent = '₹' + Math.round(silverINR10g).toLocaleString('en-IN');
@@ -4642,8 +4642,8 @@ function _coreUpdatePriceDisplay(){
     // Home cards
     const hgEl=document.getElementById('homeGoldSpot'),hsEl=document.getElementById('homeSilverSpot');
     const hgU=document.getElementById('homeGoldUnit'),hsU=document.getElementById('homeSilverUnit');
-    if(hgEl){hgEl.textContent='₹'+Math.round(goldINR10g).toLocaleString('en-IN');if(hgU)hgU.textContent='per 10g · MCX incl. duty+GST';}
-    if(hsEl){hsEl.textContent='₹'+Math.round(silverINR10g).toLocaleString('en-IN');if(hsU)hsU.textContent='per 10g · MCX incl. duty+GST';}
+    if(hgEl){hgEl.textContent='₹'+Math.round(goldINR10g).toLocaleString('en-IN');if(hgU)hgU.textContent='per 10g · INR est.';}
+    if(hsEl){hsEl.textContent='₹'+Math.round(silverINR10g).toLocaleString('en-IN');if(hsU)hsU.textContent='per 10g · INR est.';}
   } else {
     const goldDisp = prices.gold   * rate;
     const silverDisp = prices.silver * rate;
