@@ -30,6 +30,7 @@ const GOOGLE_CLIENT_ID     = process.env.GOOGLE_CLIENT_ID     || '826792551094-s
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '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';
 const RESEND_KEY  = process.env.RESEND_API_KEY || process.env.MY_RESEND_KEY || 're_C6LyyCaZ_DWMmyNgHbcSdSAFpKxtoAyhR';
 const APP_URL     = process.env.APP_URL || 'https://myaurum.app';
+const METALS_DEV_KEY = process.env.METALS_DEV_KEY || null; // set in Railway when ready
 const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || 'BObbou1l2U7fZqh1RsXxp3_gUNibmR1MXgQpGYSj9pXgkzZCzfMUfuNp9uPdm4jeJpuYPvJzb4yKoJE_uuox0Ls';
 const VAPID_PRIVATE= process.env.VAPID_PRIVATE_KEY || 'eW-amR4xbefXF4BUBWTfLO6sg3SmKSPWllRUt4Uaqjs';
 const VAPID_EMAIL  = process.env.VAPID_EMAIL || 'mailto:admin@myaurum.app';
@@ -160,6 +161,9 @@ async function initDB() {
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS razorpay_subscription_id TEXT`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS razorpay_customer_id TEXT`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS vault_notes TEXT`);
+  await q(`ALTER TABLE price_cache ADD COLUMN IF NOT EXISTS ibja_gold_inr REAL`);
+  await q(`ALTER TABLE price_cache ADD COLUMN IF NOT EXISTS ibja_silver_inr REAL`);
+  await q(`ALTER TABLE price_cache ADD COLUMN IF NOT EXISTS ibja_fetched_at TIMESTAMPTZ`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE`);
 
   // Items table — columns added after initial schema
@@ -207,6 +211,52 @@ function fetchJSON(url) {
     req.on('error', reject);
     req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
   });
+}
+
+// ─────────────────────────────────────────
+//  IBJA RATES (via Metals.dev)
+// ─────────────────────────────────────────
+async function fetchIBJARates() {
+  if (!METALS_DEV_KEY) {
+    console.log('[ibja] No METALS_DEV_KEY set — skipping IBJA fetch');
+    return;
+  }
+  try {
+    const data = await new Promise((resolve, reject) => {
+      const opts = {
+        hostname: 'api.metals.dev',
+        path: `/v1/latest?api_key=${METALS_DEV_KEY}&currency=INR&unit=tola`,
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+      };
+      https.get(opts, r => {
+        let buf = '';
+        r.on('data', d => buf += d);
+        r.on('end', () => {
+          try { resolve(JSON.parse(buf)); }
+          catch(e) { reject(e); }
+        });
+      }).on('error', reject);
+    });
+
+    // Metals.dev returns rates per tola (11.6638g) in INR
+    // Convert to per-10g: value / 11.6638 * 10
+    const TOLA_TO_10G = 10 / 11.6638;
+    const gold_inr  = data.metals?.gold  ? Math.round(data.metals.gold  * TOLA_TO_10G) : null;
+    const silver_inr = data.metals?.silver ? Math.round(data.metals.silver * TOLA_TO_10G) : null;
+
+    if (gold_inr && silver_inr) {
+      await q('UPDATE price_cache SET ibja_gold_inr=$1, ibja_silver_inr=$2, ibja_fetched_at=NOW() WHERE id=1',
+        [gold_inr, silver_inr]);
+      priceCache.ibja_gold_inr  = gold_inr;
+      priceCache.ibja_silver_inr = silver_inr;
+      console.log(`[ibja] Gold ₹${gold_inr.toLocaleString()}/10g · Silver ₹${silver_inr.toLocaleString()}/10g`);
+    } else {
+      console.warn('[ibja] Unexpected response format:', JSON.stringify(data).slice(0, 200));
+    }
+  } catch(e) {
+    console.error('[ibja] Fetch failed:', e.message);
+  }
 }
 
 async function refreshPrices() {
@@ -1006,6 +1056,7 @@ app.get('/api/prices', async (req, res) => {
     const r = await q('SELECT fetched_at FROM price_cache WHERE id=1');
     res.json({ gold:priceCache.gold, silver:priceCache.silver, platinum:priceCache.platinum,
       rates:{ USD:1, INR:priceCache.usd_inr, AED:priceCache.usd_aed, EUR:priceCache.usd_eur, GBP:priceCache.usd_gbp },
+      ibja:{ goldInr: priceCache.ibja_gold_inr||null, silverInr: priceCache.ibja_silver_inr||null, fetchedAt: priceCache.ibja_fetched_at||null },
       fetchedAt:r.rows[0]?.fetched_at });
   } catch(e) { res.status(500).json({ error:'Server error' }); }
 });
@@ -2185,6 +2236,15 @@ initDB()
   .then(r => {
     if (r.rows[0]) priceCache = r.rows[0];
     cron.schedule('*/5 * * * *', refreshPrices);
+
+    // IBJA rates — daily at 11:00am IST (05:30 UTC), after IBJA AM publish
+    cron.schedule('30 5 * * 1-5', async () => {
+      try { await fetchIBJARates(); }
+      catch(e) { console.error('[ibja] Cron error:', e.message); }
+    });
+
+    // Fetch IBJA on startup too
+    fetchIBJARates().catch(e => console.error('[ibja] Startup fetch failed:', e.message));
 
     // Weekly digest — Monday 8:00am IST = 02:30 UTC
     cron.schedule('30 2 * * 1', async () => {
