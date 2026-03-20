@@ -2606,10 +2606,10 @@ function renderVaultNotes(){
     ${revealBtn}
     ${rows}
     ${vaultNotes.length < 10 ? `
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <input id="vaultNoteLabel" type="text" placeholder="Label (e.g. Bank locker)" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg3);color:var(--text);font-family:'Jost',sans-serif">
-      <input id="vaultNoteValue" type="text" placeholder="Value (e.g. HDFC Bandra, #247)" style="flex:2;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg3);color:var(--text);font-family:'Jost',sans-serif">
-      <button onclick="addVaultNote()" style="padding:8px 14px;background:var(--brand);color:#FDF8F0;border:none;border-radius:6px;font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0">Add</button>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
+      <input id="vaultNoteLabel" type="text" placeholder="Label (e.g. Bank locker)" style="flex:1;min-width:100px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg3);color:var(--text);font-family:'Jost',sans-serif">
+      <input id="vaultNoteValue" type="text" placeholder="Value (e.g. HDFC Bandra, #247)" style="flex:2;min-width:140px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg3);color:var(--text);font-family:'Jost',sans-serif">
+      <button onclick="addVaultNote()" style="padding:8px 18px;background:var(--brand);color:#FDF8F0;border:none;border-radius:6px;font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0">Add</button>
     </div>` : `<div style="font-size:11px;color:var(--text-dim);margin-top:8px">Maximum 10 notes reached.</div>`}`;
 }
 
