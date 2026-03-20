@@ -1455,7 +1455,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         </div>
         <div class="history-legend">
           <span class="hl-dot gold-dot"></span><span class="hl-lbl">Gold spot</span>
-          <span class="hl-dot silver-dot"></span><span class="hl-lbl">Silver spot (×100)</span>
+          <span class="hl-dot silver-dot"></span><span class="hl-lbl">Silver spot</span>
         </div>
         <div class="history-note" id="historyNote">Price history simulated from current spot</div>
       </div>
@@ -3970,23 +3970,44 @@ function drawHistoryCanvas(rows){
   const rate = rates[currency] || 1;
   const convertGold = v => isINR ? Math.round(v * rates.INR * INDIA_FACTOR) : v * rate;
   const gH = rows.map(r => convertGold(r.gold));
-  const sH = rows.map(r => r.silver * rate * 100); // scale silver for visibility
-  const allVals=[...gH,...sH];
-  const minV=Math.min(...allVals)*.995,maxV=Math.max(...allVals)*1.005;
-  const n=rows.length-1||1;
-  const pad={t:16,b:24,l:8,r:8};
-  const pw=W-pad.l-pad.r,ph=H-pad.t-pad.b;
-  const xp=i=>pad.l+(i/n)*pw,yp=v=>pad.t+ph-(((v-minV)/(maxV-minV))*ph);
+  const sH = rows.map(r => r.silver * rate);
+  const n = rows.length - 1 || 1;
+  const pad = {t:16, b:24, l:8, r:8};
+  const pw = W-pad.l-pad.r, ph = H-pad.t-pad.b;
+  const xp = i => pad.l + (i/n)*pw;
+
+  // Dual Y axes — each line fills its own range with 0.5% padding
+  const gMin=Math.min(...gH)*.995, gMax=Math.max(...gH)*1.005;
+  const sMin=Math.min(...sH)*.995, sMax=Math.max(...sH)*1.005;
+  const ypG = v => pad.t + ph - ((v-gMin)/(gMax-gMin||1))*ph;
+  const ypS = v => pad.t + ph - ((v-sMin)/(sMax-sMin||1))*ph;
+
+  // Grid lines
   ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=1;
-  [0,.25,.5,.75,1].forEach(f=>{const y=pad.t+ph*f;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke()});
-  ctx.beginPath();sH.forEach((v,i)=>{i===0?ctx.moveTo(xp(i),yp(v)):ctx.lineTo(xp(i),yp(v))});
+  [0,.25,.5,.75,1].forEach(f=>{
+    const y=pad.t+ph*f;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+  });
+
+  // Silver line
+  ctx.beginPath();
+  sH.forEach((v,i)=>{i===0?ctx.moveTo(xp(i),ypS(v)):ctx.lineTo(xp(i),ypS(v))});
   ctx.strokeStyle='rgba(120,180,230,.9)';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
-  ctx.beginPath();gH.forEach((v,i)=>{i===0?ctx.moveTo(xp(i),yp(v)):ctx.lineTo(xp(i),yp(v))});
+
+  // Gold line
+  ctx.beginPath();
+  gH.forEach((v,i)=>{i===0?ctx.moveTo(xp(i),ypG(v)):ctx.lineTo(xp(i),ypG(v))});
   ctx.strokeStyle='#F0B429';ctx.lineWidth=2.5;ctx.stroke();
-  ctx.beginPath();ctx.arc(xp(n),yp(gH[n]),4,0,2*Math.PI);ctx.fillStyle='#F0B429';ctx.fill();
+
+  // Gold endpoint dot
+  ctx.beginPath();ctx.arc(xp(n),ypG(gH[n]),4,0,2*Math.PI);ctx.fillStyle='#F0B429';ctx.fill();
+
+  // Axis labels
   ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='9px Jost,sans-serif';ctx.textAlign='left';
   const oldest=new Date(rows[0].recorded_at).toLocaleDateString([],{month:'short',day:'numeric'});
-  ctx.fillText(oldest,pad.l,H-4);ctx.fillText('Today',W-pad.r-30,H-4);
+  ctx.fillText(oldest,pad.l,H-4);
+  ctx.textAlign='right';ctx.fillText('Today',W-pad.r,H-4);
+
   const days=rows.length>1?Math.round((new Date(rows[rows.length-1].recorded_at)-new Date(rows[0].recorded_at))/(86400000)):0;
   const goldLabel = isINR
     ? `Gold ₹${Math.round(gH[n]).toLocaleString('en-IN')}/10g`
