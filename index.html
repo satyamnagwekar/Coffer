@@ -1631,11 +1631,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <div class="profile-section" style="border-bottom:none">
         <div class="profile-section-title" style="text-align:center">Actions</div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
-          <button onclick="openSettings()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text-dim);border-radius:20px;padding:11px 0;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;width:30%;text-align:center">⚙ Settings</button>
-          <button onclick="exportSuccessionPDF()" style="background:rgba(192,132,252,.06);border:1px solid rgba(192,132,252,.2);color:#c084fc;border-radius:20px;padding:11px 0;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;width:30%;text-align:center">📄 Succession PDF</button>
-          <button onclick="generateHoldingsStatement()" style="background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.25);color:var(--brand);border-radius:20px;padding:11px 0;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;width:30%;text-align:center">🗒 Holdings Statement</button>
-          <button onclick="openSharePanel()" style="background:rgba(46,204,138,.06);border:1px solid rgba(46,204,138,.25);color:var(--green);border-radius:20px;padding:11px 0;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;width:30%;text-align:center">🔗 Share Portfolio</button>
-          <button onclick="doLogout()" style="background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:20px;padding:11px 0;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;width:30%;text-align:center">Sign Out</button>
+          <button onclick="openSettings()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text-dim);border-radius:20px;padding:11px 24px;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;min-width:160px;text-align:center">⚙ Settings</button>
+          <button onclick="exportSuccessionPDF()" style="background:rgba(192,132,252,.06);border:1px solid rgba(192,132,252,.2);color:#c084fc;border-radius:20px;padding:11px 24px;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;min-width:160px;text-align:center">📄 Succession PDF</button>
+          <button onclick="generateHoldingsStatement()" style="background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.25);color:var(--brand);border-radius:20px;padding:11px 24px;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;min-width:160px;text-align:center">🗒 Holdings Statement</button>
+          <button onclick="openSharePanel()" style="background:rgba(46,204,138,.06);border:1px solid rgba(46,204,138,.25);color:var(--green);border-radius:20px;padding:11px 24px;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;min-width:160px;text-align:center">🔗 Share Portfolio</button>
+          <button onclick="doLogout()" style="background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:20px;padding:11px 24px;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;min-width:160px;text-align:center">Sign Out</button>
         </div>
 
         <!-- Share panel -->
@@ -3980,10 +3980,10 @@ function drawHistoryCanvas(rows){
   ctx.strokeStyle='rgba(46,42,24,.5)';ctx.lineWidth=1;
   [0,.25,.5,.75,1].forEach(f=>{const y=pad.t+ph*f;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke()});
   ctx.beginPath();sH.forEach((v,i)=>{i===0?ctx.moveTo(xp(i),yp(v)):ctx.lineTo(xp(i),yp(v))});
-  ctx.strokeStyle='rgba(200,216,232,.5)';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle='rgba(90,140,190,.85)';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
   ctx.beginPath();gH.forEach((v,i)=>{i===0?ctx.moveTo(xp(i),yp(v)):ctx.lineTo(xp(i),yp(v))});
-  ctx.strokeStyle='var(--gold-bright)';ctx.lineWidth=2;ctx.stroke();
-  ctx.beginPath();ctx.arc(xp(n),yp(gH[n]),4,0,2*Math.PI);ctx.fillStyle='var(--gold-bright)';ctx.fill();
+  ctx.strokeStyle='#B8860B';ctx.lineWidth=2.5;ctx.stroke();
+  ctx.beginPath();ctx.arc(xp(n),yp(gH[n]),4,0,2*Math.PI);ctx.fillStyle='#B8860B';ctx.fill();
   ctx.fillStyle='rgba(106,96,64,.7)';ctx.font='9px Jost,sans-serif';ctx.textAlign='left';
   const oldest=new Date(rows[0].recorded_at).toLocaleDateString([],{month:'short',day:'numeric'});
   ctx.fillText(oldest,pad.l,H-4);ctx.fillText('Today',W-pad.r-30,H-4);
