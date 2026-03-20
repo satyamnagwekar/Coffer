@@ -3130,7 +3130,7 @@ function toUSD(a,c){return a/rates[c]}
 function metalValueUSD(metal,grams,purity){return toOz(grams*purity)*(metal==='gold'?prices.gold:metal==='platinum'?prices.platinum:prices.silver)}
 
 // Returns value in display currency, applying MCX factor when benchmark=MCX
-// MCX: raw_oz_USD * rates.INR * 1.15 * 1.03 (15% import duty + 3% GST)
+// INR est: raw_oz_USD * rates.INR * 1.035 (MCX-aligned empirical factor)
 // Other benchmarks: raw_oz_USD * rates[currency]
 // Platinum has no MCX import premium — uses raw spot × rate
 function spotDisplayValue(metal,grams,purity){
@@ -3766,7 +3766,7 @@ function openDetail(idx){
   if(item.nominee)acqRows.push(['Nominee',`<span style="color:#c084fc">${escHtml(item.nominee)}</span>`]);
   const spotLabel = isMCX&&item.metal!=='platinum' ? 'Spot (INR /10g)' : `Spot (${bLabel} /oz)`;
   const spotDisp = isMCX&&item.metal!=='platinum'
-    ? '₹'+Math.round((item.metal==='gold'?prices.gold:prices.silver)*rates.INR*1.035).toLocaleString('en-IN')
+    ? '₹'+Math.round((item.metal==='gold'?prices.gold:prices.silver)*rates.INR*(10/31.1035)*1.035).toLocaleString('en-IN')
     : (SYMBOLS[currency]||'$')+((item.metal==='gold'?prices.gold:item.metal==='platinum'?prices.platinum:prices.silver)*(rates[currency]||1)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
   const valRows=[
     [spotLabel, spotDisp],
@@ -4429,7 +4429,7 @@ let priceAlerts=[];
 
 function refreshAlertsPanel(){
   const isMCX = benchmark === 'MCX';
-  const INDIA_FACTOR = (10/31.1035) * 1.15 * 1.03;
+  const INDIA_FACTOR = (10/31.1035) * 1.035;
   const bLabel = BENCHMARK_LABELS[benchmark] || benchmark;
   const alertDutyNote = document.getElementById('alertDutyNote');
   if(alertDutyNote) alertDutyNote.style.display = isMCX ? 'block' : 'none';
@@ -4608,7 +4608,7 @@ function fireNotification(a,spot){
 // ══════════════════════════════════════════
 function _coreUpdatePriceDisplay(){
   const isMCX = benchmark === 'MCX';
-  const INDIA_FACTOR = (10/31.1035) * 1.15 * 1.03;
+  const INDIA_FACTOR = (10/31.1035) * 1.035;
   const sym = SYMBOLS[currency] || '$';
   const rate = rates[currency] || 1;
   const bLabel = BENCHMARK_LABELS[benchmark] || benchmark;
