@@ -1857,10 +1857,6 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div style="font-size:11px;font-weight:500;color:#8B6914;margin-bottom:3px;letter-spacing:.04em;font-family:'Jost',sans-serif">Not sure of the purity?</div>
           <div style="font-size:11px;color:var(--text-dim);line-height:1.65;font-family:'Jost',sans-serif">Older family jewellery is typically 22K. Coins and bars are usually 24K (999). If unsure, 22K is a safe default for jewellery. You can always update this later.</div>
         </div>
-        <div id="purityHint" style="border-left:2px solid rgba(184,134,11,.4);padding:8px 12px;background:rgba(184,134,11,.04);border-radius:0 6px 6px 0;margin-top:8px">
-          <div style="font-size:11px;font-weight:500;color:#8B6914;margin-bottom:3px;letter-spacing:.04em;font-family:'Jost',sans-serif">Not sure of the purity?</div>
-          <div style="font-size:11px;color:var(--text-dim);line-height:1.65;font-family:'Jost',sans-serif">Older family jewellery is typically 22K. Coins and bars are usually 24K (999). If unsure, 22K is a safe default for jewellery. You can always update this later.</div>
-        </div>
         <div class="field-note" id="gradeNote">Select a purity grade. For jewellery, this is usually stamped inside the piece.</div>
         <div style="font-size:11px;color:var(--brand);margin-top:6px;cursor:pointer" onclick="document.getElementById('purityHelperBox').style.display=document.getElementById('purityHelperBox').style.display==='none'?'block':'none'">Not sure of the purity? ▾</div>
         <div id="purityHelperBox" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:6px;font-size:11px;color:var(--text-mid);line-height:1.8">
@@ -1892,17 +1888,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div style="font-size:11px;font-weight:500;color:#8B6914;margin-bottom:3px;letter-spacing:.04em;font-family:'Jost',sans-serif">Not sure of the weight?</div>
         <div style="font-size:11px;color:var(--text-dim);line-height:1.65;font-family:'Jost',sans-serif">A portable precision scale — widely available on e-commerce platforms — measures with a high degree of accuracy. You can enter an estimate now and update it later once you have the exact figure.</div>
       </div>
-      <div style="border-left:2px solid rgba(184,134,11,.4);padding:8px 12px;background:rgba(184,134,11,.04);border-radius:0 6px 6px 0;margin-top:6px">
-        <div style="font-size:11px;font-weight:500;color:#8B6914;margin-bottom:3px;letter-spacing:.04em;font-family:'Jost',sans-serif">Not sure of the weight?</div>
-        <div style="font-size:11px;color:var(--text-dim);line-height:1.65;font-family:'Jost',sans-serif">A portable precision scale — widely available on e-commerce platforms — measures with a high degree of accuracy. You can enter an estimate now and update it later once you have the exact figure.</div>
-      </div>
 
-      <div class="form-divider provenance-toggle" onclick="toggleProvenance()" style="cursor:pointer">
+      <div class="form-divider">
         <div class="form-divider-line"></div>
-        <div class="form-divider-text" style="display:flex;align-items:center;gap:5px;white-space:nowrap">
-          <span>Purchase Details</span>
-          <span style="font-size:10px;color:var(--text-dim);font-weight:400;letter-spacing:0">· optional</span>
-          <span id="provenanceChevron" style="font-size:10px;color:var(--text-dim);transition:transform .2s">▼</span>
+        <div class="form-divider-text">Purchase Details</div>
+        <div class="form-divider-line"></div>
+      </div>
         </div>
         <div class="form-divider-line"></div>
       </div>
@@ -1985,10 +1976,6 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       </div>
 
       <div style="display:flex;align-items:flex-start;gap:7px;background:rgba(139,105,20,.05);border-radius:6px;padding:9px 11px;margin-top:14px;margin-bottom:10px">
-        <span style="font-size:13px;flex-shrink:0;margin-top:1px;opacity:.6">ℹ</span>
-        <span style="font-size:11px;color:var(--text-dim);line-height:1.65;font-family:'Jost',sans-serif">Value shown is an indicative estimate based on declared weight and purity at live spot prices. Actual resale may differ due to physical condition, dust or carbon accumulation, embedded stones, and prevailing market conditions.</span>
-      </div>
-      <div style="display:flex;align-items:flex-start;gap:7px;background:rgba(139,105,20,.05);border-radius:6px;padding:9px 11px;margin-bottom:10px">
         <span style="font-size:13px;flex-shrink:0;margin-top:1px;opacity:.6">ℹ</span>
         <span style="font-size:11px;color:var(--text-dim);line-height:1.65;font-family:'Jost',sans-serif">Value shown is an indicative estimate based on declared weight and purity at live spot prices. Actual resale may differ due to physical condition, dust or carbon accumulation, embedded stones, and prevailing market conditions.</span>
       </div>
@@ -3554,9 +3541,6 @@ function openAddModal(){
   document.getElementById('photoFile').value='';
   document.getElementById('valuePreview').textContent='—';
   document.getElementById('pnlPreviewBox').style.display='none';
-  // Collapse provenance section by default
-  document.getElementById('provenanceSection').style.display='none';
-  document.getElementById('provenanceChevron').style.transform='';
   // Collapse purity helper
   const phb=document.getElementById('purityHelperBox');
   if(phb)phb.style.display='none';
