@@ -252,36 +252,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 @keyframes appFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 @media(min-width:900px){
-  .app-screen.active{display:flex;flex-direction:column;height:100vh;overflow:hidden;animation:none}
-  /* Header — single row */
-  #appHeader{flex-direction:row!important;align-items:center!important;padding:0 24px!important;min-height:52px;flex-shrink:0;position:relative}
-  #appHeader #headerRow1{margin-bottom:0!important;flex:1;display:flex!important;align-items:center}
-  #appHeader #headerRow1 .logo{margin-bottom:0!important;font-size:20px!important;letter-spacing:.18em!important}
-  #appHeader #headerLogoText{font-size:20px!important;letter-spacing:.18em!important}
-  #appHeader #headerStrip{display:none!important}
-  #appHeader #inrDutyNote{display:none!important}
-  /* Body layout */
-  .app-body{display:flex;flex:1;min-height:0;overflow:hidden;align-items:stretch}
-  /* Sidebar — compact */
-  .nav-tabs{display:flex!important;flex-direction:column!important;width:120px!important;min-width:120px!important;flex-shrink:0!important;border-bottom:none!important;border-right:1px solid var(--border)!important;background:var(--bg2)!important;padding:16px 0!important;overflow-y:auto!important;gap:4px!important;align-self:stretch!important}
-  .nav-tab{flex:none!important;text-align:left!important;padding:9px 12px!important;display:flex!important;align-items:center!important;gap:8px!important;border-radius:0!important;justify-content:flex-start!important;white-space:nowrap!important;font-size:10px!important;letter-spacing:.07em!important;text-transform:uppercase!important;font-weight:500!important;color:var(--text-dim)!important;position:relative!important}
-  .nav-tab.active::after{display:none!important}
-  .nav-tab.active{background:rgba(184,134,11,.08)!important;border-left:2px solid var(--brand)!important;padding-left:10px!important;color:var(--brand)!important}
-  .nav-tab .nav-icon{display:inline!important;margin-bottom:0!important;font-size:14px!important;flex-shrink:0}
-  .nav-tab .nav-label{display:inline!important;font-size:9.5px!important;letter-spacing:.07em}
-  /* Content */
-  .app-content{flex:1;min-height:0;overflow-y:auto;background:var(--bg);width:0}
-  .content-panel{display:none}
-  .content-panel.active{display:block}
-  .desktop-panel-wrap{max-width:720px;margin:0 auto;padding:24px 24px 80px}
-  /* Spot strip in header */
-  .spot-strip{gap:16px!important}
-  .spot-strip .spot-item .metal{font-size:8px!important}
-  .spot-strip .spot-item .price{font-size:12px!important}
-  /* FAB */
-  .fab-wrap{position:fixed!important;bottom:24px!important;right:24px!important}
-  /* Desktop welcome strip */
-  #desktopWelcomeStrip{display:flex!important}
+  .desktop-panel-wrap{max-width:680px;margin:0 auto}
 }
 
 .header{position:sticky;top:0;z-index:100;background:rgba(253,251,247,.97);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -1284,67 +1255,42 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 <div class="app-screen" id="appScreen">
 
-  <div class="header" id="appHeader" style="flex-direction:column;align-items:stretch;gap:0;padding:10px 16px 10px">
-    <!-- Row 1: logo + spot strip -->
-    <div id="headerRow1" style="margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <div class="logo" style="flex-shrink:0">
-        <span style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:.22em;color:#8B6914" id="headerLogoText">MYAURUM</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:16px;flex:1;justify-content:flex-end">
-        <div class="spot-strip">
-          <div class="spot-item gold">
-            <div class="metal" id="goldSpotLabel">GOLD /oz</div>
-            <div class="price" id="goldSpot"><span class="loading-dot"></span></div>
-          </div>
-          <div class="spot-item silver">
-            <div class="metal" id="silverSpotLabel">SILVER /oz</div>
-            <div class="price" id="silverSpot"><span class="loading-dot"></span></div>
-          </div>
-          <div class="spot-item" style="opacity:.8">
-            <div class="metal" id="platinumSpotLabel">PLAT /oz</div>
-            <div class="price" id="platinumSpot"><span class="loading-dot"></span></div>
-          </div>
+  <div class="header" id="appHeader">
+    <div class="logo">MYAURUM</div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <div class="spot-strip">
+        <div class="spot-item gold">
+          <div class="metal" id="goldSpotLabel">GOLD /10g (INR)</div>
+          <div class="price" id="goldSpot"><span class="loading-dot"></span></div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
-          <span style="font-size:9px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;opacity:.55">Benchmark</span>
-          <div id="benchmarkToggle" style="display:flex;gap:3px;align-items:center"></div>
+        <div class="spot-item silver">
+          <div class="metal" id="silverSpotLabel">SILVER /10g (INR)</div>
+          <div class="price" id="silverSpot"><span class="loading-dot"></span></div>
+        </div>
+        <div class="spot-item" style="opacity:.8">
+          <div class="metal" id="platinumSpotLabel">PLAT /10g</div>
+          <div class="price" id="platinumSpot"><span class="loading-dot"></span></div>
         </div>
       </div>
-    </div>
-    <!-- Row 2: dynamic welcome strip -->
-    <div id="headerStrip" style="display:none;align-items:center;justify-content:space-between;border-top:1px solid rgba(139,105,20,.12);padding-top:9px;gap:10px">
-      <div id="headerStripText" style="min-width:0">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:var(--text);line-height:1.2" id="headerWelcomeName">Welcome, —</div>
-        <div style="font-size:11px;color:var(--text-dim);margin-top:1px" id="headerStripSub">Add an item to see its live value instantly. <span style="color:var(--brand);font-weight:500">Takes 30 seconds.</span></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
+        <span style="font-size:9px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;opacity:.55">Benchmark</span>
+        <div id="benchmarkToggle" style="display:flex;gap:3px;align-items:center"></div>
       </div>
-      <button id="headerStripBtn" onclick="openAddModal()" style="padding:8px 20px;background:var(--brand);color:#FDF8F0;border:none;border-radius:7px;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;letter-spacing:.06em;cursor:pointer;white-space:nowrap;flex-shrink:0">+ Add First Holding</button>
     </div>
-    <div id="inrDutyNote" style="display:none;font-size:11px;color:var(--text-dim);text-align:right;padding:2px 16px 4px;letter-spacing:.04em;opacity:0.7">MCX-aligned estimate</div>
-  </div><!-- /appHeader -->
+  </div>
 
   <!-- Nav -->
-  <div class="app-body">
   <div class="nav-tabs">
     <button class="nav-tab active" id="navMyAurum" onclick="setNavTab('vault',this)"><span class="nav-icon">🏛</span><span class="nav-label">MyAurum</span></button>
     <button class="nav-tab" id="navChart" onclick="setNavTab('chart',this)"><span class="nav-icon">📊</span><span class="nav-label">Chart</span></button>
     <button class="nav-tab" id="navAlerts" onclick="setNavTab('alerts',this)"><span class="nav-icon">🔔</span><span class="nav-label">Alerts</span></button>
     <button class="nav-tab" id="navProfile" onclick="setNavTab('profile',this)"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></button>
   </div>
-  <div class="app-content">
 
   <!-- ── MYAURUM PANEL ── -->
   <div class="content-panel active" id="panelVault">
-<div class="desktop-panel-wrap">
-  <!-- Desktop welcome strip (hidden on mobile, shown on desktop via CSS) -->
-  <div id="desktopWelcomeStrip" style="display:none;align-items:center;justify-content:space-between;padding:0 0 20px;gap:10px">
-    <div style="min-width:0">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--text);line-height:1.2" id="desktopWelcomeName">Welcome, —</div>
-      <div style="font-size:11px;color:var(--text-dim);margin-top:2px" id="desktopWelcomeSub"></div>
-    </div>
-    <button onclick="openAddModal()" style="padding:8px 20px;background:var(--brand);color:#FDF8F0;border:none;border-radius:7px;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;letter-spacing:.06em;cursor:pointer;white-space:nowrap;flex-shrink:0">+ Add Holding</button>
-  </div>
+    <div class="currency-bar">
       <span class="currency-label">View in:</span>
-      <button class="currency-btn" onclick="setCurrency('USD',this)">$ USD</button>
       <button class="currency-btn active" onclick="setCurrency('INR',this)">₹ INR</button>
       <button class="currency-btn" onclick="setCurrency('AED',this)">AED</button>
       <button class="currency-btn" onclick="setCurrency('EUR',this)">€ EUR</button>
@@ -1438,12 +1384,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <span style="opacity:.6">© 2026 MyAurum. All rights reserved. Registered in India. &nbsp;·&nbsp; <a href="/privacy" style="color:var(--text-dim);text-decoration:none">Privacy Policy</a> &nbsp;·&nbsp; <a href="/security" style="color:var(--text-dim);text-decoration:none">Security</a></span></p>
     </div>
 
-</div>
   </div><!-- /panelVault -->
 
   <!-- ── CHART PANEL ── -->
   <div class="content-panel" id="panelChart">
-<div class="desktop-panel-wrap">
     <div class="chart-panel pb">
       <!-- Empty state shown when no holdings -->
       <div id="chartEmptyState" style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;gap:12px">
@@ -1517,12 +1461,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       </div>
       </div><!-- /chartContent -->
     </div>
-</div>
   </div><!-- /panelChart -->
 
   <!-- ── ALERTS PANEL ── -->
   <div class="content-panel" id="panelAlerts">
-<div class="desktop-panel-wrap">
     <div class="alerts-panel pb">
       <div class="alerts-header">
         <div class="alerts-title">Price Alerts</div>
@@ -1593,12 +1535,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       </div>
       <div id="alertsList" class="alerts-list"></div>
     </div>
-</div>
   </div><!-- /panelAlerts -->
 
   <!-- ── PROFILE PANEL ── -->
   <div class="content-panel" id="panelProfile">
-<div class="desktop-panel-wrap">
     <div class="profile-panel">
 
       <div class="profile-header" id="profileHeader">
@@ -1797,8 +1737,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     </div>
   </div>
 
-  </div><!-- /app-content -->
-  </div><!-- /app-body -->
+
 
   <div class="fab-wrap" id="fabWrap">
     <div class="fab-label">Add holding</div>
@@ -2920,41 +2859,12 @@ async function deleteAccount(){
 // ══════════════════════════════════════════
 function refreshHeader(){
   if(!currentUser)return;
-  document.getElementById('headerWelcomeName').textContent='Welcome, '+currentUser.firstName;
-  updateOnboardingGreeting(currentUser.firstName);
   updateHeaderWelcome();
+  updateOnboardingGreeting(currentUser.firstName);
 }
 
 function updateHeaderWelcome(){
   if(!currentUser)return;
-  const hasItems = items.filter(i=>!i.sold&&!i.gifted).length > 0;
-  const strip = document.getElementById('headerStrip');
-  const sub = document.getElementById('headerStripSub');
-  const btn = document.getElementById('headerStripBtn');
-  strip.style.display = 'flex';
-  if(hasItems){
-    const total = fmtDisp(items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0));
-    const count = items.filter(i=>!i.sold&&!i.gifted).length;
-    const dates = items.filter(i=>!i.sold&&!i.gifted).map(i=>i.updatedAt||i.purchaseDate).filter(Boolean).sort().reverse();
-    const lastDate = dates.length ? new Date(dates[0]).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}) : null;
-    sub.textContent = total + ' across ' + count + ' holding' + (count!==1?'s':'') + (lastDate ? '. Last updated ' + lastDate + '.' : '.');
-    btn.textContent = '+ Add Holding';
-  } else {
-    strip.style.display = 'none';
-  }
-  // Populate desktop welcome strip
-  const dName = document.getElementById('desktopWelcomeName');
-  const dSub = document.getElementById('desktopWelcomeSub');
-  if(dName) dName.textContent = 'Welcome, ' + (currentUser.firstName||'') + '.';
-  if(dSub){
-    if(hasItems){
-      const total = fmtDisp(items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0));
-      const count = items.filter(i=>!i.sold&&!i.gifted).length;
-      dSub.textContent = total + ' across ' + count + ' holding' + (count!==1?'s':'');
-    } else {
-      dSub.textContent = 'Add your first holding to see a live value.';
-    }
-  }
   // Purchase price nudge
   if(!sessionStorage.getItem('nudgeDismissed')){
     const noPriceCount = items.filter(i=>!i.sold&&!i.gifted&&!i.pricePaid).length;
