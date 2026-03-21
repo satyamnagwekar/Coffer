@@ -1289,6 +1289,15 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
   <!-- ── MYAURUM PANEL ── -->
   <div class="content-panel active" id="panelVault">
+
+    <div id="welcomeBar" style="display:none;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--border);gap:10px">
+      <div style="min-width:0">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:var(--text);line-height:1.2" id="welcomeName">—</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:1px" id="welcomeSub"></div>
+      </div>
+      <button onclick="openAddModal()" style="padding:8px 18px;background:var(--brand);color:#FDF8F0;border:none;border-radius:7px;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;letter-spacing:.06em;cursor:pointer;white-space:nowrap;flex-shrink:0">+ Add Holding</button>
+    </div>
+
     <div class="currency-bar">
       <span class="currency-label">View in:</span>
       <button class="currency-btn active" onclick="setCurrency('INR',this)">₹ INR</button>
@@ -2855,12 +2864,29 @@ async function deleteAccount(){
 // ══════════════════════════════════════════
 function refreshHeader(){
   if(!currentUser)return;
-  updateHeaderWelcome();
   updateOnboardingGreeting(currentUser.firstName);
+  updateHeaderWelcome();
 }
 
 function updateHeaderWelcome(){
   if(!currentUser)return;
+  const hasItems = items.filter(i=>!i.sold&&!i.gifted).length > 0;
+  const bar = document.getElementById('welcomeBar');
+  const nameEl = document.getElementById('welcomeName');
+  const subEl = document.getElementById('welcomeSub');
+  if(bar && nameEl){
+    bar.style.display = 'flex';
+    nameEl.textContent = 'Welcome, ' + (currentUser.firstName||'') + '.';
+    if(subEl){
+      if(hasItems){
+        const total = fmtDisp(items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0));
+        const count = items.filter(i=>!i.sold&&!i.gifted).length;
+        subEl.textContent = total + ' across ' + count + ' holding' + (count!==1?'s':'');
+      } else {
+        subEl.textContent = 'Add your first holding to see a live value.';
+      }
+    }
+  }
   // Purchase price nudge
   if(!sessionStorage.getItem('nudgeDismissed')){
     const noPriceCount = items.filter(i=>!i.sold&&!i.gifted&&!i.pricePaid).length;
