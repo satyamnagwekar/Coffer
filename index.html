@@ -1824,17 +1824,13 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div style="font-size:11px;color:var(--text-dim);line-height:1.65;font-family:'Jost',sans-serif">A portable precision scale — widely available on e-commerce platforms — measures with a high degree of accuracy. You can enter an estimate now and update it later once you have the exact figure.</div>
       </div>
 
-      <div class="form-divider provenance-toggle" onclick="toggleProvenance()" style="cursor:pointer">
+      <div class="form-divider">
         <div class="form-divider-line"></div>
-        <div class="form-divider-text" style="display:flex;align-items:center;gap:5px;white-space:nowrap">
-          <span>Purchase Details</span>
-          <span style="font-size:10px;color:var(--text-dim);font-weight:400;letter-spacing:0">· optional</span>
-          <span id="provenanceChevron" style="font-size:10px;color:var(--text-dim);transition:transform .2s">▼</span>
-        </div>
+        <div class="form-divider-text">Purchase Details</div>
         <div class="form-divider-line"></div>
       </div>
 
-      <div id="provenanceSection" style="display:none">
+      <div id="provenanceSection">
         <div class="field">
           <div class="field-label-row"><label>Date Purchased</label></div>
           <input type="date" id="purchaseDate">
@@ -3354,9 +3350,6 @@ function openAddModal(){
   document.getElementById('photoFile').value='';
   document.getElementById('valuePreview').textContent='—';
   document.getElementById('pnlPreviewBox').style.display='none';
-  // Collapse provenance section by default
-  document.getElementById('provenanceSection').style.display='none';
-  document.getElementById('provenanceChevron').style.transform='';
   // Collapse purity helper
   const phb=document.getElementById('purityHelperBox');
   if(phb)phb.style.display='none';
@@ -3453,13 +3446,7 @@ function saveHeir(){
   closeModal('heirModal');
 }
 
-function toggleProvenance(){
-  const sec=document.getElementById('provenanceSection');
-  const chev=document.getElementById('provenanceChevron');
-  const open=sec.style.display==='none'||sec.style.display==='';
-  sec.style.display=open?'block':'none';
-  chev.style.transform=open?'rotate(180deg)':'';
-}
+
 function toggleMakingCharge(){
   const checked=document.getElementById('hasMakingCharge').checked;
   document.getElementById('makingChargeRow').style.display=checked?'':'none';
