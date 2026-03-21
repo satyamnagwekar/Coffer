@@ -254,31 +254,33 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 @media(min-width:900px){
   .app-screen.active{display:flex;flex-direction:column;height:100vh;overflow:hidden;animation:none}
   /* Header — single row */
-  #appHeader{flex-direction:row!important;align-items:center!important;padding:0 24px!important;min-height:54px;flex-shrink:0;position:relative}
+  #appHeader{flex-direction:row!important;align-items:center!important;padding:0 24px!important;min-height:52px;flex-shrink:0;position:relative}
   #appHeader #headerRow1{margin-bottom:0!important;flex:1;display:flex!important;align-items:center}
-  #appHeader #headerRow1 .logo{margin-bottom:0!important}
+  #appHeader #headerRow1 .logo{margin-bottom:0!important;font-size:20px!important;letter-spacing:.18em!important}
+  #appHeader #headerLogoText{font-size:20px!important;letter-spacing:.18em!important}
   #appHeader #headerStrip{display:none!important}
+  #appHeader #inrDutyNote{display:none!important}
   /* Body layout */
   .app-body{display:flex;flex:1;min-height:0;overflow:hidden;align-items:stretch}
-  /* Sidebar */
-  .nav-tabs{display:flex;flex-direction:column;min-width:160px;width:160px;flex-shrink:0;border-bottom:none;border-right:1px solid var(--border);background:var(--bg2);padding:12px 0;overflow-y:auto;gap:2px;align-self:stretch}
-  .nav-tab{flex:none;text-align:left;padding:10px 16px;display:flex;align-items:center;gap:10px;border-radius:0;justify-content:flex-start;white-space:nowrap}
-  .nav-tab.active::after{display:none}
-  .nav-tab.active{background:rgba(184,134,11,.08);border-left:2px solid var(--brand);padding-left:14px}
-  .nav-tab .nav-icon{display:inline!important;margin-bottom:0!important;font-size:15px}
-  .nav-tab .nav-label{display:inline!important;font-size:11px;letter-spacing:.06em}
+  /* Sidebar — compact */
+  .nav-tabs{display:flex!important;flex-direction:column!important;width:120px!important;min-width:120px!important;flex-shrink:0!important;border-bottom:none!important;border-right:1px solid var(--border)!important;background:var(--bg2)!important;padding:16px 0!important;overflow-y:auto!important;gap:4px!important;align-self:stretch!important}
+  .nav-tab{flex:none!important;text-align:left!important;padding:9px 12px!important;display:flex!important;align-items:center!important;gap:8px!important;border-radius:0!important;justify-content:flex-start!important;white-space:nowrap!important;font-size:10px!important;letter-spacing:.07em!important;text-transform:uppercase!important;font-weight:500!important;color:var(--text-dim)!important;position:relative!important}
+  .nav-tab.active::after{display:none!important}
+  .nav-tab.active{background:rgba(184,134,11,.08)!important;border-left:2px solid var(--brand)!important;padding-left:10px!important;color:var(--brand)!important}
+  .nav-tab .nav-icon{display:inline!important;margin-bottom:0!important;font-size:14px!important;flex-shrink:0}
+  .nav-tab .nav-label{display:inline!important;font-size:9.5px!important;letter-spacing:.07em}
   /* Content */
   .app-content{flex:1;min-height:0;overflow-y:auto;background:var(--bg);width:0}
   .content-panel{display:none}
   .content-panel.active{display:block}
-  .desktop-panel-wrap{max-width:740px;margin:0 auto;padding:0 0 80px}
+  .desktop-panel-wrap{max-width:720px;margin:0 auto;padding:24px 24px 80px}
   /* Spot strip in header */
-  .spot-strip .spot-item .metal{font-size:9px}
-  .spot-strip .spot-item .price{font-size:13px}
+  .spot-strip{gap:16px!important}
+  .spot-strip .spot-item .metal{font-size:8px!important}
+  .spot-strip .spot-item .price{font-size:12px!important}
   /* FAB */
   .fab-wrap{position:fixed!important;bottom:24px!important;right:24px!important}
-  /* Welcome strip inside content on desktop */
-  #headerStrip{display:flex!important;max-width:712px;margin:0 auto;padding:16px 14px 0!important;border-top:none!important}
+  /* Desktop welcome strip */
   #desktopWelcomeStrip{display:flex!important}
 }
 
@@ -1286,7 +1288,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     <!-- Row 1: logo + spot strip -->
     <div id="headerRow1" style="margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;gap:12px">
       <div class="logo" style="flex-shrink:0">
-        <span style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:.22em;color:#8B6914">MYAURUM</span>
+        <span style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:.22em;color:#8B6914" id="headerLogoText">MYAURUM</span>
       </div>
       <div style="display:flex;align-items:center;gap:16px;flex:1;justify-content:flex-end">
         <div class="spot-strip">
@@ -1334,7 +1336,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   <div class="content-panel active" id="panelVault">
 <div class="desktop-panel-wrap">
   <!-- Desktop welcome strip (hidden on mobile, shown on desktop via CSS) -->
-  <div id="desktopWelcomeStrip" style="display:none;align-items:center;justify-content:space-between;padding:16px 14px 0;gap:10px">
+  <div id="desktopWelcomeStrip" style="display:none;align-items:center;justify-content:space-between;padding:0 0 20px;gap:10px">
     <div style="min-width:0">
       <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--text);line-height:1.2" id="desktopWelcomeName">Welcome, —</div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:2px" id="desktopWelcomeSub"></div>
