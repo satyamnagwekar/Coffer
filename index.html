@@ -41,6 +41,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <style>
 :root{
   /* Brand — dark burnished gold */
@@ -247,13 +248,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* ═══════════════════════════════════════
    MAIN APP
 ═══════════════════════════════════════ */
-.app-screen{display:none}
-.app-screen.active{display:block;animation:appFadeIn .35s ease}
+.app-screen{display:none;animation:appFadeIn .35s ease}
+.app-screen.active{display:block}
 @keyframes appFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
-@media(min-width:900px){
-  .desktop-panel-wrap{max-width:680px;margin:0 auto}
-}
 
 .header{position:sticky;top:0;z-index:100;background:rgba(253,251,247,.97);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .header-left{display:flex;align-items:center;gap:10px}
@@ -1241,7 +1238,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 </div><!-- /auth-screen -->
 
 <!-- MAIN APP -->
+<div class="app-screen" id="appScreen">
+
+
 <div id="toastContainer"></div>
+
 <!-- Pull-to-refresh indicator -->
 <div id="ptrIndicator" style="position:fixed;top:0;left:0;right:0;height:52px;display:flex;align-items:center;justify-content:center;gap:8px;transform:translateY(-52px);transition:transform .25s cubic-bezier(.32,.72,0,1);z-index:90;background:var(--bg2);border-bottom:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.06);pointer-events:none">
   <div id="ptrSpinner" style="width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--brand);border-radius:50%;flex-shrink:0"></div>
@@ -1253,30 +1254,43 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .ptr-spinning{animation:ptr-spin .65s linear infinite}
 </style>
 
-<div class="app-screen" id="appScreen">
-
-  <div class="header" id="appHeader">
-    <div class="logo">MYAURUM</div>
-    <div style="display:flex;align-items:center;gap:16px">
-      <div class="spot-strip">
-        <div class="spot-item gold">
-          <div class="metal" id="goldSpotLabel">GOLD /10g (INR)</div>
-          <div class="price" id="goldSpot"><span class="loading-dot"></span></div>
-        </div>
-        <div class="spot-item silver">
-          <div class="metal" id="silverSpotLabel">SILVER /10g (INR)</div>
-          <div class="price" id="silverSpot"><span class="loading-dot"></span></div>
-        </div>
-        <div class="spot-item" style="opacity:.8">
-          <div class="metal" id="platinumSpotLabel">PLAT /10g</div>
-          <div class="price" id="platinumSpot"><span class="loading-dot"></span></div>
-        </div>
+  <div class="header" style="flex-direction:column;align-items:stretch;gap:0;padding:10px 16px 10px">
+    <!-- Row 1: logo + spot strip -->
+    <div style="margin-bottom:4px">
+      <div class="logo" style="margin-bottom:6px">
+        <span style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:.22em;color:#8B6914">MYAURUM</span>
       </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
-        <span style="font-size:9px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;opacity:.55">Benchmark</span>
-        <div id="benchmarkToggle" style="display:flex;gap:3px;align-items:center"></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end">
+        <div class="spot-strip">
+          <div class="spot-item gold">
+            <div class="metal" id="goldSpotLabel">GOLD /oz</div>
+            <div class="price" id="goldSpot"><span class="loading-dot"></span></div>
+          </div>
+          <div class="spot-item silver">
+            <div class="metal" id="silverSpotLabel">SILVER /oz</div>
+            <div class="price" id="silverSpot"><span class="loading-dot"></span></div>
+          </div>
+          <div class="spot-item" style="opacity:.8">
+            <div class="metal" id="platinumSpotLabel">PLAT /oz</div>
+            <div class="price" id="platinumSpot"><span class="loading-dot"></span></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
+          <span style="font-size:9px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;opacity:.55">Benchmark</span>
+          <div id="benchmarkToggle" style="display:flex;gap:3px;align-items:center"></div>
+        </div>
       </div>
     </div>
+    <!-- Row 2: dynamic welcome strip -->
+    <div id="headerStrip" style="display:none;align-items:center;justify-content:space-between;border-top:1px solid rgba(139,105,20,.12);padding-top:9px;gap:10px">
+      <div id="headerStripText" style="min-width:0">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:var(--text);line-height:1.2" id="headerWelcomeName">Welcome, —</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:1px" id="headerStripSub">Add an item to see its live value instantly. <span style="color:var(--brand);font-weight:500">Takes 30 seconds.</span></div>
+      </div>
+      <button id="headerStripBtn" onclick="openAddModal()" style="padding:8px 20px;background:var(--brand);color:#FDF8F0;border:none;border-radius:7px;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;letter-spacing:.06em;cursor:pointer;white-space:nowrap;flex-shrink:0">+ Add First Holding</button>
+    </div>
+    </div>
+    <div id="inrDutyNote" style="display:none;font-size:11px;color:var(--text-dim);text-align:right;padding:2px 16px 4px;letter-spacing:.04em;opacity:0.7">MCX-aligned estimate</div>
   </div>
 
   <!-- Nav -->
@@ -1300,6 +1314,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
     <div class="currency-bar">
       <span class="currency-label">View in:</span>
+      <button class="currency-btn" onclick="setCurrency('USD',this)">$ USD</button>
       <button class="currency-btn active" onclick="setCurrency('INR',this)">₹ INR</button>
       <button class="currency-btn" onclick="setCurrency('AED',this)">AED</button>
       <button class="currency-btn" onclick="setCurrency('EUR',this)">€ EUR</button>
@@ -1659,7 +1674,6 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       </div>
 
     </div>
-</div>
   </div><!-- /panelProfile -->
 
   <!-- ── SETTINGS MODAL ── -->
@@ -1676,6 +1690,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px;font-weight:500">Account</div>
           <button class="btn-profile-action btn-edit-profile" onclick="closeModal('settingsModal');openEditProfile()" style="margin-bottom:0">✏ Edit Profile</button>
           <div id="settingsPremiumSection" style="margin-top:12px"></div>
+          <div id="settingsPremiumSection" style="margin-top:12px"></div>
         </div>
 
         <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
@@ -1691,6 +1706,20 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
             <button id="twoFAToggleBtn" onclick="toggleTwoFA()" style="flex-shrink:0;padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:11px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;color:var(--text-dim);transition:all .2s;white-space:nowrap">Enable</button>
           </div>
           <div id="twoFANote" style="display:none;margin-top:8px;font-size:11px;color:#B8A070;padding:8px 12px;background:rgba(184,134,11,.06);border-radius:6px;line-height:1.6">Verify your email address before enabling two-factor authentication. <a href="#" id="verifyNowLink" onclick="sendVerifyNow(event)" style="color:#B8860B;text-decoration:underline;cursor:pointer">Send verification email →</a></div>
+        </div>
+
+        <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
+
+        <!-- Email preferences -->
+        <div style="margin-bottom:24px">
+          <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px;font-weight:500">Email Preferences</div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+            <div>
+              <div style="font-size:13px;color:var(--text);font-weight:500;margin-bottom:3px">Weekly portfolio digest</div>
+              <div style="font-size:11px;color:var(--text-dim);line-height:1.6">A brief summary of your portfolio sent every Monday morning.</div>
+            </div>
+            <button id="weeklyDigestBtn" onclick="toggleWeeklyDigest()" style="flex-shrink:0;padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:11px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;color:var(--text-dim);transition:all .2s;white-space:nowrap">Enabled</button>
+          </div>
         </div>
 
         <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
@@ -1746,7 +1775,45 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     </div>
   </div>
 
+  <!-- ── PREMIUM UPGRADE MODAL ── -->
+  <div class="modal-overlay" id="premiumModal">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <div class="modal-title" style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--brand)">MyAurum Premium</div>
+        <button class="modal-close" onclick="closeModal('premiumModal')">✕</button>
+      </div>
+      <div style="padding:0 20px 24px">
+        <div style="text-align:center;padding:16px 0 20px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--brand)">₹600</div>
+          <div style="font-size:11px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-top:2px">per year</div>
+        </div>
 
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)">
+            <span style="color:var(--brand);font-size:16px">✓</span> Unlimited holdings
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)">
+            <span style="color:var(--brand);font-size:16px">✓</span> Live portfolio share link
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)">
+            <span style="color:var(--brand);font-size:16px">✓</span> Succession PDF with nominees
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)">
+            <span style="color:var(--brand);font-size:16px">✓</span> Holdings Statement
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)">
+            <span style="color:var(--brand);font-size:16px">✓</span> Priority support
+          </div>
+        </div>
+
+        <button id="upgradeBtn" onclick="startCheckout()" style="width:100%;padding:14px;background:var(--brand);color:#FDF8F0;border:none;border-radius:var(--radius);font-family:'Jost',sans-serif;font-size:13px;font-weight:500;letter-spacing:.08em;cursor:pointer;margin-bottom:12px">Upgrade to Premium →</button>
+
+        <div style="font-size:10px;color:var(--text-dim);text-align:center;line-height:1.7">
+          Cancel anytime. If you cancel, your premium access continues until the end of your current billing period. No refund is issued for the remaining period — you keep what you paid for. After expiry, your account reverts to the free tier. Your holdings are never deleted.
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="fab-wrap" id="fabWrap">
     <div class="fab-label">Add holding</div>
@@ -1801,6 +1868,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div style="font-size:11px;font-weight:500;color:#8B6914;margin-bottom:3px;letter-spacing:.04em;font-family:'Jost',sans-serif">Not sure of the purity?</div>
           <div style="font-size:11px;color:var(--text-dim);line-height:1.65;font-family:'Jost',sans-serif">Older family jewellery is typically 22K. Coins and bars are usually 24K (999). If unsure, 22K is a safe default for jewellery. You can always update this later.</div>
         </div>
+        <div id="purityHint" style="border-left:2px solid rgba(184,134,11,.4);padding:8px 12px;background:rgba(184,134,11,.04);border-radius:0 6px 6px 0;margin-top:8px">
+          <div style="font-size:11px;font-weight:500;color:#8B6914;margin-bottom:3px;letter-spacing:.04em;font-family:'Jost',sans-serif">Not sure of the purity?</div>
+          <div style="font-size:11px;color:var(--text-dim);line-height:1.65;font-family:'Jost',sans-serif">Older family jewellery is typically 22K. Coins and bars are usually 24K (999). If unsure, 22K is a safe default for jewellery. You can always update this later.</div>
+        </div>
         <div class="field-note" id="gradeNote">Select a purity grade. For jewellery, this is usually stamped inside the piece.</div>
         <div style="font-size:11px;color:var(--brand);margin-top:6px;cursor:pointer" onclick="document.getElementById('purityHelperBox').style.display=document.getElementById('purityHelperBox').style.display==='none'?'block':'none'">Not sure of the purity? ▾</div>
         <div id="purityHelperBox" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:6px;font-size:11px;color:var(--text-mid);line-height:1.8">
@@ -1832,14 +1903,22 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div style="font-size:11px;font-weight:500;color:#8B6914;margin-bottom:3px;letter-spacing:.04em;font-family:'Jost',sans-serif">Not sure of the weight?</div>
         <div style="font-size:11px;color:var(--text-dim);line-height:1.65;font-family:'Jost',sans-serif">A portable precision scale — widely available on e-commerce platforms — measures with a high degree of accuracy. You can enter an estimate now and update it later once you have the exact figure.</div>
       </div>
+      <div style="border-left:2px solid rgba(184,134,11,.4);padding:8px 12px;background:rgba(184,134,11,.04);border-radius:0 6px 6px 0;margin-top:6px">
+        <div style="font-size:11px;font-weight:500;color:#8B6914;margin-bottom:3px;letter-spacing:.04em;font-family:'Jost',sans-serif">Not sure of the weight?</div>
+        <div style="font-size:11px;color:var(--text-dim);line-height:1.65;font-family:'Jost',sans-serif">A portable precision scale — widely available on e-commerce platforms — measures with a high degree of accuracy. You can enter an estimate now and update it later once you have the exact figure.</div>
+      </div>
 
-      <div class="form-divider">
+      <div class="form-divider provenance-toggle" onclick="toggleProvenance()" style="cursor:pointer">
         <div class="form-divider-line"></div>
-        <div class="form-divider-text">Purchase Details</div>
+        <div class="form-divider-text" style="display:flex;align-items:center;gap:5px;white-space:nowrap">
+          <span>Purchase Details</span>
+          <span style="font-size:10px;color:var(--text-dim);font-weight:400;letter-spacing:0">· optional</span>
+          <span id="provenanceChevron" style="font-size:10px;color:var(--text-dim);transition:transform .2s">▼</span>
+        </div>
         <div class="form-divider-line"></div>
       </div>
 
-      <div id="provenanceSection">
+      <div id="provenanceSection" style="display:none">
         <div class="field">
           <div class="field-label-row"><label>Date Purchased</label></div>
           <input type="date" id="purchaseDate">
@@ -1917,6 +1996,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       </div>
 
       <div style="display:flex;align-items:flex-start;gap:7px;background:rgba(139,105,20,.05);border-radius:6px;padding:9px 11px;margin-top:14px;margin-bottom:10px">
+        <span style="font-size:13px;flex-shrink:0;margin-top:1px;opacity:.6">ℹ</span>
+        <span style="font-size:11px;color:var(--text-dim);line-height:1.65;font-family:'Jost',sans-serif">Value shown is an indicative estimate based on declared weight and purity at live spot prices. Actual resale may differ due to physical condition, dust or carbon accumulation, embedded stones, and prevailing market conditions.</span>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:7px;background:rgba(139,105,20,.05);border-radius:6px;padding:9px 11px;margin-bottom:10px">
         <span style="font-size:13px;flex-shrink:0;margin-top:1px;opacity:.6">ℹ</span>
         <span style="font-size:11px;color:var(--text-dim);line-height:1.65;font-family:'Jost',sans-serif">Value shown is an indicative estimate based on declared weight and purity at live spot prices. Actual resale may differ due to physical condition, dust or carbon accumulation, embedded stones, and prevailing market conditions.</span>
       </div>
@@ -2499,6 +2582,10 @@ function premiumWaitlist(){
   document.getElementById('premiumModal').classList.add('open');
 }
 
+function premiumWaitlist(){
+  document.getElementById('premiumModal').classList.add('open');
+}
+
 async function generateShareLink(){
   const btn = document.getElementById('generateShareBtn');
   btn.textContent = 'Generating…'; btn.disabled = true;
@@ -2632,6 +2719,7 @@ async function deleteVaultNote(i){
   }
 }
 
+
 // ══════════════════════════════════════════
 // PREMIUM / PAYMENTS
 // ══════════════════════════════════════════
@@ -2676,6 +2764,82 @@ async function startCheckout(){
           refreshProfile();
           updateAll();
           showToast('Welcome to MyAurum Premium! 🎉', 'ok', 5000);
+        } catch(e) {
+          showToast('Payment received but verification failed. Please contact support.', 'error', 6000);
+        }
+      },
+      modal: {
+        ondismiss: () => {
+          btn.textContent = 'Upgrade to Premium →'; btn.disabled = false;
+        }
+      }
+    };
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+    btn.textContent = 'Upgrade to Premium →'; btn.disabled = false;
+  } catch(e) {
+    showToast(e.message || 'Could not start checkout. Please try again.', 'error');
+    btn.textContent = 'Upgrade to Premium →'; btn.disabled = false;
+  }
+}
+
+async function cancelSubscription(){
+  if(!confirm('Cancel your subscription?\n\nYour premium access will continue until the end of your current billing period. No refund will be issued. Your holdings will never be deleted.')) return;
+  try {
+    const data = await api('POST', '/payment/cancel', {});
+    currentUser.razorpaySubscriptionId = null;
+    showToast('Subscription cancelled. Access continues until period end.', 'ok', 5000);
+    closeModal('settingsModal');
+    refreshProfile();
+  } catch(e) {
+    showToast(e.message || 'Could not cancel. Please try again.', 'error');
+  }
+}
+
+// ══════════════════════════════════════════
+// PREMIUM / PAYMENTS
+// ══════════════════════════════════════════
+function openUpgradeModal(){
+  closeModal('settingsModal');
+  document.getElementById('premiumModal').classList.add('open');
+}
+
+function premiumWaitlist(){
+  document.getElementById('premiumModal').classList.add('open');
+}
+
+async function startCheckout(){
+  const btn = document.getElementById('upgradeBtn');
+  btn.textContent = 'Loading…'; btn.disabled = true;
+  try {
+    const data = await api('POST', '/payment/create-subscription', {});
+    if (data.error) {
+      showToast(data.error, 'error', 5000);
+      btn.textContent = 'Upgrade to Premium →'; btn.disabled = false;
+      return;
+    }
+    const options = {
+      key: data.keyId,
+      subscription_id: data.subscriptionId,
+      name: 'MyAurum',
+      description: data.description,
+      image: 'https://myaurum.app/og-image.png',
+      prefill: data.prefill,
+      theme: { color: '#B8860B' },
+      handler: async function(response) {
+        try {
+          const verify = await api('POST', '/payment/verify', {
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_subscription_id: response.razorpay_subscription_id,
+            razorpay_signature: response.razorpay_signature,
+          });
+          currentUser.isPremium = true;
+          currentUser.premiumExpiresAt = verify.premiumExpiresAt;
+          currentUser.razorpaySubscriptionId = response.razorpay_subscription_id;
+          closeModal('premiumModal');
+          refreshProfile();
+          updateAll();
+          showToast('Welcome to MyAurum Premium! ??', 'ok', 5000);
         } catch(e) {
           showToast('Payment received but verification failed. Please contact support.', 'error', 6000);
         }
@@ -2755,7 +2919,26 @@ function openSettings(){
     note.style.display='none';
     desc.textContent='A 6-digit code is sent to your email each time you sign in.';
   }
+  // Render weekly digest toggle
+  const wBtn = document.getElementById('weeklyDigestBtn');
+  if(wBtn){
+    const optedOut = currentUser.weeklyEmailOptOut;
+    wBtn.textContent = optedOut ? 'Disabled' : 'Enabled';
+    wBtn.style.background = optedOut ? 'transparent' : 'rgba(184,134,11,.06)';
+    wBtn.style.borderColor = optedOut ? 'var(--border)' : 'rgba(184,134,11,.25)';
+    wBtn.style.color = optedOut ? 'var(--text-dim)' : 'var(--brand)';
+  }
   document.getElementById('settingsModal').classList.add('open');
+}
+
+async function toggleWeeklyDigest(){
+  try{
+    const newVal = !currentUser.weeklyEmailOptOut;
+    await api('POST','/auth/weekly-digest-pref',{optOut: newVal});
+    currentUser.weeklyEmailOptOut = newVal;
+    openSettings();
+    showToast(newVal ? 'Weekly digest disabled' : 'Weekly digest enabled');
+  }catch(e){ showToast('Could not update preference','error'); }
 }
 
 async function sendVerifyNow(e){
@@ -2874,9 +3057,9 @@ function updateHeaderWelcome(){
   const bar = document.getElementById('welcomeBar');
   const nameEl = document.getElementById('welcomeName');
   const subEl = document.getElementById('welcomeSub');
-  if(bar && nameEl){
+  if(bar){
     bar.style.display = 'flex';
-    nameEl.textContent = 'Welcome, ' + (currentUser.firstName||'') + '.';
+    if(nameEl) nameEl.textContent = 'Welcome, ' + (currentUser.firstName||'') + '.';
     if(subEl){
       if(hasItems){
         const total = fmtDisp(items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0));
@@ -2914,6 +3097,8 @@ function refreshProfile(){
     const d = new Date(currentUser.joinedAt);
     if(!isNaN(d)) joined = d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
   } catch(e) {}
+  // Load vault notes
+  loadVaultNotes();
   // Load vault notes
   loadVaultNotes();
   document.getElementById('profileHeader').innerHTML=`
@@ -3376,6 +3561,9 @@ function openAddModal(){
   document.getElementById('photoFile').value='';
   document.getElementById('valuePreview').textContent='—';
   document.getElementById('pnlPreviewBox').style.display='none';
+  // Collapse provenance section by default
+  document.getElementById('provenanceSection').style.display='none';
+  document.getElementById('provenanceChevron').style.transform='';
   // Collapse purity helper
   const phb=document.getElementById('purityHelperBox');
   if(phb)phb.style.display='none';
@@ -3472,7 +3660,13 @@ function saveHeir(){
   closeModal('heirModal');
 }
 
-
+function toggleProvenance(){
+  const sec=document.getElementById('provenanceSection');
+  const chev=document.getElementById('provenanceChevron');
+  const open=sec.style.display==='none'||sec.style.display==='';
+  sec.style.display=open?'block':'none';
+  chev.style.transform=open?'rotate(180deg)':'';
+}
 function toggleMakingCharge(){
   const checked=document.getElementById('hasMakingCharge').checked;
   document.getElementById('makingChargeRow').style.display=checked?'':'none';
@@ -5045,7 +5239,7 @@ window.onerror = (msg, src, line, col, err) => {
       If we make material changes to this policy, we will notify users by email and update the date below. We will not retroactively reduce the privacy protections described here without explicit consent.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">11. Contact</strong><br>
-      For privacy-related questions or data requests, write to us at <a href="mailto:privacy@myaurum.app" style="color:#B8860B;text-decoration:none">privacy@myaurum.app</a>. We will respond within 5 business days.</p>
+      For privacy-related questions or data requests, write to us at <a href="/cdn-cgi/l/email-protection#09797b607f686a70496470687c7b7c6427687979" style="color:#B8860B;text-decoration:none"><span class="__cf_email__" data-cfemail="9bebe9f2edfaf8e2dbf6e2faeee9eef6b5faebeb">[email&#160;protected]</span></a>. We will respond within 5 business days.</p>
 
       <p style="color:#999;font-size:10px;border-top:1px solid #EEE;padding-top:12px;margin-top:4px">Last updated: March 2026 · MyAurum, Mumbai, India · Registered under UDYAM</p>
     </div>
@@ -5063,5 +5257,4 @@ window.onerror = (msg, src, line, col, err) => {
       <p><strong style="color:#2C2410">2. Service description</strong><br>MyAurum is a personal tracking tool that estimates the indicative market value of physical precious metals based on live spot prices. It is not a financial advisory, brokerage, or investment service.</p>
       <p><strong style="color:#2C2410">3. Indicative values only</strong><br>All valuations shown are estimates based on global spot prices and may not reflect the price you would receive if you sold your holdings. Actual resale values depend on purity verification, local market conditions, buyer premiums, and applicable taxes. Nothing in MyAurum constitutes financial advice.</p>
       <p><strong style="color:#2C2410">4. Your data</strong><br>Your account and holdings data are stored on encrypted servers. Sensitive fields are encrypted at the application layer before being written to the database. We do not sell, share, or monetise your data. See our Privacy Policy for full details.</p>
-      <p><strong style="color:#2C2410">5. Account responsibility</strong><br>You are responsible for maintaining the security of your account credentials. MyAurum is not liable for unauthorised access resulting from compromised credentials.</p>
-      <p><strong style="color:#2C2410">6. Availability</strong><br>We make 
+      <p><strong style="color:#2C2410">5. Account responsibility</strong><br>You are responsible for maintaining the security of your account credentials. MyAurum is not liable for unau
