@@ -253,24 +253,33 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 @media(min-width:900px){
   .app-screen.active{display:flex;flex-direction:column;height:100vh;overflow:hidden}
-  #appHeader{flex-direction:row!important;align-items:center!important;padding:0 24px!important;height:54px;flex-shrink:0}
-  #appHeader #headerRow1{margin-bottom:0!important;flex:1}
+  /* Header — single row */
+  #appHeader{flex-direction:row!important;align-items:center!important;padding:0 24px!important;min-height:54px;flex-shrink:0;position:relative}
+  #appHeader #headerRow1{margin-bottom:0!important;flex:1;display:flex!important;align-items:center}
+  #appHeader #headerRow1 .logo{margin-bottom:0!important}
   #appHeader #headerStrip{display:none!important}
-  #appHeader #inrDutyNote{display:none!important}
+  /* Body layout */
   .app-body{display:flex;flex:1;overflow:hidden}
-  .nav-tabs{display:flex;flex-direction:column;width:190px;flex-shrink:0;border-bottom:none;border-right:1px solid var(--border);background:var(--bg2);padding:12px 0;overflow-y:auto;gap:2px}
-  .nav-tab{flex:none;text-align:left;padding:10px 18px;display:flex;align-items:center;gap:10px;border-radius:0;justify-content:flex-start}
+  /* Sidebar */
+  .nav-tabs{display:flex;flex-direction:column;min-width:160px;width:160px;flex-shrink:0;border-bottom:none;border-right:1px solid var(--border);background:var(--bg2);padding:12px 0;overflow-y:auto;gap:2px}
+  .nav-tab{flex:none;text-align:left;padding:10px 16px;display:flex;align-items:center;gap:10px;border-radius:0;justify-content:flex-start;white-space:nowrap}
   .nav-tab.active::after{display:none}
-  .nav-tab.active{background:rgba(184,134,11,.08);border-left:2px solid var(--brand);padding-left:16px}
-  .nav-tab .nav-icon{display:inline;margin-bottom:0;font-size:16px}
-  .nav-tab .nav-label{font-size:12px;letter-spacing:.06em}
+  .nav-tab.active{background:rgba(184,134,11,.08);border-left:2px solid var(--brand);padding-left:14px}
+  .nav-tab .nav-icon{display:inline!important;margin-bottom:0!important;font-size:15px}
+  .nav-tab .nav-label{display:inline!important;font-size:11px;letter-spacing:.06em}
+  /* Content */
   .app-content{flex:1;overflow-y:auto;background:var(--bg)}
   .content-panel{display:none}
   .content-panel.active{display:block}
-  .desktop-panel-wrap{max-width:720px;margin:0 auto}
+  .desktop-panel-wrap{max-width:740px;margin:0 auto;padding:0 0 80px}
+  /* Spot strip in header */
   .spot-strip .spot-item .metal{font-size:9px}
   .spot-strip .spot-item .price{font-size:13px}
-  .fab-wrap{position:fixed;bottom:24px;right:24px}
+  /* FAB */
+  .fab-wrap{position:fixed!important;bottom:24px!important;right:24px!important}
+  /* Welcome strip inside content on desktop */
+  #headerStrip{display:flex!important;max-width:712px;margin:0 auto;padding:16px 14px 0!important;border-top:none!important}
+  #desktopWelcomeStrip{display:flex!important}
 }
 
 .header{position:sticky;top:0;z-index:100;background:rgba(253,251,247,.97);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -1327,8 +1336,14 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   <!-- ── MYAURUM PANEL ── -->
   <div class="content-panel active" id="panelVault">
 <div class="desktop-panel-wrap">
-
-    <div class="currency-bar">
+  <!-- Desktop welcome strip (hidden on mobile, shown on desktop via CSS) -->
+  <div id="desktopWelcomeStrip" style="display:none;align-items:center;justify-content:space-between;padding:16px 14px 0;gap:10px">
+    <div style="min-width:0">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--text);line-height:1.2" id="desktopWelcomeName">Welcome, —</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:2px" id="desktopWelcomeSub"></div>
+    </div>
+    <button onclick="openAddModal()" style="padding:8px 20px;background:var(--brand);color:#FDF8F0;border:none;border-radius:7px;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;letter-spacing:.06em;cursor:pointer;white-space:nowrap;flex-shrink:0">+ Add Holding</button>
+  </div>
       <span class="currency-label">View in:</span>
       <button class="currency-btn" onclick="setCurrency('USD',this)">$ USD</button>
       <button class="currency-btn active" onclick="setCurrency('INR',this)">₹ INR</button>
@@ -2927,6 +2942,19 @@ function updateHeaderWelcome(){
     btn.textContent = '+ Add Holding';
   } else {
     strip.style.display = 'none';
+  }
+  // Populate desktop welcome strip
+  const dName = document.getElementById('desktopWelcomeName');
+  const dSub = document.getElementById('desktopWelcomeSub');
+  if(dName) dName.textContent = 'Welcome, ' + (currentUser.firstName||'') + '.';
+  if(dSub){
+    if(hasItems){
+      const total = fmtDisp(items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0));
+      const count = items.filter(i=>!i.sold&&!i.gifted).length;
+      dSub.textContent = total + ' across ' + count + ' holding' + (count!==1?'s':'');
+    } else {
+      dSub.textContent = 'Add your first holding to see a live value.';
+    }
   }
   // Purchase price nudge
   if(!sessionStorage.getItem('nudgeDismissed')){
