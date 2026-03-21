@@ -280,7 +280,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 @media (min-width:640px){
   .nav-tab .nav-icon{font-size:20px}
   .nav-tab{padding:14px 4px}
+  /* Centre modals as dialogs on desktop */
+  .modal-overlay{align-items:center;justify-content:center;padding:20px}
+  .modal{width:100%;max-width:480px;border-radius:20px;animation:fadeInScale .25s cubic-bezier(.32,.72,0,1)}
+  .modal-handle{display:none}
 }
+@keyframes fadeInScale{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 
 /* Currency bar */
 .currency-bar{display:flex;gap:6px;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;align-items:center}
