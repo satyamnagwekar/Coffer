@@ -267,15 +267,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .app-content{flex:1;overflow-y:auto;background:var(--bg)}
   .content-panel{display:none}
   .content-panel.active{display:block}
-  .summary-card{max-width:672px!important;margin-left:auto!important;margin-right:auto!important}
-  .filter-bar{max-width:720px;margin-left:auto;margin-right:auto}
-  .currency-bar{max-width:720px!important;margin-left:auto!important;margin-right:auto!important;padding-left:24px!important;padding-right:24px!important}
-  .last-updated{max-width:720px;margin-left:auto;margin-right:auto;padding-left:18px}
-  #pricePaidNudge{max-width:672px!important;margin-left:auto!important;margin-right:auto!important}
-  #headerStrip{max-width:672px;margin-left:auto;margin-right:auto;display:flex!important;border-top:none!important;padding:16px 0 0!important}
-  .fab-wrap{right:max(16px,calc(50vw - 95px - 360px + 16px))}
+  .desktop-panel-wrap{max-width:720px;margin:0 auto}
   .spot-strip .spot-item .metal{font-size:9px}
   .spot-strip .spot-item .price{font-size:13px}
+  .fab-wrap{position:fixed;bottom:24px;right:24px}
 }
 
 .header{position:sticky;top:0;z-index:100;background:rgba(253,251,247,.97);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -1331,6 +1326,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
   <!-- ── MYAURUM PANEL ── -->
   <div class="content-panel active" id="panelVault">
+<div class="desktop-panel-wrap">
 
     <div class="currency-bar">
       <span class="currency-label">View in:</span>
@@ -1428,10 +1424,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <span style="opacity:.6">© 2026 MyAurum. All rights reserved. Registered in India. &nbsp;·&nbsp; <a href="/privacy" style="color:var(--text-dim);text-decoration:none">Privacy Policy</a> &nbsp;·&nbsp; <a href="/security" style="color:var(--text-dim);text-decoration:none">Security</a></span></p>
     </div>
 
+</div>
   </div><!-- /panelVault -->
 
   <!-- ── CHART PANEL ── -->
   <div class="content-panel" id="panelChart">
+<div class="desktop-panel-wrap">
     <div class="chart-panel pb">
       <!-- Empty state shown when no holdings -->
       <div id="chartEmptyState" style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;gap:12px">
@@ -1505,10 +1503,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       </div>
       </div><!-- /chartContent -->
     </div>
+</div>
   </div><!-- /panelChart -->
 
   <!-- ── ALERTS PANEL ── -->
   <div class="content-panel" id="panelAlerts">
+<div class="desktop-panel-wrap">
     <div class="alerts-panel pb">
       <div class="alerts-header">
         <div class="alerts-title">Price Alerts</div>
@@ -1579,10 +1579,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       </div>
       <div id="alertsList" class="alerts-list"></div>
     </div>
+</div>
   </div><!-- /panelAlerts -->
 
   <!-- ── PROFILE PANEL ── -->
   <div class="content-panel" id="panelProfile">
+<div class="desktop-panel-wrap">
     <div class="profile-panel">
 
       <div class="profile-header" id="profileHeader">
@@ -1694,6 +1696,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       </div>
 
     </div>
+</div>
   </div><!-- /panelProfile -->
 
   <!-- ── SETTINGS MODAL ── -->
