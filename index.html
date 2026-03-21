@@ -251,6 +251,33 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .app-screen.active{display:block}
 @keyframes appFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
+@media(min-width:900px){
+  .app-screen.active{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  #appHeader{flex-direction:row!important;align-items:center!important;padding:0 24px!important;height:54px;flex-shrink:0}
+  #appHeader #headerRow1{margin-bottom:0!important;flex:1}
+  #appHeader #headerStrip{display:none!important}
+  #appHeader #inrDutyNote{display:none!important}
+  .app-body{display:flex;flex:1;overflow:hidden}
+  .nav-tabs{display:flex;flex-direction:column;width:190px;flex-shrink:0;border-bottom:none;border-right:1px solid var(--border);background:var(--bg2);padding:12px 0;overflow-y:auto;gap:2px}
+  .nav-tab{flex:none;text-align:left;padding:10px 18px;display:flex;align-items:center;gap:10px;border-radius:0;justify-content:flex-start}
+  .nav-tab.active::after{display:none}
+  .nav-tab.active{background:rgba(184,134,11,.08);border-left:2px solid var(--brand);padding-left:16px}
+  .nav-tab .nav-icon{display:inline;margin-bottom:0;font-size:16px}
+  .nav-tab .nav-label{font-size:12px;letter-spacing:.06em}
+  .app-content{flex:1;overflow-y:auto;background:var(--bg)}
+  .content-panel{display:none}
+  .content-panel.active{display:block}
+  .summary-card{max-width:672px!important;margin-left:auto!important;margin-right:auto!important}
+  .filter-bar{max-width:720px;margin-left:auto;margin-right:auto}
+  .currency-bar{max-width:720px!important;margin-left:auto!important;margin-right:auto!important;padding-left:24px!important;padding-right:24px!important}
+  .last-updated{max-width:720px;margin-left:auto;margin-right:auto;padding-left:18px}
+  #pricePaidNudge{max-width:672px!important;margin-left:auto!important;margin-right:auto!important}
+  #headerStrip{max-width:672px;margin-left:auto;margin-right:auto;display:flex!important;border-top:none!important;padding:16px 0 0!important}
+  .fab-wrap{right:max(16px,calc(50vw - 95px - 360px + 16px))}
+  .spot-strip .spot-item .metal{font-size:9px}
+  .spot-strip .spot-item .price{font-size:13px}
+}
+
 .header{position:sticky;top:0;z-index:100;background:rgba(253,251,247,.97);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .header-left{display:flex;align-items:center;gap:10px}
 .logo{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:.16em;color:var(--brand)}
@@ -1253,13 +1280,13 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .ptr-spinning{animation:ptr-spin .65s linear infinite}
 </style>
 
-  <div class="header" style="flex-direction:column;align-items:stretch;gap:0;padding:10px 16px 10px">
+  <div class="header" id="appHeader" style="flex-direction:column;align-items:stretch;gap:0;padding:10px 16px 10px">
     <!-- Row 1: logo + spot strip -->
-    <div style="margin-bottom:4px">
-      <div class="logo" style="margin-bottom:6px">
+    <div id="headerRow1" style="margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div class="logo" style="flex-shrink:0">
         <span style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:.22em;color:#8B6914">MYAURUM</span>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:flex-end">
+      <div style="display:flex;align-items:center;gap:16px;flex:1;justify-content:flex-end">
         <div class="spot-strip">
           <div class="spot-item gold">
             <div class="metal" id="goldSpotLabel">GOLD /oz</div>
@@ -1293,12 +1320,14 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   </div>
 
   <!-- Nav -->
+  <div class="app-body">
   <div class="nav-tabs">
     <button class="nav-tab active" id="navMyAurum" onclick="setNavTab('vault',this)"><span class="nav-icon">🏛</span><span class="nav-label">MyAurum</span></button>
     <button class="nav-tab" id="navChart" onclick="setNavTab('chart',this)"><span class="nav-icon">📊</span><span class="nav-label">Chart</span></button>
     <button class="nav-tab" id="navAlerts" onclick="setNavTab('alerts',this)"><span class="nav-icon">🔔</span><span class="nav-label">Alerts</span></button>
     <button class="nav-tab" id="navProfile" onclick="setNavTab('profile',this)"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></button>
   </div>
+  <div class="app-content">
 
   <!-- ── MYAURUM PANEL ── -->
   <div class="content-panel active" id="panelVault">
@@ -1750,6 +1779,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       </div>
     </div>
   </div>
+
+  </div><!-- /app-content -->
+  </div><!-- /app-body -->
 
   <div class="fab-wrap" id="fabWrap">
     <div class="fab-label">Add holding</div>
