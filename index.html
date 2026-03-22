@@ -3495,9 +3495,11 @@ function renderList(){
     const dB=item.purchaseDate?`<span class="badge badge-date">📅 ${item.purchaseDate}</span>`:'';
     const pB=(item.photos&&item.photos.length)||(item.receipt)?`<span class="badge badge-provenance">📷 Photos</span>`:'';
     const hB=item.heldBy?`<span class="badge" style="background:rgba(139,105,20,.08);color:var(--brand);border:1px solid rgba(139,105,20,.2);font-size:10px;padding:2px 7px;border-radius:10px">👤 ${escHtml(item.heldBy)}</span>`:'';
+    const mcB=item.makingCharge?`<span class="badge" style="background:rgba(100,100,100,.07);color:var(--text-dim);border:1px solid var(--border);font-size:10px;padding:2px 7px;border-radius:10px">🔧 Making ${fmtCurr(item.makingCharge,item.makingChargeCurrency||item.pricePaidCurrency)}</span>`:'';
+    const giftB=item.receivedAsGift?`<span class="badge" style="background:rgba(192,132,252,.07);color:#c084fc;border:1px solid rgba(192,132,252,.25);font-size:10px;padding:2px 7px;border-radius:10px">🎁 Gift</span>`:'';
     return `<div class="item-card ${item.metal}${item.sold?' sold':''}${item.gifted?' gifted':''}" onclick="openDetail(${ri})">
       <div class="item-top"><div class="item-name">${escHtml(item.name)}</div><div class="item-value">${vD}</div></div>
-      <div class="item-meta"><span class="badge badge-type">${tL[item.type]}</span><span class="badge badge-grade${item.metal==='silver'?' silver':''}">${item.gradeName.split(' — ')[0]}</span><span class="badge badge-weight">${item.grams.toFixed(2)}g</span>${dB}${pB}${hB}</div>
+      <div class="item-meta"><span class="badge badge-type">${tL[item.type]}</span><span class="badge badge-grade${item.metal==='silver'?' silver':''}">${item.gradeName.split(' — ')[0]}</span><span class="badge badge-weight">${item.grams.toFixed(2)}g</span>${dB}${mcB}${giftB}${pB}${hB}</div>
       ${pnlH}${!item.pricePaidUSD&&!item.receivedAsGift&&!item.sold?'<div class="item-hint">Add purchase price to track gain/loss</div>':''}
     </div>`;
   }).join('');
