@@ -289,12 +289,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 @keyframes fadeInScale{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 
 /* Currency bar */
-.currency-bar{display:flex;gap:6px;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;align-items:center}
+.currency-bar{display:flex;gap:6px;padding:10px 16px;background:#EDE6D6;border-bottom:1px solid #D4C9A8;overflow-x:auto;align-items:center}
 .currency-label{font-size:11px;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;margin-right:2px}
 .currency-btn{padding:6px 13px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer;transition:all .2s;white-space:nowrap}
 .currency-btn.active{background:var(--brand);border-color:var(--brand);color:#FDF8F0;font-weight:500;box-shadow:0 2px 8px rgba(139,105,20,.25)}
 
-.last-updated{font-size:11px;color:var(--text-dim);padding:5px 18px 7px;cursor:pointer;display:flex;align-items:center;gap:5px}
+.last-updated{font-size:11px;color:var(--text-dim);padding:5px 18px 7px;cursor:pointer;display:flex;align-items:center;gap:5px;background:#E8E0CE;border-bottom:1px solid #D4C9A8}
 .last-updated:hover{color:var(--gold)}
 .loading-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--gold-dim);animation:pulse 1.2s infinite}
 
@@ -303,7 +303,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .content-panel.active{display:block}
 
 /* Summary */
-.summary-card{margin:14px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:22px;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.summary-card{margin:14px 14px;background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--brand);border-radius:var(--radius);padding:22px;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .summary-card::before{display:none}
 .summary-card::after{display:none}
 .summary-eyebrow{font-size:14px;letter-spacing:.16em;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px}
@@ -1338,7 +1338,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div class="split-sub" id="totalPnlPct">vs cost paid</div>
         </div>
       </div>
-      <div id="platinumSplitRow" style="display:none;padding-top:10px;border-top:1px solid var(--border);margin-top:10px">
+      <div id="platinumSplitRow" style="display:none;padding:10px 12px;border-radius:8px;background:rgba(120,120,130,.07);border:1px solid rgba(120,120,130,.15);margin-top:12px">
         <div class="split-label" style="margin-bottom:4px">🔷 Platinum</div>
         <div style="display:flex;align-items:baseline;gap:10px">
           <div class="split-val" id="platinumTotal" style="color:var(--text)">—</div>
@@ -1348,19 +1348,19 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 14px 14px" id="spotCardsGrid">
-      <div style="background:var(--bg2);border:1px solid var(--border-gold);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
-        <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(139,105,20,.08),transparent 70%);border-radius:50%"></div>
+      <div style="background:rgba(139,105,20,.07);border:1px solid rgba(139,105,20,.2);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(139,105,20,.1),transparent 70%);border-radius:50%"></div>
         <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🥇 Gold spot</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--brand);line-height:1;margin-bottom:3px" id="homeGoldSpot">—</div>
         <div style="font-size:11px;color:var(--text-dim)" id="homeGoldUnit">per oz · USD</div>
       </div>
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
-        <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(122,142,160,.06),transparent 70%);border-radius:50%"></div>
+      <div style="background:rgba(100,130,160,.07);border:1px solid rgba(100,130,160,.2);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(100,130,160,.1),transparent 70%);border-radius:50%"></div>
         <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🥈 Silver spot</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--silver-bright);line-height:1;margin-bottom:3px" id="homeSilverSpot">—</div>
         <div style="font-size:11px;color:var(--text-dim)" id="homeSilverUnit">per oz · USD</div>
       </div>
-      <div id="platSpotCard" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;grid-column:span 2">
+      <div id="platSpotCard" style="display:none;background:rgba(120,120,130,.07);border:1px solid rgba(120,120,130,.2);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;grid-column:span 2">
         <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🔷 Platinum spot</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:#757575;line-height:1;margin-bottom:3px" id="homePlatSpot">—</div>
         <div style="font-size:11px;color:var(--text-dim)" id="homePlatUnit">per oz · USD</div>
