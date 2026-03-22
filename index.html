@@ -2459,7 +2459,6 @@ function checkStrength(pw){
 
 async function signInWithGoogle(){
   try {
-    // Use Google Identity Services one-tap / popup flow
     google.accounts.id.initialize({
       client_id: '826792551094-s9dg885quvbfd04ocaohnkp1ar8jvm5h.apps.googleusercontent.com',
       callback: async (response) => {
@@ -2472,18 +2471,23 @@ async function signInWithGoogle(){
           showMsg('loginMsg', 'Google sign-in failed: ' + e.message, 'error');
         }
       },
-      use_fedcm_for_prompt: true,
+      ux_mode: 'popup',
+      use_fedcm_for_prompt: false,
     });
-    google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        // Fallback to popup
-        google.accounts.id.renderButton(
-          document.createElement('div'),
-          { theme: 'outline', size: 'large' }
-        );
-        google.accounts.id.prompt();
-      }
-    });
+
+    // Render into a real (but hidden) container and programmatically click it
+    let container = document.getElementById('_googleBtnContainer');
+    if(!container){
+      container = document.createElement('div');
+      container.id = '_googleBtnContainer';
+      container.style.cssText = 'position:fixed;opacity:0;pointer-events:none;top:-999px;left:-999px';
+      document.body.appendChild(container);
+    }
+    google.accounts.id.renderButton(container, { theme: 'outline', size: 'large', width: 280 });
+    // Trigger the rendered button
+    const btn = container.querySelector('[role="button"], button, div[tabindex]');
+    if(btn) btn.click();
+    else google.accounts.id.prompt();
   } catch(e) {
     showMsg('loginMsg', 'Google sign-in unavailable: ' + e.message, 'error');
   }
