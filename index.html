@@ -2412,6 +2412,8 @@ function switchAuthTab(tab, btn){
   document.querySelectorAll('.auth-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
   clearMsgs();
+  // Re-render Google buttons in case they weren't visible on first load
+  setTimeout(initGoogleSignIn, 50);
 }
 
 function clearMsgs(){
@@ -2462,7 +2464,11 @@ function handleGoogleCredential(response){
 }
 
 function initGoogleSignIn(){
-  if(typeof google === 'undefined' || !google.accounts) return;
+  if(typeof google === 'undefined' || !google.accounts){
+    // Script not ready yet — retry
+    setTimeout(initGoogleSignIn, 300);
+    return;
+  }
   google.accounts.id.initialize({
     client_id: '826792551094-s9dg885quvbfd04ocaohnkp1ar8jvm5h.apps.googleusercontent.com',
     callback: handleGoogleCredential,
@@ -5217,7 +5223,7 @@ async function subscribePush(){
 window.addEventListener('DOMContentLoaded',()=>{
   checkResetToken();
   checkVerifyToken();
-
+  initGoogleSignIn();
 });
 
 // Global error reporting to Sentry
