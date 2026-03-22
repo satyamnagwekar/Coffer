@@ -450,6 +450,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .grade-btn.selected.gold-grade .purity,.grade-btn.selected.gold-grade .label{color:var(--brand)}
 .grade-btn.selected.silver-grade{border-color:var(--silver);background:rgba(200,216,232,.1)}
 .grade-btn.selected.silver-grade .purity,.grade-btn.selected.silver-grade .label{color:var(--silver-bright)}
+.grade-btn.selected.platinum-grade{border-color:#9E9E9E;background:rgba(180,180,180,.15);box-shadow:0 0 0 3px rgba(158,158,158,.12)}
+.grade-btn.selected.platinum-grade .purity,.grade-btn.selected.platinum-grade .label{color:#757575}
 
 /* Receipt */
 .receipt-upload{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:22px 16px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--bg3)}
@@ -1345,7 +1347,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 14px 14px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 14px 14px" id="spotCardsGrid">
       <div style="background:var(--bg2);border:1px solid var(--border-gold);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
         <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(139,105,20,.08),transparent 70%);border-radius:50%"></div>
         <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🥇 Gold spot</div>
@@ -1357,6 +1359,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🥈 Silver spot</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--silver-bright);line-height:1;margin-bottom:3px" id="homeSilverSpot">—</div>
         <div style="font-size:11px;color:var(--text-dim)" id="homeSilverUnit">per oz · USD</div>
+      </div>
+      <div id="platSpotCard" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;grid-column:span 2">
+        <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🔷 Platinum spot</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:#757575;line-height:1;margin-bottom:3px" id="homePlatSpot">—</div>
+        <div style="font-size:11px;color:var(--text-dim)" id="homePlatUnit">per oz · USD</div>
       </div>
     </div>
 
@@ -1838,7 +1845,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
             <span class="m-icon">🥈</span><span class="m-name">Silver</span><span class="m-code">XAG</span>
           </button>
           <button class="metal-btn platinum" id="metalPlatinum" onclick="selectMetal('platinum')">
-            <span class="m-icon">⬜</span><span class="m-name">Platinum</span><span class="m-code">XPT</span>
+            <span class="m-icon">🔷</span><span class="m-name">Platinum</span><span class="m-code">XPT</span>
           </button>
         </div>
       </div>
@@ -1853,7 +1860,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="type-grid">
           <button class="type-btn selected" id="typeJewellery" onclick="selectType('jewellery')"><span class="icon">💍</span>Jewellery</button>
           <button class="type-btn" id="typeCoin_bar" onclick="selectType('coin_bar')"><span class="icon">🪙</span>Coins &amp; Bars</button>
-          <button class="type-btn" id="typeRaw" onclick="selectType('raw')"><span class="icon">⚗️</span>Raw</button>
+          <button class="type-btn" id="typeRaw" onclick="selectType('raw')"><span class="icon">🪨</span>Raw</button>
         </div>
       </div>
 
@@ -3395,8 +3402,9 @@ function updateSummary(){
   document.getElementById('silverTotal').textContent=fmtDisp(sD);
   document.getElementById('goldWeight').textContent=gG.toFixed(2)+'g';
   document.getElementById('silverWeight').textContent=sG.toFixed(2)+'g';
-  // Platinum — show row only if any platinum held
+  // Platinum — show row and spot card only if any platinum held
   const ptRow=document.getElementById('platinumSplitRow');
+  const ptCard=document.getElementById('platSpotCard');
   if(ptRow){
     if(ptD>0){
       ptRow.style.display='';
@@ -3406,6 +3414,7 @@ function updateSummary(){
       ptRow.style.display='none';
     }
   }
+  if(ptCard) ptCard.style.display = ptD>0 ? '' : 'none';
   const pEl=document.getElementById('totalPnl'),pPct=document.getElementById('totalPnlPct');
   if(pD>0){const g=spD-pD,p=(g/pD)*100,s=g>=0?'+':'';pEl.textContent=s+fmtDisp(g);pEl.className='split-val pnl '+(g>=0?'pos':'neg');pPct.textContent=s+p.toFixed(1)+'%'}
   else{pEl.textContent='—';pEl.className='split-val pnl';pPct.textContent='add cost to track'}
@@ -4891,6 +4900,8 @@ function _coreUpdatePriceDisplay(){
     const hgU=document.getElementById('homeGoldUnit'),hsU=document.getElementById('homeSilverUnit');
     if(hgEl){hgEl.textContent='₹'+Math.round(goldINR10g).toLocaleString('en-IN');if(hgU)hgU.textContent='per 10g · INR est.';}
     if(hsEl){hsEl.textContent='₹'+Math.round(silverINR10g).toLocaleString('en-IN');if(hsU)hsU.textContent='per 10g · INR est.';}
+    const hpEl=document.getElementById('homePlatSpot'),hpU=document.getElementById('homePlatUnit');
+    if(hpEl){hpEl.textContent='₹'+Math.round(platINR10g).toLocaleString('en-IN');if(hpU)hpU.textContent='per 10g · INR est.';}
   } else {
     const goldDisp = prices.gold   * rate;
     const silverDisp = prices.silver * rate;
@@ -4906,6 +4917,8 @@ function _coreUpdatePriceDisplay(){
     const hgU=document.getElementById('homeGoldUnit'),hsU=document.getElementById('homeSilverUnit');
     if(hgEl){hgEl.textContent=sym+goldDisp.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});if(hgU)hgU.textContent=`per oz · ${bLabel}`;}
     if(hsEl){hsEl.textContent=sym+silverDisp.toFixed(2);if(hsU)hsU.textContent=`per oz · ${bLabel}`;}
+    const hpEl=document.getElementById('homePlatSpot'),hpU=document.getElementById('homePlatUnit');
+    if(hpEl){hpEl.textContent=sym+platDisp.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});if(hpU)hpU.textContent=`per oz · ${bLabel}`;}
   }
 }
 
