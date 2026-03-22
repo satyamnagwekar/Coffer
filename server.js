@@ -177,6 +177,7 @@ async function initDB() {
   await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS gifted_to TEXT`);
   await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS gifted_at TEXT`);
   await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS gift_notes TEXT`);
+  await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS received_as_gift BOOLEAN DEFAULT FALSE`);
   await q(`ALTER TABLE items DROP CONSTRAINT IF EXISTS items_metal_check`);
   await q(`ALTER TABLE items ADD CONSTRAINT items_metal_check CHECK (metal IN ('gold','silver','platinum'))`);
 
@@ -369,7 +370,8 @@ function itemToClient(r) {
     sellPriceUSD:r.sell_price_usd, sellDate:r.sell_date||'', sellNotes:r.sell_notes||'', addedAt:r.added_at,
     heldBy:r.held_by||'', nominee:r.nominee||'', makingCharge:r.making_charge||null,
     makingChargeCurrency:r.making_charge_currency||null, goldCostBasisUSD:r.gold_cost_basis_usd||null,
-    gifted:!!r.gifted, giftedTo:r.gifted_to||'', giftedAt:r.gifted_at||'', photos:r.photos||null };
+    gifted:!!r.gifted, giftedTo:r.gifted_to||'', giftedAt:r.gifted_at||'', photos:r.photos||null,
+    receivedAsGift:!!r.received_as_gift };
 }
 
 // ─────────────────────────────────────────
@@ -1072,13 +1074,18 @@ app.get('/api/items', requireAuth, async (req, res) => {
 app.post('/api/items', requireAuth, async (req, res) => {
   const d = req.body;
   try {
-    const r = await q(`INSERT INTO items (user_id,client_id,name,metal,type,grade_name,purity,grams,notes,purchase_date,price_paid,price_paid_curr,price_paid_usd,receipt,added_at)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING *`,
+    const r = await q(`INSERT INTO items (user_id,client_id,name,metal,type,grade_name,purity,grams,notes,purchase_date,price_paid,price_paid_curr,price_paid_usd,receipt,held_by,nominee,making_charge,making_charge_currency,gold_cost_basis_usd,photos,received_as_gift,added_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING *`,
       [req.user.userId, d.clientId||null,
        encryptField(d.name), d.metal, d.type, encryptField(d.gradeName), d.purity, d.grams,
        d.notes?encryptField(d.notes):null, d.purchaseDate||null,
        d.pricePaid||null, d.pricePaidCurrency||'USD', d.pricePaidUSD||null,
-       d.receipt||null, d.addedAt||new Date().toISOString()]);
+       d.receipt||null,
+       d.heldBy||null, d.nominee||null,
+       d.makingCharge||null, d.makingChargeCurrency||null, d.goldCostBasisUSD||null,
+       d.photos?JSON.stringify(d.photos):null,
+       d.receivedAsGift||false,
+       d.addedAt||new Date().toISOString()]);
     res.status(201).json(itemToClient(decryptRow(r.rows[0])));
   } catch(e) { console.error(e); res.status(500).json({ error:'Server error' }); }
 });
@@ -1088,12 +1095,16 @@ app.put('/api/items/:id', requireAuth, async (req, res) => {
   try {
     const exists = await q('SELECT id FROM items WHERE id=$1 AND user_id=$2', [req.params.id, req.user.userId]);
     if (!exists.rows.length) return res.status(404).json({ error:'Item not found' });
-    const r = await q(`UPDATE items SET name=$1,metal=$2,type=$3,grade_name=$4,purity=$5,grams=$6,notes=$7,purchase_date=$8,price_paid=$9,price_paid_curr=$10,price_paid_usd=$11,receipt=$12,sold=$13,sell_price=$14,sell_currency=$15,sell_price_usd=$16,sell_date=$17,sell_notes=$18,updated_at=NOW() WHERE id=$19 AND user_id=$20 RETURNING *`,
+    const r = await q(`UPDATE items SET name=$1,metal=$2,type=$3,grade_name=$4,purity=$5,grams=$6,notes=$7,purchase_date=$8,price_paid=$9,price_paid_curr=$10,price_paid_usd=$11,receipt=$12,sold=$13,sell_price=$14,sell_currency=$15,sell_price_usd=$16,sell_date=$17,sell_notes=$18,held_by=$19,nominee=$20,making_charge=$21,making_charge_currency=$22,gold_cost_basis_usd=$23,photos=$24,received_as_gift=$25,updated_at=NOW() WHERE id=$26 AND user_id=$27 RETURNING *`,
       [encryptField(d.name), d.metal, d.type, encryptField(d.gradeName), d.purity, d.grams,
        d.notes?encryptField(d.notes):null, d.purchaseDate||null,
        d.pricePaid||null, d.pricePaidCurrency||'USD', d.pricePaidUSD||null, d.receipt||null, !!d.sold,
        d.sellPrice||null, d.sellCurrency||null, d.sellPriceUSD||null, d.sellDate||null,
        d.sellNotes?encryptField(d.sellNotes):null,
+       d.heldBy||null, d.nominee||null,
+       d.makingCharge||null, d.makingChargeCurrency||null, d.goldCostBasisUSD||null,
+       d.photos?JSON.stringify(d.photos):null,
+       d.receivedAsGift||false,
        req.params.id, req.user.userId]);
     res.json(itemToClient(decryptRow(r.rows[0])));
   } catch(e) { console.error(e); res.status(500).json({ error:'Server error' }); }
