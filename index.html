@@ -266,6 +266,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .spot-item .price{font-size:12px;font-weight:500}
 .spot-item.gold .price{color:var(--gold-light)}
 .spot-item.silver .price{color:var(--silver)}
+@media(max-width:639px){.spot-strip,.benchmark-wrap{display:none!important}}
 .benchmark-btn{font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 5px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;font-family:'Jost',sans-serif;transition:all .15s}
 .benchmark-btn.active{background:rgba(139,105,20,.12);border-color:var(--brand-dim);color:var(--brand)}
 
@@ -1272,7 +1273,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
             <div class="price" id="platinumSpot"><span class="loading-dot"></span></div>
           </div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
+        <div class="benchmark-wrap" style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
           <span style="font-size:9px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;opacity:.55">Benchmark</span>
           <div id="benchmarkToggle" style="display:flex;gap:3px;align-items:center"></div>
         </div>
@@ -1333,6 +1334,13 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div class="split-label">📈 G/L</div>
           <div class="split-val pnl" id="totalPnl">—</div>
           <div class="split-sub" id="totalPnlPct">vs cost paid</div>
+        </div>
+      </div>
+      <div id="platinumSplitRow" style="display:none;padding-top:10px;border-top:1px solid var(--border);margin-top:10px">
+        <div class="split-label" style="margin-bottom:4px">🔷 Platinum</div>
+        <div style="display:flex;align-items:baseline;gap:10px">
+          <div class="split-val" id="platinumTotal" style="color:var(--text)">—</div>
+          <div class="split-sub" id="platinumWeight">0g</div>
         </div>
       </div>
     </div>
@@ -3060,7 +3068,7 @@ function updateHeaderWelcome(){
   const btn = document.getElementById('headerStripBtn');
   if(strip){
     strip.style.display = 'flex';
-    if(nameEl) nameEl.textContent = 'Welcome, ' + (currentUser.firstName||'') + '.';
+    if(nameEl) nameEl.textContent = 'Welcome, ' + (currentUser.firstName||'');
     if(subEl){
       if(hasItems){
         const total = fmtDisp(items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0));
@@ -3371,13 +3379,15 @@ function updateAll(){
   updateSummary();renderList();updateHeaderWelcome();if(groupedViewActive)renderGroupedPL();
 }
 function updateSummary(){
-  let gD=0,sD=0,gG=0,sG=0,pD=0,spD=0;
+  let gD=0,sD=0,ptD=0,gG=0,sG=0,ptG=0,pD=0,spD=0;
   items.filter(i=>!i.sold&&!i.gifted).forEach(it=>{
     const v=spotDisplayValue(it.metal,it.grams,it.purity);
-    if(it.metal==='gold'){gD+=v;gG+=it.grams}else{sD+=v;sG+=it.grams}
-    spD+=v;const _cb=costBasisDisplay(it);if(_cb)pD+=_cb;
+    if(it.metal==='gold'){gD+=v;gG+=it.grams}
+    else if(it.metal==='silver'){sD+=v;sG+=it.grams}
+    else if(it.metal==='platinum'){ptD+=v;ptG+=it.grams}
+    spD+=v;const _cb=costBasisDisplay(it);if(_cb!==null)pD+=_cb;
   });
-  const tot=gD+sD;
+  const tot=gD+sD+ptD;
   const totUSD=items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+metalValueUSD(i.metal,i.grams,i.purity),0);
   document.getElementById('totalValue').textContent=fmtDisp(tot);
   document.getElementById('totalUSD').textContent=currency!=='USD'?'≈ $'+totUSD.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+' USD':'';
@@ -3385,6 +3395,17 @@ function updateSummary(){
   document.getElementById('silverTotal').textContent=fmtDisp(sD);
   document.getElementById('goldWeight').textContent=gG.toFixed(2)+'g';
   document.getElementById('silverWeight').textContent=sG.toFixed(2)+'g';
+  // Platinum — show row only if any platinum held
+  const ptRow=document.getElementById('platinumSplitRow');
+  if(ptRow){
+    if(ptD>0){
+      ptRow.style.display='';
+      document.getElementById('platinumTotal').textContent=fmtDisp(ptD);
+      document.getElementById('platinumWeight').textContent=ptG.toFixed(2)+'g';
+    } else {
+      ptRow.style.display='none';
+    }
+  }
   const pEl=document.getElementById('totalPnl'),pPct=document.getElementById('totalPnlPct');
   if(pD>0){const g=spD-pD,p=(g/pD)*100,s=g>=0?'+':'';pEl.textContent=s+fmtDisp(g);pEl.className='split-val pnl '+(g>=0?'pos':'neg');pPct.textContent=s+p.toFixed(1)+'%'}
   else{pEl.textContent='—';pEl.className='split-val pnl';pPct.textContent='add cost to track'}
