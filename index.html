@@ -438,7 +438,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .metal-btn.selected.platinum .m-name{color:#757575}
 
 .type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.type-btn{padding:12px 6px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg3);color:var(--text-dim);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer;text-align:center;transition:all .2s}
+.type-btn{padding:12px 6px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg3);color:var(--text-dim);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer;text-align:center;transition:all .2s;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .type-btn .icon{font-size:22px;display:block;margin-bottom:4px}
 .type-btn.selected{border-color:var(--brand);background:rgba(139,105,20,.08);color:var(--brand)}
 
@@ -1909,7 +1909,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
       <div class="form-divider">
         <div class="form-divider-line"></div>
-        <div class="form-divider-text">Purchase Details</div>
+        <div class="form-divider-text">Essential Details</div>
         <div class="form-divider-line"></div>
       </div>
 
@@ -1925,13 +1925,6 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
             </div>
           </div>
           <input type="date" id="purchaseDate">
-        </div>
-
-        <!-- Price Details sub-section -->
-        <div class="form-divider" style="margin:14px 0 10px">
-          <div class="form-divider-line"></div>
-          <div class="form-divider-text" style="font-size:10px">Price Details</div>
-          <div class="form-divider-line"></div>
         </div>
 
         <!-- Gift toggle -->
