@@ -1394,7 +1394,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <button class="filter-btn active" onclick="setFilter('all',this)">All Types</button>
       <button class="filter-btn" onclick="setFilter('jewellery',this)">💍 Jewellery</button>
       <button class="filter-btn" onclick="setFilter('coin_bar',this)">🪙 Coins &amp; Bars</button>
-      <button class="filter-btn" onclick="setFilter('raw',this)">⚗️ Raw</button>
+      <button class="filter-btn" onclick="setFilter('raw',this)">🧩 Pieces</button>
     </div>
 
     <div class="section-header">
@@ -1860,7 +1860,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="type-grid">
           <button class="type-btn selected" id="typeJewellery" onclick="selectType('jewellery')"><span class="icon">💍</span>Jewellery</button>
           <button class="type-btn" id="typeCoin_bar" onclick="selectType('coin_bar')"><span class="icon">🪙</span>Coins &amp; Bars</button>
-          <button class="type-btn" id="typeRaw" onclick="selectType('raw')"><span class="icon">🪨</span>Raw</button>
+          <button class="type-btn" id="typeRaw" onclick="selectType('raw')"><span class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle"><path d="M4 7h3.5c0 0 .5-1.5 1.5-1.5S10.5 7 10.5 7H14v3.5c0 0 1.5.5 1.5 1.5s-1.5 1.5-1.5 1.5V17H10.5c0 0-.5-1.5-1.5-1.5S7.5 17 7.5 17H4v-3.5c0 0-1.5-.5-1.5-1.5S4 10.5 4 10.5V7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="none"/><path d="M15 4h3v3c0 0 1.2.4 1.2 1.2S18 9.4 18 9.4V12h-3" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" fill="none" opacity="0.5"/><path d="M15 17h2.5v2.5" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" fill="none" opacity="0.3"/></svg></span>Pieces</button>
+        </div>
+        <div id="piecesHint" style="display:none;border-left:2px solid rgba(184,134,11,.4);padding:8px 12px;background:rgba(184,134,11,.04);border-radius:0 6px 6px 0;margin-top:8px">
+          <div style="font-size:11px;font-weight:500;color:#8B6914;margin-bottom:3px;letter-spacing:.04em;font-family:'Jost',sans-serif">Broken jewellery, loose fragments, unidentified pieces</div>
+          <div style="font-size:11px;color:var(--text-dim);line-height:1.65;font-family:'Jost',sans-serif">For anything that doesn't fit neatly elsewhere — a broken chain, a loose pendant, inherited fragments. Enter your best estimate of weight and purity. You can always update it later.</div>
         </div>
       </div>
 
@@ -3475,7 +3479,7 @@ function renderList(){
     }
     return;
   }
-  const tL={jewellery:'💍 Jewellery',coin_bar:'🪙 Coin/Bar',raw:'⚗️ Raw'};
+  const tL={jewellery:'💍 Jewellery',coin_bar:'🪙 Coin/Bar',raw:'🧩 Pieces'};
   list.innerHTML=f.map(item=>{
     const ri=items.indexOf(item);
     const sD=spotDisplayValue(item.metal,item.grams,item.purity);
@@ -3652,7 +3656,12 @@ function selectMetal(m){
   document.getElementById('metalPlatinum').className='metal-btn platinum'+(m==='platinum'?' selected':'');
   renderGradeGrid();updatePreview();
 }
-function selectType(t){selectedType=t;renderTypeGrid()}
+function selectType(t){
+  selectedType=t;
+  renderTypeGrid();
+  const hint=document.getElementById('piecesHint');
+  if(hint) hint.style.display = t==='raw' ? '' : 'none';
+}
 function selectGrade(l){
   const grades=selectedMetal==='gold'?GOLD_GRADES:selectedMetal==='platinum'?PLATINUM_GRADES:SILVER_GRADES;
   selectedGrade=grades.find(g=>g.label===l);renderGradeGrid();updatePreview();
@@ -4018,7 +4027,7 @@ function openDetail(idx){
   const sD=spotDisplayValue(item.metal,item.grams,item.purity);
   const bLabel=BENCHMARK_LABELS[benchmark]||benchmark;
   const isMCX=benchmark==='MCX';
-  const tL={jewellery:'Jewellery',coin_bar:'Coin / Bar',raw:'Raw / Unrefined'};
+  const tL={jewellery:'Jewellery',coin_bar:'Coin / Bar',raw:'Pieces'};
   document.getElementById('detailTitle').textContent=item.name;
   const acqRows=[
     ['Metal',item.metal==='gold'?'🥇 Gold':'🥈 Silver'],
@@ -4445,7 +4454,7 @@ function generateHoldingsStatement(){
   // Group by metal
   const metals = ['gold','silver','platinum'];
   const metalLabels = {gold:'Gold',silver:'Silver',platinum:'Platinum'};
-  const typeLabels = {jewellery:'Jewellery',coin_bar:'Coin / Bar',raw:'Raw / Unrefined'};
+  const typeLabels = {jewellery:'Jewellery',coin_bar:'Coin / Bar',raw:'Pieces'};
 
   let tableHTML = '';
   let grandTotal = 0;
