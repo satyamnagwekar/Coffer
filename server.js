@@ -2263,7 +2263,61 @@ app.get(`/api/${ADMIN_SLUG}/stats`, requireAdmin, async (req, res) => {
 });
 
 // ─────────────────────────────────────────
-//  FAVICON — inline SVG-based PNG (light, no base64 bloat)
+//  REACTIVATION EMAIL — zero-item users
+// ─────────────────────────────────────────
+app.post(`/api/${ADMIN_SLUG}/reactivation-email`, requireAdmin, async (req, res) => {
+  try {
+    // Find users with no items, registered more than 1 day ago
+    const users = await q(`
+      SELECT u.id, u.email, u.first_name
+      FROM users u
+      WHERE NOT EXISTS (SELECT 1 FROM items i WHERE i.user_id = u.id)
+      AND u.created_at < NOW() - INTERVAL '1 day'
+      AND u.email IS NOT NULL
+      ORDER BY u.created_at DESC
+    `);
+
+    if (!users.rows.length) {
+      return res.json({ sent: 0, message: 'No zero-item users found' });
+    }
+
+    const { dryRun } = req.body;
+    const results = [];
+
+    for (const user of users.rows) {
+      const firstName = user.first_name || 'there';
+      const subject = `Quick question`;
+      const text = `Hi ${firstName},\n\nYou signed up for MyAurum but never added anything — is there something confusing?\n\nHappy to help.\n\nSatyam\nmyaurum.app`;
+      const html = `<div style="font-family:Georgia,serif;font-size:15px;color:#2C2410;line-height:1.8;max-width:480px">
+        <p>Hi ${firstName},</p>
+        <p>You signed up for MyAurum but never added anything — is there something confusing?</p>
+        <p>Happy to help.</p>
+        <p>Satyam<br><a href="https://myaurum.app" style="color:#8B6914;text-decoration:none">myaurum.app</a></p>
+      </div>`;
+
+      if (dryRun) {
+        results.push({ email: user.email, firstName, status: 'dry-run' });
+      } else {
+        try {
+          await sendEmail({ to: user.email, subject, html, text });
+          results.push({ email: user.email, firstName, status: 'sent' });
+          // Small delay to avoid rate limiting
+          await new Promise(r => setTimeout(r, 300));
+        } catch(e) {
+          results.push({ email: user.email, firstName, status: 'failed', error: e.message });
+        }
+      }
+    }
+
+    console.log(`[reactivation] ${dryRun ? 'DRY RUN' : 'SENT'} to ${results.length} users`);
+    res.json({ sent: results.filter(r => r.status === 'sent').length, total: results.length, dryRun: !!dryRun, results });
+  } catch(e) {
+    console.error('[reactivation]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
 // ─────────────────────────────────────────
 // Serve a minimal gold coin SVG as favicon
 const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
