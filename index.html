@@ -1251,10 +1251,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 <div id="exitOverlay" style="display:none;position:fixed;inset:0;background:rgba(44,36,16,.6);backdrop-filter:blur(8px);z-index:2000;align-items:center;justify-content:center;padding:24px">
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px 24px;max-width:320px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.2)">
     <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--text);margin-bottom:8px">Leave MyAurum?</div>
-    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:24px">Your vault is safe. Everything is saved.</div>
+    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:24px">Your vault is safe. Everything is saved.<br>Use your home button to exit.</div>
     <div style="display:flex;flex-direction:column;gap:10px">
       <button onclick="document.getElementById('exitOverlay').style.display='none'" style="padding:12px;background:var(--brand);color:#FDF8F0;border:none;border-radius:8px;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;letter-spacing:.06em;cursor:pointer">Stay in MyAurum</button>
-      <button onclick="window._intentionalExit=true;try{window.close();}catch(e){}history.go(-(history.length))" style="padding:12px;background:transparent;color:var(--text-dim);border:1px solid var(--border);border-radius:8px;font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;letter-spacing:.04em">Leave</button>
     </div>
   </div>
 </div>
