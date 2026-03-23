@@ -2947,7 +2947,7 @@ function openSettings(){
     wBtn.style.borderColor = optedOut ? 'var(--border)' : 'rgba(184,134,11,.25)';
     wBtn.style.color = optedOut ? 'var(--text-dim)' : 'var(--brand)';
   }
-  document.getElementById('settingsModal').classList.add('open');
+  openModalWithHistory('settingsModal');
 }
 
 async function toggleWeeklyDigest(){
@@ -3244,7 +3244,7 @@ function openEditProfile(){
   document.getElementById('epPassword').value='';
   document.getElementById('epPasswordConfirm').value='';
   document.getElementById('editProfileMsg').className='msg';
-  document.getElementById('editProfileModal').classList.add('open');
+  openModalWithHistory('editProfileModal');
 }
 
 async function saveProfile(){
@@ -3288,6 +3288,12 @@ function setNavTab(tab,btn){
   else { _vaultNotesRevealed=false; clearTimeout(_vaultNotesTimer); }
   if(tab==='chart'){updateChartPanel();renderHistoryChart()}
   if(tab==='alerts'){refreshAlertsPanel()}
+  // Push tab state to browser history
+  const state={type:'tab',tab};
+  const url='#'+tab;
+  if(history.state?.tab !== tab){
+    history.pushState(state, '', url);
+  }
 }
 
 // ══════════════════════════════════════════
@@ -3615,7 +3621,7 @@ function openAddModal(){
   const phb=document.getElementById('purityHelperBox');
   if(phb)phb.style.display='none';
   renderGradeGrid();renderTypeGrid();
-  document.getElementById('addModal').classList.add('open');
+  openModalWithHistory('addModal');
 }
 
 function openAddModalWith(metal, type){
@@ -3865,7 +3871,7 @@ function openEditModal(idx){
   document.getElementById('editHeldBy').value=item.heldBy||'Self';
   document.getElementById('editNominee').value=item.nominee||'';
   closeModal('detailModal');
-  document.getElementById('editModal').classList.add('open');
+  openModalWithHistory('editModal');
 }
 
 async function saveEditItem(){
@@ -3925,7 +3931,7 @@ function openSellModal(idx){
   document.getElementById('sellCurrency').value=currency!=='USD'?currency:'USD';
   document.getElementById('sellNotes').value='';
   updateSellPreview();
-  document.getElementById('sellModal').classList.add('open');
+  openModalWithHistory('sellModal');
 }
 
 function updateSellPreview(){
@@ -3993,7 +3999,7 @@ function openGiftModal(idx){
   } else {
     document.getElementById('giftGain').textContent='—';
   }
-  document.getElementById('giftModal').classList.add('open');
+  openModalWithHistory('giftModal');
 }
 
 async function confirmGift(){
@@ -4107,7 +4113,7 @@ function openDetail(idx){
     })()}
     <div class="detail-actions">${editBtn}${actionBtn}</div>
     <button class="btn-danger" onclick="deleteItem(${idx})">Remove from Aurum</button>`;
-  document.getElementById('detailModal').classList.add('open');
+  openModalWithHistory('detailModal');
 }
 
 async function deleteItem(idx){
@@ -4124,7 +4130,13 @@ async function deleteItem(idx){
 // ══════════════════════════════════════════
 function openLightbox(src){document.getElementById('lightboxImg').src=src;document.getElementById('lightbox').classList.add('open')}
 function closeLightbox(){document.getElementById('lightbox').classList.remove('open')}
-function closeModal(id){document.getElementById(id).classList.remove('open')}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  // If this modal was the last pushed state, go back
+  if(history.state?.type==='modal' && history.state?.modal===id){
+    history.back();
+  }
+}
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
 
 // ══════════════════════════════════════════
@@ -5283,7 +5295,65 @@ window.addEventListener('DOMContentLoaded',()=>{
   checkResetToken();
   checkVerifyToken();
   initGoogleSignIn();
+
+  // ── SPA ROUTING ──
+  // Push initial state so we always have something in the stack
+  const initTab = sessionStorage.getItem('myaurum_tab') || 'vault';
+  history.replaceState({type:'tab', tab:initTab}, '', '#'+initTab);
+
+  // Handle back/forward
+  window.addEventListener('popstate', e => {
+    const state = e.state;
+    if(!state){ return; }
+
+    if(state.type === 'modal'){
+      // Popstate from a modal — close it silently (no history.back() loop)
+      const el = document.getElementById(state.modal);
+      if(el) el.classList.remove('open');
+      return;
+    }
+
+    if(state.type === 'tab'){
+      // Navigate to tab without pushing new history entry
+      const tab = state.tab;
+      const tabBtnMap = {vault:'navMyAurum', chart:'navChart', alerts:'navAlerts', profile:'navProfile'};
+      const btn = document.getElementById(tabBtnMap[tab]);
+      if(btn){
+        document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.content-panel').forEach(p=>p.classList.remove('active'));
+        const panel = document.getElementById('panel'+tab.charAt(0).toUpperCase()+tab.slice(1));
+        if(panel) panel.classList.add('active');
+        document.getElementById('fabWrap').style.display=tab==='vault'?'flex':'none';
+        sessionStorage.setItem('myaurum_tab', tab);
+        if(tab==='profile') refreshProfile();
+        if(tab==='chart'){updateChartPanel();renderHistoryChart();}
+        if(tab==='alerts') refreshAlertsPanel();
+      }
+      return;
+    }
+
+    // Nothing left in our stack — confirm exit
+    if(!state.type){
+      const confirmed = confirm('Leave MyAurum?');
+      if(confirmed){
+        history.back();
+      } else {
+        // Re-push current state so back works again next time
+        const tab = sessionStorage.getItem('myaurum_tab') || 'vault';
+        history.pushState({type:'tab', tab}, '', '#'+tab);
+      }
+    }
+  });
+
+  // Push an "exit sentinel" before our first state so back triggers the confirm
+  history.pushState({type:'tab', tab:initTab}, '', '#'+initTab);
 });
+
+function openModalWithHistory(id){
+  document.getElementById(id).classList.add('open');
+  history.pushState({type:'modal', modal:id}, '', '#'+id);
+}
 
 // Global error reporting to Sentry
 window.addEventListener('unhandledrejection', e => {
