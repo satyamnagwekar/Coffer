@@ -1472,7 +1472,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div class="history-note" id="historyNote">Price history simulated from current spot</div>
       </div>
 
-      <!-- Export section -->
+      <div style="margin:0 14px 16px;padding:10px 14px;background:rgba(139,105,20,.04);border:1px solid rgba(139,105,20,.12);border-radius:8px">
+        <div style="font-size:10px;color:var(--text-dim);line-height:1.75;font-family:'Jost',sans-serif">
+          <strong style="color:var(--text-mid);letter-spacing:.04em">Chart disclaimer</strong><br>
+          Price data is sourced from global spot markets and is displayed for informational purposes only. Historical prices are daily closes in USD and do not account for historical exchange rate fluctuations, import duties, making charges, or local market premiums. The chart does not constitute financial advice, a valuation, or a recommendation to buy or sell. Past price performance is not indicative of future results. Actual resale values may differ materially from spot estimates. MyAurum is a personal record-keeping tool — not a regulated financial service.
+        </div>
+      </div>
       <div class="export-section">
         <div class="export-title">Export Your Data</div>
         <div class="export-desc">Download a complete record of your MyAurum holdings for your own records or tax purposes.</div>
@@ -3823,6 +3828,10 @@ async function addItem(){
   try{
     const newItem=await api('POST','/items',payload);
     items.unshift(newItem);
+    // Invalidate chart cache if new item has an older purchase date
+    if(newItem.purchaseDate && priceHistoryCache && priceHistoryCache.from){
+      if(newItem.purchaseDate < priceHistoryCache.from) priceHistoryCache=null;
+    }
     closeModal('addModal');updateAll();
     if(activeCount+1===20){
       // Fire 20-holdings milestone email (fire and forget)
@@ -4278,29 +4287,39 @@ function drawHistoryCanvas(rows){
 
   const days=rows.length>1?Math.round((new Date(rows[rows.length-1].recorded_at)-new Date(rows[0].recorded_at))/(86400000)):0;
   const goldLabel = isINR
-    ? `Gold ₹${Math.round(gH[n]).toLocaleString('en-IN')}/10g`
+    ? `Gold ₹${inrPer10g('gold').toLocaleString('en-IN')}/10g`
     : `Gold ${sym}${gH[n].toFixed(2)}/oz`;
   const silverLabel = isINR
     ? `Silver ₹${inrPer10g('silver').toLocaleString('en-IN')}/10g`
     : `Silver ${sym}${(rows[n].silver * rate).toFixed(2)}/oz`;
-  document.getElementById('historyNote').textContent=`${days}d of real spot data · ${goldLabel} · ${silverLabel}`;
+  const fromDate = new Date(rows[0].recorded_at).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+  const toDate = new Date(rows[n].recorded_at).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+  document.getElementById('historyNote').textContent=`${fromDate} — ${toDate} · ${goldLabel} · ${silverLabel}`;
 }
 
 async function renderHistoryChart(){
   if(priceHistoryLoading)return;
-  // Use cache if fresh (< 5 min)
   if(priceHistoryCache&&Date.now()-priceHistoryCache.fetchedAt<5*60*1000){
     drawHistoryCanvas(priceHistoryCache.rows);return;
   }
   priceHistoryLoading=true;
   document.getElementById('historyNote').textContent='Loading price history…';
   try{
-    const rows=await api('GET','/prices/history?days=30');
-    priceHistoryCache={rows,fetchedAt:Date.now()};
+    // Find oldest purchase date across all items
+    const activePurchaseDates = items
+      .filter(i=>i.purchaseDate&&i.purchaseDate.length>=10)
+      .map(i=>i.purchaseDate.slice(0,10))
+      .sort();
+    const oldestDate = activePurchaseDates.length ? activePurchaseDates[0] : null;
+    const url = oldestDate
+      ? `/prices/history?from=${oldestDate}`
+      : `/prices/history?days=90`;
+    const rows = await api('GET', url);
+    priceHistoryCache={rows,fetchedAt:Date.now(),from:oldestDate};
     drawHistoryCanvas(rows);
   }catch(e){
-    // Fall back to simulated data so the chart isn't blank
-    const days=30,simRows=[];
+    // Fall back to simulated data
+    const days=90,simRows=[];
     let g=prices.gold,s=prices.silver;
     const now=Date.now();
     for(let i=days;i>=0;i--){
@@ -4309,7 +4328,7 @@ async function renderHistoryChart(){
     }
     simRows.reverse();
     drawHistoryCanvas(simRows);
-    document.getElementById('historyNote').textContent=`Estimated 30-day trend (live history builds up over time)`;
+    document.getElementById('historyNote').textContent=`Estimated trend (live history builds as data accumulates)`;
   }finally{priceHistoryLoading=false;}
 }
 
