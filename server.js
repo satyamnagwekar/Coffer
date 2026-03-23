@@ -124,7 +124,9 @@ async function initDB() {
       id          SERIAL PRIMARY KEY,
       gold        REAL NOT NULL,
       silver      REAL NOT NULL,
-      recorded_at TIMESTAMPTZ DEFAULT NOW()
+      platinum    REAL,
+      recorded_at TIMESTAMPTZ DEFAULT NOW(),
+      is_daily    BOOLEAN DEFAULT FALSE
     );
     CREATE TABLE IF NOT EXISTS email_verify_tokens (
       id         SERIAL PRIMARY KEY,
@@ -178,6 +180,8 @@ async function initDB() {
   await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS gifted_at TEXT`);
   await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS gift_notes TEXT`);
   await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS received_as_gift BOOLEAN DEFAULT FALSE`);
+  await q(`ALTER TABLE price_history ADD COLUMN IF NOT EXISTS platinum REAL`);
+  await q(`ALTER TABLE price_history ADD COLUMN IF NOT EXISTS is_daily BOOLEAN DEFAULT FALSE`);
   await q(`ALTER TABLE items DROP CONSTRAINT IF EXISTS items_metal_check`);
   await q(`ALTER TABLE items ADD CONSTRAINT items_metal_check CHECK (metal IN ('gold','silver','platinum'))`);
 
@@ -201,6 +205,95 @@ async function initDB() {
 }
 
 let priceCache = { gold: 3320, silver: 33.2, platinum: 980, usd_inr: 83.5, usd_aed: 3.67, usd_eur: 0.92, usd_gbp: 0.79 };
+
+// ─────────────────────────────────────────
+//  HISTORICAL PRICE BACKFILL (stooq.com)
+// ─────────────────────────────────────────
+function fetchStooq(symbol, fromDate, toDate) {
+  // fromDate, toDate: 'YYYYMMDD'
+  return new Promise((resolve, reject) => {
+    const url = `https://stooq.com/q/d/l/?s=${symbol}&d1=${fromDate}&d2=${toDate}&i=d`;
+    const req = https.get(url, { timeout: 15000 }, res => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => {
+        // CSV: Date,Open,High,Low,Close,Volume
+        const rows = [];
+        const lines = data.trim().split('\n');
+        for (let i = 1; i < lines.length; i++) {
+          const parts = lines[i].split(',');
+          if (parts.length >= 5 && parts[0].match(/^\d{4}-\d{2}-\d{2}$/)) {
+            rows.push({ date: parts[0], close: parseFloat(parts[4]) });
+          }
+        }
+        resolve(rows);
+      });
+    });
+    req.on('error', reject);
+    req.on('timeout', () => { req.destroy(); reject(new Error('stooq timeout')); });
+  });
+}
+
+async function backfillPriceHistory() {
+  try {
+    // Find the oldest purchase date across all items
+    const oldest = await q(`
+      SELECT MIN(purchase_date) as oldest_date FROM items
+      WHERE purchase_date IS NOT NULL AND purchase_date != ''
+    `);
+    if (!oldest.rows[0]?.oldest_date) {
+      console.log('[backfill] No purchase dates found, skipping');
+      return;
+    }
+
+    // Find the oldest date we already have in price_history
+    const existingOldest = await q(`SELECT MIN(recorded_at) as oldest FROM price_history WHERE is_daily = TRUE`);
+    const targetStart = new Date(oldest.rows[0].oldest_date);
+    const dbOldest = existingOldest.rows[0]?.oldest ? new Date(existingOldest.rows[0].oldest) : null;
+
+    // Check if we already have data going back far enough (within 2 days)
+    if (dbOldest && (dbOldest - targetStart) < 2 * 24 * 60 * 60 * 1000) {
+      console.log('[backfill] History already covers oldest purchase date, skipping');
+      return;
+    }
+
+    // Format dates for stooq
+    const fmt = d => d.toISOString().slice(0,10).replace(/-/g,'');
+    const fromStr = fmt(targetStart);
+    const toStr = fmt(new Date());
+
+    console.log(`[backfill] Fetching gold history from ${fromStr} to ${toStr}`);
+    const goldRows = await fetchStooq('xauusd', fromStr, toStr);
+    const silverRows = await fetchStooq('xagusd', fromStr, toStr);
+
+    if (!goldRows.length) {
+      console.log('[backfill] No data returned from stooq');
+      return;
+    }
+
+    // Build a silver lookup by date
+    const silverByDate = {};
+    for (const r of silverRows) silverByDate[r.date] = r.close;
+
+    // Insert daily closes — skip dates we already have
+    let inserted = 0;
+    for (const g of goldRows) {
+      const silver = silverByDate[g.date] || null;
+      if (!silver) continue;
+      try {
+        await q(`
+          INSERT INTO price_history (gold, silver, is_daily, recorded_at)
+          VALUES ($1, $2, TRUE, $3::date)
+          ON CONFLICT DO NOTHING
+        `, [g.close, silver, g.date]);
+        inserted++;
+      } catch(e) { /* skip duplicates */ }
+    }
+    console.log(`[backfill] Inserted ${inserted} daily price records`);
+  } catch(e) {
+    console.warn('[backfill] Error:', e.message);
+  }
+}
 
 function fetchJSON(url) {
   return new Promise((resolve, reject) => {
@@ -323,8 +416,10 @@ async function refreshPrices() {
     [gold, silver, usd_inr, usd_aed, usd_eur, usd_gbp]);
 
   try {
-    await q('INSERT INTO price_history (gold, silver) VALUES ($1, $2)', [gold, silver]);
-    await q("DELETE FROM price_history WHERE recorded_at < NOW() - INTERVAL '90 days'");
+    await q('INSERT INTO price_history (gold, silver, platinum, is_daily) VALUES ($1, $2, $3, FALSE)',
+      [gold, silver, priceCache.platinum||null]);
+    // Only delete intraday snapshots older than 90 days — keep daily records forever
+    await q("DELETE FROM price_history WHERE recorded_at < NOW() - INTERVAL '90 days' AND is_daily = FALSE");
   } catch(e) { console.warn('[history] Could not record price snapshot:', e.message); }
 
   checkAndFireAlerts().catch(e => console.error('[alerts] checkAndFireAlerts error:', e.message));
@@ -1573,14 +1668,31 @@ async function sendWeeklyDigests() {
 // ─────────────────────────────────────────
 app.get('/api/prices/history', async (req, res) => {
   try {
-    const days = Math.min(parseInt(req.query.days) || 30, 90);
-    const r = await q(
-      `SELECT gold, silver, recorded_at FROM price_history
-       WHERE recorded_at > NOW() - ($1 || ' days')::INTERVAL
-       ORDER BY recorded_at ASC`,
-      [days]
-    );
-    res.json(r.rows);
+    let rows;
+    if (req.query.from) {
+      // Fetch from a specific date to now
+      rows = await q(
+        `SELECT gold, silver, platinum, recorded_at FROM price_history
+         WHERE recorded_at >= $1
+         ORDER BY recorded_at ASC`,
+        [req.query.from]
+      );
+    } else {
+      const days = Math.min(parseInt(req.query.days) || 30, 3650);
+      rows = await q(
+        `SELECT gold, silver, platinum, recorded_at FROM price_history
+         WHERE recorded_at > NOW() - ($1 || ' days')::INTERVAL
+         ORDER BY recorded_at ASC`,
+        [days]
+      );
+    }
+    // Deduplicate to one record per day (prefer daily records, else last intraday)
+    const byDay = {};
+    for (const r of rows.rows) {
+      const day = r.recorded_at.toISOString().slice(0, 10);
+      if (!byDay[day] || r.is_daily) byDay[day] = r;
+    }
+    res.json(Object.values(byDay).sort((a, b) => new Date(a.recorded_at) - new Date(b.recorded_at)));
   } catch(e) { res.status(500).json({ error: 'Server error' }); }
 });
 
@@ -2256,6 +2368,11 @@ initDB()
 
     // Fetch IBJA on startup too
     fetchIBJARates().catch(e => console.error('[ibja] Startup fetch failed:', e.message));
+
+    // Backfill price history from oldest purchase date
+    setTimeout(() => {
+      backfillPriceHistory().catch(e => console.error('[backfill] Startup error:', e.message));
+    }, 5000); // wait 5s after startup to avoid hammering on cold boot
 
     // Weekly digest — Monday 8:00am IST = 02:30 UTC
     cron.schedule('30 2 * * 1', async () => {
