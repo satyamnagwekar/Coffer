@@ -1254,7 +1254,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:24px">Your vault is safe. Everything is saved.</div>
     <div style="display:flex;flex-direction:column;gap:10px">
       <button onclick="document.getElementById('exitOverlay').style.display='none'" style="padding:12px;background:var(--brand);color:#FDF8F0;border:none;border-radius:8px;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;letter-spacing:.06em;cursor:pointer">Stay in MyAurum</button>
-      <button onclick="document.getElementById('exitOverlay').style.display='none';history.go(-2)" style="padding:12px;background:transparent;color:var(--text-dim);border:1px solid var(--border);border-radius:8px;font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;letter-spacing:.04em">Leave</button>
+      <button onclick="window._intentionalExit=true;window.location.href='about:blank'" style="padding:12px;background:transparent;color:var(--text-dim);border:1px solid var(--border);border-radius:8px;font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;letter-spacing:.04em">Leave</button>
     </div>
   </div>
 </div>
@@ -5339,7 +5339,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 
   // Desktop: standard beforeunload warning
   window.addEventListener('beforeunload', e => {
-    if(currentUser){
+    if(currentUser && !window._intentionalExit){
       e.preventDefault();
       e.returnValue = '';
     }
