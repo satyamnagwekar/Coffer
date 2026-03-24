@@ -41,7 +41,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <style>
 :root{
   /* Brand — dark burnished gold */
@@ -107,12 +106,6 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .pw-wrap input{padding-right:40px}
 .pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#BBB;cursor:pointer;font-size:14px;padding:4px;line-height:1}
 .pw-toggle:hover{color:#B8860B}
-
-.btn-auth{width:100%;padding:12px;background:linear-gradient(135deg,#B8860B,#D4A017);border:none;border-radius:9px;color:#fff;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.1em;cursor:pointer;font-weight:500;margin-top:2px;transition:all .2s}
-.btn-auth:hover{background:linear-gradient(135deg,#D4A017,#F0B429);box-shadow:0 4px 16px rgba(184,134,11,.3)}
-
-.auth-disclaimer{font-size:11px;color:#AAA;line-height:1.6;padding:10px;background:#F5F0E8;border-radius:8px;border:1px solid #E8E0D0}
-.auth-disclaimer strong{color:#888}
 
 /* Right side: headline fills height of login box */
 .auth-hero{flex:1;min-width:260px;padding:0;display:flex;flex-direction:column;justify-content:center}
@@ -204,7 +197,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .vault-name{font-size:13px;color:var(--text);font-weight:500}
 .vault-meta{font-size:11px;color:var(--text-dim);margin-top:2px}
 .vault-actions{display:flex;gap:8px}
-.vault-btn{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:10px;color:var(--text-mid);cursor:pointer;font-family:'Jost',sans-serif;letter-spacing:.06em}
+.vault-btn{padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:10px;color:var(--text-mid);cursor:pointer;font-family:'Jost',sans-serif;letter-spacing:.06em}
 .vault-btn:hover{border-color:var(--gold-dim);color:var(--gold)}
 .vault-btn.danger:hover{border-color:rgba(176,48,48,.3);color:var(--red)}
 .btn-add-vault{width:100%;padding:12px;border:1px dashed var(--border);border-radius:var(--radius-sm);background:transparent;font-family:'Jost',sans-serif;font-size:11px;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-top:8px}
@@ -277,7 +270,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .nav-tab.active::after{content:'';position:absolute;bottom:0;left:15%;right:15%;height:2px;background:var(--brand);border-radius:2px 2px 0 0}
 .nav-tab .nav-icon{display:flex;align-items:center;justify-content:center;margin-bottom:4px}
 .nav-tab .nav-icon svg{width:20px;height:20px;display:block}
-.nav-tab .nav-label{font-size:10px;letter-spacing:.06em}
+.nav-tab .nav-label{font-size:11px;letter-spacing:.06em}
 
 @media (min-width:640px){
   .nav-tab .nav-icon svg{width:26px;height:26px}
@@ -287,7 +280,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   #pageReloadBtn{display:flex!important}
   /* Centre modals as dialogs on desktop */
   .modal-overlay{align-items:center;justify-content:center;padding:20px}
-  .modal{width:100%;max-width:480px;border-radius:20px;animation:fadeInScale .25s cubic-bezier(.32,.72,0,1)}
+  .modal{width:100%;max-width:480px;border-radius:20px;animation:fadeInScale .3s cubic-bezier(.32,.72,0,1)}
   .modal-handle{display:none}
 }
 @keyframes fadeInScale{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
@@ -312,7 +305,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .summary-card::after{display:none}
 .summary-eyebrow{font-size:14px;letter-spacing:.16em;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px}
 .summary-value{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;color:var(--brand);line-height:1;margin-bottom:3px}
-.summary-usd{font-size:12px;color:var(--text-dim);margin-bottom:16px}
+.summary-usd{font-size:12px;color:var(--text-dim);margin-bottom:16px;min-height:16px}
 .summary-split{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding-top:16px;border-top:1px solid var(--border)}
 .split-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px}
 .split-val{font-size:18px;font-weight:500}
@@ -325,10 +318,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* Holdings tabs */
 .htabs{display:flex;flex-wrap:wrap;margin:0 14px 10px;background:var(--bg3);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border);gap:2px}
 .htab{flex:1;min-width:fit-content;padding:7px 6px;border-radius:9px;border:none;background:transparent;color:var(--text-dim);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;font-weight:500}
-.htab.active{background:#1a2a4a;color:#7eb3f5;border:1px solid rgba(100,160,240,.3);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.htab.active{background:var(--brand);color:#FDF8F0;border:1px solid var(--brand-dim);box-shadow:0 1px 4px rgba(139,105,20,.25)}
 
 .filter-bar{display:flex;gap:6px;padding:0 14px 10px;overflow-x:auto}
-.filter-btn{padding:5px 13px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.filter-btn{padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer;transition:all .2s;white-space:nowrap}
 .filter-btn.active{background:var(--bg3);border-color:rgba(240,180,41,.3);color:var(--gold-light)}
 
 .section-header{display:flex;align-items:center;justify-content:space-between;padding:0 16px 10px}
@@ -410,7 +403,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .modal-header{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 20px 14px;border-bottom:1px solid var(--border)}
 .modal-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--text)}
 .modal-subtitle{font-size:11px;color:var(--text-dim);margin-top:2px}
-.modal-close{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--bg3);color:var(--text-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.modal-close{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--bg3);color:var(--text-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .modal-body{padding:20px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;-webkit-overflow-scrolling:touch}
 
 /* MyAurum form fields */
@@ -573,11 +566,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .perf-val.silver-c{color:var(--silver-bright)}
 
 /* History chart */
-.history-chart-wrap{background:#1C2128;border:1px solid #2D3340;border-radius:var(--radius);padding:12px;margin-bottom:10px;overflow:hidden}
+.history-chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px;overflow:hidden}
 .history-legend{display:flex;align-items:center;gap:14px;padding:0 4px;margin-bottom:8px}
 .hl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.gold-dot{background:#F0B429}
-.silver-dot{background:rgba(120,180,230,.9)}
+.gold-dot{background:var(--brand)}
+.silver-dot{background:var(--silver-bright)}
 .hl-lbl{font-size:11px;color:var(--text-dim)}
 .history-note{font-size:11px;color:var(--text-dim);text-align:center;padding:4px 0 8px}
 
@@ -1378,7 +1371,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div class="split-sub" id="silverWeight">0g</div>
         </div>
         <div>
-          <div class="split-label">📈 G/L</div>
+          <div class="split-label">◈ G/L</div>
           <div class="split-val pnl" id="totalPnl">—</div>
           <div class="split-sub" id="totalPnlPct">vs cost paid</div>
         </div>
@@ -1743,7 +1736,6 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
           <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px;font-weight:500">Account</div>
           <button class="btn-profile-action btn-edit-profile" onclick="closeModal('settingsModal');openEditProfile()" style="margin-bottom:0">✏ Edit Profile</button>
           <div id="settingsPremiumSection" style="margin-top:12px"></div>
-          <div id="settingsPremiumSection" style="margin-top:12px"></div>
         </div>
 
         <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
@@ -1828,45 +1820,6 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     </div>
   </div>
 
-  <!-- ── PREMIUM UPGRADE MODAL ── -->
-  <div class="modal-overlay" id="premiumModal">
-    <div class="modal" style="max-width:420px">
-      <div class="modal-header">
-        <div class="modal-title" style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--brand)">MyAurum Premium</div>
-        <button class="modal-close" onclick="closeModal('premiumModal')">✕</button>
-      </div>
-      <div style="padding:0 20px 24px">
-        <div style="text-align:center;padding:16px 0 20px">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--brand)">₹600</div>
-          <div style="font-size:11px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-top:2px">per year</div>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)">
-            <span style="color:var(--brand);font-size:16px">✓</span> Unlimited holdings
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)">
-            <span style="color:var(--brand);font-size:16px">✓</span> Live portfolio share link
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)">
-            <span style="color:var(--brand);font-size:16px">✓</span> Succession PDF with nominees
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)">
-            <span style="color:var(--brand);font-size:16px">✓</span> Holdings Statement
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)">
-            <span style="color:var(--brand);font-size:16px">✓</span> Priority support
-          </div>
-        </div>
-
-        <button id="upgradeBtn" onclick="startCheckout()" style="width:100%;padding:14px;background:var(--brand);color:#FDF8F0;border:none;border-radius:var(--radius);font-family:'Jost',sans-serif;font-size:13px;font-weight:500;letter-spacing:.08em;cursor:pointer;margin-bottom:12px">Upgrade to Premium →</button>
-
-        <div style="font-size:10px;color:var(--text-dim);text-align:center;line-height:1.7">
-          Cancel anytime. If you cancel, your premium access continues until the end of your current billing period. No refund is issued for the remaining period — you keep what you paid for. After expiry, your account reverts to the free tier. Your holdings are never deleted.
-        </div>
-      </div>
-    </div>
-  </div>
 
   <div class="fab-wrap" id="fabWrap">
     <div class="fab-label">Add holding</div>
@@ -2644,10 +2597,6 @@ function premiumWaitlist(){
   document.getElementById('premiumModal').classList.add('open');
 }
 
-function premiumWaitlist(){
-  document.getElementById('premiumModal').classList.add('open');
-}
-
 async function generateShareLink(){
   const btn = document.getElementById('generateShareBtn');
   btn.textContent = 'Generating…'; btn.disabled = true;
@@ -2785,15 +2734,6 @@ async function deleteVaultNote(i){
 // ══════════════════════════════════════════
 // PREMIUM / PAYMENTS
 // ══════════════════════════════════════════
-function openUpgradeModal(){
-  closeModal('settingsModal');
-  document.getElementById('premiumModal').classList.add('open');
-}
-
-function premiumWaitlist(){
-  document.getElementById('premiumModal').classList.add('open');
-}
-
 async function startCheckout(){
   const btn = document.getElementById('upgradeBtn');
   btn.textContent = 'Loading…'; btn.disabled = true;
@@ -2826,82 +2766,6 @@ async function startCheckout(){
           refreshProfile();
           updateAll();
           showToast('Welcome to MyAurum Premium! 🎉', 'ok', 5000);
-        } catch(e) {
-          showToast('Payment received but verification failed. Please contact support.', 'error', 6000);
-        }
-      },
-      modal: {
-        ondismiss: () => {
-          btn.textContent = 'Upgrade to Premium →'; btn.disabled = false;
-        }
-      }
-    };
-    const rzp = new window.Razorpay(options);
-    rzp.open();
-    btn.textContent = 'Upgrade to Premium →'; btn.disabled = false;
-  } catch(e) {
-    showToast(e.message || 'Could not start checkout. Please try again.', 'error');
-    btn.textContent = 'Upgrade to Premium →'; btn.disabled = false;
-  }
-}
-
-async function cancelSubscription(){
-  if(!confirm('Cancel your subscription?\n\nYour premium access will continue until the end of your current billing period. No refund will be issued. Your holdings will never be deleted.')) return;
-  try {
-    const data = await api('POST', '/payment/cancel', {});
-    currentUser.razorpaySubscriptionId = null;
-    showToast('Subscription cancelled. Access continues until period end.', 'ok', 5000);
-    closeModal('settingsModal');
-    refreshProfile();
-  } catch(e) {
-    showToast(e.message || 'Could not cancel. Please try again.', 'error');
-  }
-}
-
-// ══════════════════════════════════════════
-// PREMIUM / PAYMENTS
-// ══════════════════════════════════════════
-function openUpgradeModal(){
-  closeModal('settingsModal');
-  document.getElementById('premiumModal').classList.add('open');
-}
-
-function premiumWaitlist(){
-  document.getElementById('premiumModal').classList.add('open');
-}
-
-async function startCheckout(){
-  const btn = document.getElementById('upgradeBtn');
-  btn.textContent = 'Loading…'; btn.disabled = true;
-  try {
-    const data = await api('POST', '/payment/create-subscription', {});
-    if (data.error) {
-      showToast(data.error, 'error', 5000);
-      btn.textContent = 'Upgrade to Premium →'; btn.disabled = false;
-      return;
-    }
-    const options = {
-      key: data.keyId,
-      subscription_id: data.subscriptionId,
-      name: 'MyAurum',
-      description: data.description,
-      image: 'https://myaurum.app/og-image.png',
-      prefill: data.prefill,
-      theme: { color: '#B8860B' },
-      handler: async function(response) {
-        try {
-          const verify = await api('POST', '/payment/verify', {
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_subscription_id: response.razorpay_subscription_id,
-            razorpay_signature: response.razorpay_signature,
-          });
-          currentUser.isPremium = true;
-          currentUser.premiumExpiresAt = verify.premiumExpiresAt;
-          currentUser.razorpaySubscriptionId = response.razorpay_subscription_id;
-          closeModal('premiumModal');
-          refreshProfile();
-          updateAll();
-          showToast('Welcome to MyAurum Premium! ??', 'ok', 5000);
         } catch(e) {
           showToast('Payment received but verification failed. Please contact support.', 'error', 6000);
         }
@@ -3642,7 +3506,7 @@ function renderList(){
       } else {
         const metalName = activeHTab==='gold'?'gold':activeHTab==='silver'?'silver':activeHTab==='platinum'?'platinum':'';
         const sub = metalName ? `No active ${metalName} holdings. Tap + to add one.` : 'No holdings match this filter.';
-        list.innerHTML=`<div class="empty-state"><div class="icon">✦</div><div class="title">Nothing here</div><div class="sub">${sub}</div></div>`;
+        list.innerHTML=`<div class="empty-state"><div class="icon">◈</div><div class="title">Nothing here yet</div><div class="sub">${sub}</div></div>`;
       }
     }
     return;
@@ -4420,7 +4284,7 @@ function drawHistoryCanvas(rows){
   const W=canvas.width=canvas.parentElement.offsetWidth-24||320;
   const H=180;canvas.height=H;ctx.clearRect(0,0,W,H);
   if(!rows||!rows.length){
-    ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='11px Jost,sans-serif';ctx.textAlign='center';
+    ctx.fillStyle='rgba(139,105,20,.5)';ctx.font='11px Jost,sans-serif';ctx.textAlign='center';
     ctx.fillText('No history yet — check back after prices update',W/2,H/2);
     document.getElementById('historyNote').textContent='Price snapshots recorded every 5 minutes · builds up over time';
     return;
@@ -4443,7 +4307,7 @@ function drawHistoryCanvas(rows){
   const ypS = v => pad.t + ph - ((v-sMin)/(sMax-sMin||1))*ph;
 
   // Grid lines
-  ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=1;
+  ctx.strokeStyle='rgba(139,105,20,.08)';ctx.lineWidth=1;
   [0,.25,.5,.75,1].forEach(f=>{
     const y=pad.t+ph*f;
     ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
@@ -4452,18 +4316,18 @@ function drawHistoryCanvas(rows){
   // Silver line
   ctx.beginPath();
   sH.forEach((v,i)=>{i===0?ctx.moveTo(xp(i),ypS(v)):ctx.lineTo(xp(i),ypS(v))});
-  ctx.strokeStyle='rgba(120,180,230,.9)';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle='rgba(74,96,112,.8)';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
 
   // Gold line
   ctx.beginPath();
   gH.forEach((v,i)=>{i===0?ctx.moveTo(xp(i),ypG(v)):ctx.lineTo(xp(i),ypG(v))});
-  ctx.strokeStyle='#F0B429';ctx.lineWidth=2.5;ctx.stroke();
+  ctx.strokeStyle='#8B6914';ctx.lineWidth=2.5;ctx.stroke();
 
   // Gold endpoint dot
-  ctx.beginPath();ctx.arc(xp(n),ypG(gH[n]),4,0,2*Math.PI);ctx.fillStyle='#F0B429';ctx.fill();
+  ctx.beginPath();ctx.arc(xp(n),ypG(gH[n]),4,0,2*Math.PI);ctx.fillStyle='#8B6914';ctx.fill();
 
   // Axis labels
-  ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='9px Jost,sans-serif';ctx.textAlign='left';
+  ctx.fillStyle='rgba(139,105,20,.5)';ctx.font='9px Jost,sans-serif';ctx.textAlign='left';
   const oldest=new Date(rows[0].recorded_at).toLocaleDateString([],{month:'short',day:'numeric'});
   ctx.fillText(oldest,pad.l,H-4);
   ctx.textAlign='right';ctx.fillText('Today',W-pad.r,H-4);
