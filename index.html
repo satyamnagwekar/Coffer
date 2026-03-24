@@ -4288,10 +4288,6 @@ function openLightbox(src){document.getElementById('lightboxImg').src=src;docume
 function closeLightbox(){document.getElementById('lightbox').classList.remove('open')}
 function closeModal(id){
   document.getElementById(id).classList.remove('open');
-  // If this modal was the last pushed state, go back
-  if(history.state?.type==='modal' && history.state?.modal===id){
-    history.back();
-  }
 }
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
 
@@ -5512,7 +5508,11 @@ function showExitOverlay(){
 
 function openModalWithHistory(id){
   document.getElementById(id).classList.add('open');
-  history.pushState({type:'modal', modal:id}, '', '#'+id);
+  // Only push history if no other modal is currently open (avoid nested modal history conflicts)
+  const anyOpen = [...document.querySelectorAll('.modal-overlay')].some(m => m.classList.contains('open') && m.id !== id);
+  if(!anyOpen){
+    history.pushState({type:'modal', modal:id}, '', '#'+id);
+  }
 }
 
 // Global error reporting to Sentry
