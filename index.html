@@ -1258,6 +1258,32 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   </div>
 </div>
 
+<!-- Session lock overlay -->
+<div id="lockOverlay" style="display:none;position:fixed;inset:0;background:rgba(20,15,5,.92);backdrop-filter:blur(12px);z-index:3000;align-items:center;justify-content:center;padding:24px">
+  <div style="width:100%;max-width:340px;text-align:center">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:300;letter-spacing:.18em;color:#B8A070;margin-bottom:4px">MYAURUM</div>
+    <div style="font-size:11px;color:rgba(184,160,112,.5);letter-spacing:.12em;text-transform:uppercase;margin-bottom:32px">Session locked</div>
+    <div style="background:rgba(253,248,240,.06);border:1px solid rgba(184,160,112,.15);border-radius:14px;padding:28px 24px">
+      <div style="font-size:12px;color:rgba(184,160,112,.7);margin-bottom:16px;font-family:'Jost',sans-serif;letter-spacing:.04em">Enter your password to continue</div>
+      <div id="lockUserName" style="font-size:14px;color:#B8A070;margin-bottom:16px;font-family:'Jost',sans-serif"></div>
+      <div style="position:relative;margin-bottom:12px">
+        <input type="password" id="lockPassword" placeholder="Password" onkeydown="if(event.key==='Enter')unlockSession()"
+          style="width:100%;padding:13px 44px 13px 16px;border-radius:9px;border:1px solid rgba(184,160,112,.25);background:rgba(253,248,240,.08);color:#FDF8F0;font-family:'Jost',sans-serif;font-size:14px;outline:none;box-sizing:border-box">
+        <button onclick="toggleLockPw()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(184,160,112,.5);cursor:pointer;font-size:16px;padding:0">👁</button>
+      </div>
+      <div id="lockMsg" style="font-size:11px;color:#E05C5C;margin-bottom:10px;min-height:16px;font-family:'Jost',sans-serif"></div>
+      <button onclick="unlockSession()" style="width:100%;padding:13px;background:#8B6914;color:#FDF8F0;border:none;border-radius:9px;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;letter-spacing:.08em;cursor:pointer">Unlock</button>
+      <button onclick="doLogoutFromLock()" style="margin-top:12px;background:none;border:none;color:rgba(184,160,112,.4);font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.04em">Sign out instead</button>
+    </div>
+  </div>
+</div>
+
+<!-- Inactivity warning toast -->
+<div id="inactivityWarning" style="display:none;position:fixed;bottom:100px;left:50%;transform:translateX(-50%);z-index:2500;background:#2C2410;border:1px solid rgba(184,134,11,.3);border-radius:10px;padding:12px 18px;text-align:center;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.3)">
+  <div style="font-size:12px;color:#B8A070;font-family:'Jost',sans-serif;margin-bottom:6px">Session locking in <span id="lockCountdown">60</span>s</div>
+  <button onclick="resetInactivityTimer()" style="padding:5px 16px;background:#8B6914;color:#FDF8F0;border:none;border-radius:6px;font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.04em">Stay logged in</button>
+</div>
+
 <!-- Pull-to-refresh indicator -->
 <div id="ptrIndicator" style="position:fixed;top:0;left:0;right:0;height:52px;display:flex;align-items:center;justify-content:center;gap:8px;transform:translateY(-52px);transition:transform .25s cubic-bezier(.32,.72,0,1);z-index:90;background:var(--bg2);border-bottom:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.06);pointer-events:none">
   <div id="ptrSpinner" style="width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--brand);border-radius:50%;flex-shrink:0"></div>
@@ -3028,6 +3054,7 @@ async function loginUser(user){
   const tabBtnMap = {vault:'navMyAurum',chart:'navChart',alerts:'navAlerts',profile:'navProfile'};
   setNavTab(savedTab, document.getElementById(tabBtnMap[savedTab]||'navMyAurum'));
   fetchPrices();
+  startInactivityTimer();
   // Auto-refresh prices every 5 minutes while session is active
   if(window._priceInterval) clearInterval(window._priceInterval);
   window._priceInterval = setInterval(fetchPrices, 5 * 60 * 1000);
@@ -3049,6 +3076,7 @@ async function doLogout(){
   if(window._priceInterval) clearInterval(window._priceInterval);
   setToken(null);
   currentUser=null;items=[];priceAlerts=[];
+  stopInactivityTimer();
   document.getElementById('appScreen').classList.remove('active');
   const authEl = document.getElementById('authScreen');
   authEl.classList.remove('hidden','fading');
@@ -3056,6 +3084,123 @@ async function doLogout(){
   document.getElementById('loginPassword').value='';
   switchAuthTab('login',document.querySelectorAll('.auth-tab')[0]);
 }
+
+// ══════════════════════════════════════════
+// INACTIVITY LOCK
+// ══════════════════════════════════════════
+const INACTIVITY_MS = 30 * 60 * 1000; // 30 minutes
+const WARNING_MS    = 60 * 1000;       // warn 60s before lock
+let _inactivityTimer   = null;
+let _warningTimer      = null;
+let _countdownInterval = null;
+
+function startInactivityTimer(){
+  stopInactivityTimer();
+  _inactivityTimer = setTimeout(()=>{
+    showInactivityWarning();
+  }, INACTIVITY_MS - WARNING_MS);
+}
+
+function stopInactivityTimer(){
+  clearTimeout(_inactivityTimer);
+  clearTimeout(_warningTimer);
+  clearInterval(_countdownInterval);
+  _inactivityTimer = _warningTimer = _countdownInterval = null;
+  const w = document.getElementById('inactivityWarning');
+  if(w) w.style.display='none';
+}
+
+function resetInactivityTimer(){
+  stopInactivityTimer();
+  if(currentUser) startInactivityTimer();
+}
+
+function showInactivityWarning(){
+  const w = document.getElementById('inactivityWarning');
+  if(!w || !currentUser) return;
+  w.style.display='block';
+  let secs = 60;
+  document.getElementById('lockCountdown').textContent = secs;
+  _countdownInterval = setInterval(()=>{
+    secs--;
+    const el = document.getElementById('lockCountdown');
+    if(el) el.textContent = secs;
+    if(secs <= 0){
+      clearInterval(_countdownInterval);
+      w.style.display='none';
+      lockSession();
+    }
+  }, 1000);
+}
+
+function lockSession(){
+  if(!currentUser) return;
+  stopInactivityTimer();
+  // Clear sensitive data from memory but keep token for re-auth
+  items=[];
+  priceAlerts=[];
+  const overlay = document.getElementById('lockOverlay');
+  const nameEl  = document.getElementById('lockUserName');
+  const pwEl    = document.getElementById('lockPassword');
+  const msgEl   = document.getElementById('lockMsg');
+  if(nameEl) nameEl.textContent = currentUser.firstName + ' ' + (currentUser.lastName||'');
+  if(pwEl)   pwEl.value='';
+  if(msgEl)  msgEl.textContent='';
+  if(overlay){ overlay.style.display='flex'; setTimeout(()=>pwEl&&pwEl.focus(),300); }
+}
+
+async function unlockSession(){
+  const pwEl  = document.getElementById('lockPassword');
+  const msgEl = document.getElementById('lockMsg');
+  const pw    = pwEl.value;
+  if(!pw){ msgEl.textContent='Please enter your password.'; return; }
+  try{
+    const data = await api('POST','/auth/login',{email:currentUser.email, password:pw});
+    setToken(data.token);
+    currentUser = data.user;
+    // Reload items
+    try{ items = await api('GET','/items'); }catch(e){ items=[]; }
+    try{ priceAlerts = await api('GET','/alerts'); }catch(e){ priceAlerts=[]; }
+    updateAll();
+    document.getElementById('lockOverlay').style.display='none';
+    pwEl.value='';
+    msgEl.textContent='';
+    startInactivityTimer();
+    showToast('Welcome back, '+currentUser.firstName);
+  }catch(e){
+    msgEl.textContent = 'Incorrect password.';
+    pwEl.value='';
+    pwEl.focus();
+  }
+}
+
+function toggleLockPw(){
+  const pw = document.getElementById('lockPassword');
+  pw.type = pw.type==='password'?'text':'password';
+}
+
+function doLogoutFromLock(){
+  document.getElementById('lockOverlay').style.display='none';
+  setToken(null);
+  currentUser=null; items=[]; priceAlerts=[];
+  stopInactivityTimer();
+  document.getElementById('appScreen').classList.remove('active');
+  const authEl = document.getElementById('authScreen');
+  authEl.classList.remove('hidden','fading');
+  document.getElementById('loginEmail').value='';
+  document.getElementById('loginPassword').value='';
+  switchAuthTab('login',document.querySelectorAll('.auth-tab')[0]);
+}
+
+// Reset timer on any user interaction
+['touchstart','mousedown','keydown','scroll','click'].forEach(evt=>{
+  document.addEventListener(evt, ()=>{ if(currentUser) resetInactivityTimer(); }, {passive:true});
+});
+
+// Reset on visibility change (user returns to tab/app)
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden && currentUser) resetInactivityTimer();
+});
 
 async function deleteAccount(){
   if(!confirm('Delete your account and ALL MyAurum data permanently? This cannot be undone.'))return;
