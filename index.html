@@ -284,7 +284,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .nav-tab{padding:16px 4px;font-size:13px}
   .nav-tab .nav-label{font-size:11px;letter-spacing:.08em}
   .htab{font-size:13px;padding:10px 14px;letter-spacing:.08em}
-  #desktopRefreshBtn{display:inline-block!important}
+  #pageReloadBtn{display:flex!important}
   /* Centre modals as dialogs on desktop */
   .modal-overlay{align-items:center;justify-content:center;padding:20px}
   .modal{width:100%;max-width:480px;border-radius:20px;animation:fadeInScale .25s cubic-bezier(.32,.72,0,1)}
@@ -404,14 +404,14 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* ── MODALS ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(44,36,16,.5);backdrop-filter:blur(8px);z-index:500;display:none;align-items:flex-end}
 .modal-overlay.open{display:flex}
-.modal{width:100%;background:var(--bg2);border-radius:24px 24px 0 0;border-top:2px solid var(--brand);padding:0 0 env(safe-area-inset-bottom);animation:slideUp .3s cubic-bezier(.32,.72,0,1);max-height:93vh;overflow-y:auto}
+.modal{width:100%;background:var(--bg2);border-radius:24px 24px 0 0;border-top:2px solid var(--brand);padding:0 0 env(safe-area-inset-bottom);animation:slideUp .3s cubic-bezier(.32,.72,0,1);max-height:93vh;display:flex;flex-direction:column}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .modal-handle{width:44px;height:4px;background:var(--border);border-radius:2px;margin:14px auto 0}
 .modal-header{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 20px 14px;border-bottom:1px solid var(--border)}
 .modal-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--text)}
 .modal-subtitle{font-size:11px;color:var(--text-dim);margin-top:2px}
 .modal-close{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--bg3);color:var(--text-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.modal-body{padding:20px;display:flex;flex-direction:column;gap:16px}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;-webkit-overflow-scrolling:touch}
 
 /* MyAurum form fields */
 .field{display:flex;flex-direction:column;gap:7px}
@@ -1328,7 +1328,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
         <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--text);line-height:1.1" id="headerWelcomeName">Welcome, —</div>
         <div style="font-size:11px;color:var(--text-dim);margin-top:3px" id="headerStripSub"></div>
       </div>
-      <button id="headerStripBtn" onclick="openAddModal()" style="padding:10px 22px;background:var(--brand);color:#FDF8F0;border:none;border-radius:7px;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;letter-spacing:.06em;cursor:pointer;white-space:nowrap;flex-shrink:0">+ Add Holding</button>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <button id="pageReloadBtn" onclick="location.reload()" title="Reload app" style="display:none;align-items:center;justify-content:center;width:36px;height:36px;background:transparent;border:1px solid rgba(139,105,20,.25);border-radius:7px;cursor:pointer;color:var(--brand);flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+        <button id="headerStripBtn" onclick="openAddModal()" style="padding:10px 22px;background:var(--brand);color:#FDF8F0;border:none;border-radius:7px;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;letter-spacing:.06em;cursor:pointer;white-space:nowrap;flex-shrink:0">+ Add Holding</button>
+      </div>
     </div>
     <div id="inrDutyNote" style="display:none;font-size:10px;color:var(--text-dim);text-align:right;padding-top:3px;letter-spacing:.04em;opacity:0.7">MCX-aligned estimate</div>
   </div>
@@ -1356,7 +1359,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     <div class="last-updated" id="lastUpdated" onclick="fetchPrices()">
       <span>↻</span> <span id="lastUpdatedText">Fetching live prices…</span>
       <span style="margin-left:auto;font-size:10px;color:var(--text-dim);opacity:.6;letter-spacing:.04em">spot est. · may differ from jeweller prices</span>
-      <button id="desktopRefreshBtn" onclick="event.stopPropagation();fetchPrices()" style="display:none;margin-left:12px;padding:4px 12px;background:rgba(139,105,20,.08);border:1px solid rgba(139,105,20,.2);border-radius:6px;font-family:'Jost',sans-serif;font-size:11px;color:var(--brand);cursor:pointer;letter-spacing:.06em;white-space:nowrap">↻ Refresh</button>
+
     </div>
 
     <div class="summary-card">
