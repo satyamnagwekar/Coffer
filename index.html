@@ -2078,7 +2078,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 </div>
 
 <!-- ══════════════════════ SELL MODAL ══════════════════════ -->
-<div class="modal-overlay" id="sellModal">
+<div class="modal-overlay" id="sellModal" style="z-index:600">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-header">
@@ -2110,7 +2110,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 </div>
 
 <!-- ══════════════════════ GIFT MODAL ══════════════════════ -->
-<div class="modal-overlay" id="giftModal">
+<div class="modal-overlay" id="giftModal" style="z-index:600">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-header">
@@ -4289,7 +4289,16 @@ function closeLightbox(){document.getElementById('lightbox').classList.remove('o
 function closeModal(id){
   document.getElementById(id).classList.remove('open');
 }
-document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{
+  if(e.target===o){
+    // Only close if this is the topmost open modal
+    const openModals=[...document.querySelectorAll('.modal-overlay.open')];
+    const topZ=Math.max(...openModals.map(m=>parseInt(getComputedStyle(m).zIndex)||500));
+    const thisZ=parseInt(getComputedStyle(o).zIndex)||500;
+    if(thisZ>=topZ) o.classList.remove('open');
+    e.stopPropagation();
+  }
+}));
 
 // ══════════════════════════════════════════
 // CHART PANEL
