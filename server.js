@@ -178,6 +178,8 @@ async function initDB() {
   await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS gifted BOOLEAN DEFAULT FALSE`);
   await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS gifted_to TEXT`);
   await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS gifted_at TEXT`);
+  await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS gift_value_usd REAL`);
+  await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS gift_gain_usd REAL`);
   await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS gift_notes TEXT`);
   await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS received_as_gift BOOLEAN DEFAULT FALSE`);
   await q(`ALTER TABLE price_history ADD COLUMN IF NOT EXISTS platinum REAL`);
@@ -466,6 +468,8 @@ function itemToClient(r) {
     heldBy:r.held_by||'', nominee:r.nominee||'', makingCharge:r.making_charge||null,
     makingChargeCurrency:r.making_charge_currency||null, goldCostBasisUSD:r.gold_cost_basis_usd||null,
     gifted:!!r.gifted, giftedTo:r.gifted_to||'', giftedAt:r.gifted_at||'', photos:r.photos||null,
+    giftDate:r.gifted_at||'', giftTo:r.gifted_to||'', giftNotes:r.gift_notes||'',
+    giftValueUSD:r.gift_value_usd||null, giftGainUSD:r.gift_gain_usd||null,
     receivedAsGift:!!r.received_as_gift };
 }
 
@@ -1190,7 +1194,7 @@ app.put('/api/items/:id', requireAuth, async (req, res) => {
   try {
     const exists = await q('SELECT id FROM items WHERE id=$1 AND user_id=$2', [req.params.id, req.user.userId]);
     if (!exists.rows.length) return res.status(404).json({ error:'Item not found' });
-    const r = await q(`UPDATE items SET name=$1,metal=$2,type=$3,grade_name=$4,purity=$5,grams=$6,notes=$7,purchase_date=$8,price_paid=$9,price_paid_curr=$10,price_paid_usd=$11,receipt=$12,sold=$13,sell_price=$14,sell_currency=$15,sell_price_usd=$16,sell_date=$17,sell_notes=$18,held_by=$19,nominee=$20,making_charge=$21,making_charge_currency=$22,gold_cost_basis_usd=$23,photos=$24,received_as_gift=$25,updated_at=NOW() WHERE id=$26 AND user_id=$27 RETURNING *`,
+    const r = await q(`UPDATE items SET name=$1,metal=$2,type=$3,grade_name=$4,purity=$5,grams=$6,notes=$7,purchase_date=$8,price_paid=$9,price_paid_curr=$10,price_paid_usd=$11,receipt=$12,sold=$13,sell_price=$14,sell_currency=$15,sell_price_usd=$16,sell_date=$17,sell_notes=$18,held_by=$19,nominee=$20,making_charge=$21,making_charge_currency=$22,gold_cost_basis_usd=$23,photos=$24,received_as_gift=$25,gifted=$26,gifted_to=$27,gifted_at=$28,gift_notes=$29,gift_value_usd=$30,gift_gain_usd=$31,updated_at=NOW() WHERE id=$32 AND user_id=$33 RETURNING *`,
       [encryptField(d.name), d.metal, d.type, encryptField(d.gradeName), d.purity, d.grams,
        d.notes?encryptField(d.notes):null, d.purchaseDate||null,
        d.pricePaid||null, d.pricePaidCurrency||'USD', d.pricePaidUSD||null, d.receipt||null, !!d.sold,
@@ -1200,6 +1204,9 @@ app.put('/api/items/:id', requireAuth, async (req, res) => {
        d.makingCharge||null, d.makingChargeCurrency||null, d.goldCostBasisUSD||null,
        d.photos?JSON.stringify(d.photos):null,
        d.receivedAsGift||false,
+       !!d.gifted, d.giftTo||null, d.giftDate||null,
+       d.giftNotes?encryptField(d.giftNotes):null,
+       d.giftValueUSD||null, d.giftGainUSD||null,
        req.params.id, req.user.userId]);
     res.json(itemToClient(decryptRow(r.rows[0])));
   } catch(e) { console.error(e); res.status(500).json({ error:'Server error' }); }
