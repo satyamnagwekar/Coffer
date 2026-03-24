@@ -283,6 +283,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .nav-tab .nav-icon svg{width:26px;height:26px}
   .nav-tab{padding:16px 4px;font-size:13px}
   .nav-tab .nav-label{font-size:11px;letter-spacing:.08em}
+  .htab{font-size:13px;padding:10px 14px;letter-spacing:.08em}
+  #desktopRefreshBtn{display:inline-block!important}
   /* Centre modals as dialogs on desktop */
   .modal-overlay{align-items:center;justify-content:center;padding:20px}
   .modal{width:100%;max-width:480px;border-radius:20px;animation:fadeInScale .25s cubic-bezier(.32,.72,0,1)}
@@ -322,8 +324,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 /* Holdings tabs */
 .htabs{display:flex;flex-wrap:wrap;margin:0 14px 10px;background:var(--bg3);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border);gap:2px}
-.htab{flex:1;min-width:fit-content;padding:7px 6px;border-radius:9px;border:none;background:transparent;color:var(--text-dim);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
-.htab.active{background:var(--bg2);color:var(--brand);border:1px solid var(--border-gold);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.htab{flex:1;min-width:fit-content;padding:7px 6px;border-radius:9px;border:none;background:transparent;color:var(--text-dim);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;font-weight:500}
+.htab.active{background:#1a2a4a;color:#7eb3f5;border:1px solid rgba(100,160,240,.3);box-shadow:0 1px 4px rgba(0,0,0,.15)}
 
 .filter-bar{display:flex;gap:6px;padding:0 14px 10px;overflow-x:auto}
 .filter-btn{padding:5px 13px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer;transition:all .2s;white-space:nowrap}
@@ -1354,6 +1356,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     <div class="last-updated" id="lastUpdated" onclick="fetchPrices()">
       <span>↻</span> <span id="lastUpdatedText">Fetching live prices…</span>
       <span style="margin-left:auto;font-size:10px;color:var(--text-dim);opacity:.6;letter-spacing:.04em">spot est. · may differ from jeweller prices</span>
+      <button id="desktopRefreshBtn" onclick="event.stopPropagation();fetchPrices()" style="display:none;margin-left:12px;padding:4px 12px;background:rgba(139,105,20,.08);border:1px solid rgba(139,105,20,.2);border-radius:6px;font-family:'Jost',sans-serif;font-size:11px;color:var(--brand);cursor:pointer;letter-spacing:.06em;white-space:nowrap">↻ Refresh</button>
     </div>
 
     <div class="summary-card">
