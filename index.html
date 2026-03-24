@@ -1412,7 +1412,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <button class="htab" onclick="setHTab('silver',this)">Silver</button>
       <button class="htab" onclick="setHTab('platinum',this)">Platinum</button>
       <button class="htab" onclick="setHTab('sold',this)">Sold</button>
-          <button class="htab" onclick="setHTab('gifted',this)">Gifted</button>
+      <button class="htab" onclick="setHTab('gifted',this)">Gifted</button>
     </div>
 
     <!-- Held By grouped view (shown when toggled) -->
@@ -4268,7 +4268,7 @@ function openDetail(idx){
         ${gRow}</div>`;
     })()}
     <div class="detail-actions">${editBtn}${actionBtn}</div>
-    <button class="btn-danger" onclick="deleteItem(${idx})">Remove from Aurum</button>`;
+    <button class="btn-danger" onclick="deleteItem(${idx})">Remove from MyAurum</button>`;
   openModalWithHistory('detailModal');
 }
 
