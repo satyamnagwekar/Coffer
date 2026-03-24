@@ -321,8 +321,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .split-sub{font-size:11px;color:var(--text-dim);margin-top:2px}
 
 /* Holdings tabs */
-.htabs{display:flex;margin:0 14px 10px;background:var(--bg3);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border)}
-.htab{flex:1;padding:9px 4px;border-radius:9px;border:none;background:transparent;color:var(--text-dim);font-family:'Jost',sans-serif;font-size:14px;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.htabs{display:flex;flex-wrap:wrap;margin:0 14px 10px;background:var(--bg3);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border);gap:2px}
+.htab{flex:1;min-width:fit-content;padding:7px 6px;border-radius:9px;border:none;background:transparent;color:var(--text-dim);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
 .htab.active{background:var(--bg2);color:var(--brand);border:1px solid var(--border-gold);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 
 .filter-bar{display:flex;gap:6px;padding:0 14px 10px;overflow-x:auto}
@@ -701,7 +701,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .currency-bar{padding:8px 12px;gap:5px}
   .summary-card{margin:10px 10px;padding:18px 16px}
   .summary-value{font-size:40px}
-  .htabs{margin:0 10px 8px}
+  .htabs{margin:0 10px 8px;font-size:10px}
   .inventory-list{padding:0 10px;gap:8px}
   .item-card{padding:14px 14px}
   .item-name{font-size:18px}
@@ -2142,7 +2142,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
       <div><div class="modal-title" id="detailTitle">Detail</div><div class="modal-subtitle">Tap receipt image to enlarge</div></div>
       <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
     </div>
-    <div id="detailBody"></div>
+    <div id="detailBody" class="modal-body" style="padding-top:0"></div>
   </div>
 </div>
 
