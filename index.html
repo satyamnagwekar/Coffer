@@ -810,7 +810,37 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
   .app-screen.active{animation:none}
 }
 
-/* ── Push permission note ── */
+/* ── Search bar ── */
+.search-bar-wrap{overflow:hidden;max-height:0;transition:max-height .25s cubic-bezier(.32,.72,0,1),opacity .2s ease;opacity:0;padding:0 14px}
+.search-bar-wrap.open{max-height:60px;opacity:1;padding:0 14px 10px}
+.search-input{width:100%;padding:10px 36px 10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Jost',sans-serif;font-size:14px;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s;box-sizing:border-box}
+.search-input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(139,105,20,.1)}
+.search-input::placeholder{color:var(--text-dim)}
+.search-input-wrap{position:relative}
+.search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;padding:4px;line-height:1;display:none}
+.search-clear.visible{display:block}
+
+/* ── Sort pill ── */
+.sort-btn{display:flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;font-family:'Jost',sans-serif;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);cursor:pointer;transition:all .2s;white-space:nowrap}
+.sort-btn.active{border-color:var(--brand-dim);color:var(--brand);background:var(--brand-pale)}
+.sort-btn svg{flex-shrink:0}
+
+/* ── Search icon button ── */
+.search-icon-btn{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--text-dim);transition:all .2s;flex-shrink:0}
+.search-icon-btn.active{border-color:var(--brand-dim);color:var(--brand);background:var(--brand-pale)}
+
+/* ── Section header controls group ── */
+.section-controls{display:flex;align-items:center;gap:6px}
+
+/* ── Sort sheet ── */
+.sort-sheet{display:none;position:absolute;right:14px;top:100%;margin-top:4px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:0 4px 20px rgba(0,0,0,.1);z-index:200;min-width:180px;overflow:hidden}
+.sort-sheet.open{display:block}
+.sort-option{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;font-family:'Jost',sans-serif;font-size:12px;color:var(--text-mid);cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border)}
+.sort-option:last-child{border-bottom:none}
+.sort-option:hover{background:var(--bg3)}
+.sort-option.selected{color:var(--brand);font-weight:500}
+.sort-option.selected::after{content:'✓';font-size:11px}
+#sectionHeaderWrap{position:relative}
 #pushPermNote{font-size:11px;color:var(--text-dim);text-align:center;margin-top:6px;line-height:1.6}
 #pushPermNote span{color:var(--blue);cursor:pointer;text-decoration:underline}
 
@@ -1534,9 +1564,35 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <button class="filter-btn" onclick="setFilter('raw',this)">🧩 Pieces</button>
     </div>
 
-    <div class="section-header">
-      <div class="section-title">Holdings · tap to manage</div>
-      <div class="item-count" id="itemCount">0 items</div>
+    <div id="sectionHeaderWrap">
+      <div class="section-header">
+        <div class="section-title">Holdings · tap to manage</div>
+        <div class="section-controls">
+          <div class="item-count" id="itemCount">0 items</div>
+          <button class="search-icon-btn" id="searchToggleBtn" onclick="toggleSearch()" aria-label="Search holdings" title="Search">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+          <button class="sort-btn" id="sortToggleBtn" onclick="toggleSortSheet()" aria-label="Sort holdings">
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="9" y1="18" x2="15" y2="18"/></svg>
+            Sort
+          </button>
+        </div>
+      </div>
+      <div class="sort-sheet" id="sortSheet">
+        <div class="sort-option selected" id="sortOpt-value-desc" onclick="setSort('value-desc')">Value: High → Low</div>
+        <div class="sort-option" id="sortOpt-value-asc" onclick="setSort('value-asc')">Value: Low → High</div>
+        <div class="sort-option" id="sortOpt-date-desc" onclick="setSort('date-desc')">Date: Newest first</div>
+        <div class="sort-option" id="sortOpt-date-asc" onclick="setSort('date-asc')">Date: Oldest first</div>
+        <div class="sort-option" id="sortOpt-name-asc" onclick="setSort('name-asc')">Name: A → Z</div>
+        <div class="sort-option" id="sortOpt-weight-desc" onclick="setSort('weight-desc')">Weight: Heaviest first</div>
+      </div>
+    </div>
+
+    <div class="search-bar-wrap" id="searchBarWrap">
+      <div class="search-input-wrap">
+        <input class="search-input" id="searchInput" type="text" placeholder="Search by name or held by…" oninput="onSearchInput(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
+        <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Clear search">✕</button>
+      </div>
     </div>
 
     <div class="inventory-list pb" id="inventoryList">
@@ -1754,7 +1810,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         </div>
         <div class="profile-row">
           <div class="profile-key">Infrastructure</div>
-          <div class="profile-val muted" style="font-size:11px">Railway · AWS · encrypted at rest</div>
+          <div class="profile-val muted" style="font-size:11px">AWS · encrypted at rest</div>
         </div>
         <div class="profile-row">
           <div class="profile-key">Data sharing</div>
@@ -1768,7 +1824,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           <div style="font-size:11px;color:var(--text-dim);line-height:1.85">
             <p style="margin:0 0 10px"><strong style="color:var(--text)">How your data is protected</strong></p>
             <p style="margin:0 0 8px">Your password is hashed using bcrypt (cost factor 12) and is never stored in readable form — not even we can retrieve it. Sensitive holding fields (item names, purity grades, notes, held-by names, nominee names) are encrypted at the application layer using AES-256-GCM before being written to the database. Each field uses a unique random initialisation vector, and the authentication tag prevents tampering. Even with direct database access, this data cannot be read without the encryption key, which is stored separately.</p>
-            <p style="margin:0 0 8px">All communication between your device and our servers uses TLS. Our database runs on Railway's infrastructure backed by AWS, where storage volumes are encrypted at rest by default.</p>
+            <p style="margin:0 0 8px">All communication between your device and our servers uses TLS. Our database runs on AWS, where storage volumes are encrypted at rest by default.</p>
             <p style="margin:0">Login endpoints are rate-limited to mitigate brute-force attempts. Session tokens (JWTs) expire after 30 days. Optional two-factor authentication via email OTP is available in Settings for users who want an additional login verification step.</p>
           </div>
         </div>
@@ -2460,6 +2516,9 @@ function setCurrency(c,btn){
 }
 let items=[];
 let activeHTab='all',activeFilter='all';
+let _searchQuery='';
+let _sortOrder='value-desc';
+let _searchOpen=false;
 let selectedMetal='gold',selectedType='jewellery',selectedGrade=null;
 let viewingItem=null,photosBase64=[];
 let currentUser=null; // {email, firstName, lastName, age, country, joinedAt, pwHash}
@@ -3436,6 +3495,8 @@ function setNavTab(tab,btn){
   btn.classList.add('active');
   document.querySelectorAll('.content-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  // Close sort sheet if open
+  const ss=document.getElementById('sortSheet');if(ss)ss.classList.remove('open');
   document.getElementById('fabWrap').style.display=tab==='vault'?'flex':'none';
   sessionStorage.setItem('myaurum_tab', tab);
   if(tab==='profile')refreshProfile();
@@ -3594,6 +3655,21 @@ function renderList(){
   else if(activeHTab==='gifted')f=f.filter(i=>i.gifted);
   else f=f.filter(i=>!i.sold&&!i.gifted);
   if(activeFilter!=='all')f=f.filter(i=>i.type===activeFilter);
+  // Search
+  if(_searchQuery){
+    const q=_searchQuery.toLowerCase();
+    f=f.filter(i=>(i.name||'').toLowerCase().includes(q)||(i.heldBy||'').toLowerCase().includes(q));
+  }
+  // Sort
+  f.sort((a,b)=>{
+    if(_sortOrder==='value-desc') return spotDisplayValue(b.metal,b.grams,b.purity)-spotDisplayValue(a.metal,a.grams,a.purity);
+    if(_sortOrder==='value-asc')  return spotDisplayValue(a.metal,a.grams,a.purity)-spotDisplayValue(b.metal,b.grams,b.purity);
+    if(_sortOrder==='date-desc')  return new Date(b.purchaseDate||0)-new Date(a.purchaseDate||0);
+    if(_sortOrder==='date-asc')   return new Date(a.purchaseDate||0)-new Date(b.purchaseDate||0);
+    if(_sortOrder==='name-asc')   return (a.name||'').localeCompare(b.name||'');
+    if(_sortOrder==='weight-desc')return b.grams-a.grams;
+    return 0;
+  });
   document.getElementById('itemCount').textContent=f.length+' item'+(f.length!==1?'s':'');
   if(!f.length){
     const totalItems = items.filter(i=>!i.sold).length;
@@ -3736,8 +3812,75 @@ function renderGroupedPL(){
     </div>`;
   }).join('');
 }
-function setHTab(t,btn){activeHTab=t;document.querySelectorAll('.htab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderList()}
+function setHTab(t,btn){activeHTab=t;document.querySelectorAll('.htab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');_searchQuery='';if(document.getElementById('searchInput'))document.getElementById('searchInput').value='';updateSearchClear();renderList()}
 function setFilter(f,btn){activeFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderList()}
+
+// ── Search ──
+function toggleSearch(){
+  _searchOpen=!_searchOpen;
+  const wrap=document.getElementById('searchBarWrap');
+  const btn=document.getElementById('searchToggleBtn');
+  if(_searchOpen){
+    wrap.classList.add('open');
+    btn.classList.add('active');
+    setTimeout(()=>document.getElementById('searchInput').focus(),260);
+  } else {
+    wrap.classList.remove('open');
+    btn.classList.remove('active');
+    clearSearch();
+  }
+}
+function onSearchInput(val){
+  _searchQuery=val.trim();
+  updateSearchClear();
+  renderList();
+}
+function clearSearch(){
+  _searchQuery='';
+  const inp=document.getElementById('searchInput');
+  if(inp) inp.value='';
+  updateSearchClear();
+  renderList();
+}
+function updateSearchClear(){
+  const btn=document.getElementById('searchClear');
+  if(btn) btn.classList.toggle('visible',_searchQuery.length>0);
+}
+
+// ── Sort ──
+function toggleSortSheet(){
+  const sheet=document.getElementById('sortSheet');
+  const btn=document.getElementById('sortToggleBtn');
+  const open=sheet.classList.toggle('open');
+  btn.classList.toggle('active',open);
+  if(open){
+    // Close on outside click
+    setTimeout(()=>document.addEventListener('click',_closeSortSheet,{once:true,capture:true}),10);
+  }
+}
+function _closeSortSheet(e){
+  const sheet=document.getElementById('sortSheet');
+  const btn=document.getElementById('sortToggleBtn');
+  if(sheet&&!sheet.contains(e.target)&&e.target!==btn){
+    sheet.classList.remove('open');
+    btn.classList.remove('active');
+  }
+}
+function setSort(order){
+  _sortOrder=order;
+  document.querySelectorAll('.sort-option').forEach(el=>{
+    el.classList.toggle('selected',el.id==='sortOpt-'+order);
+  });
+  const sheet=document.getElementById('sortSheet');
+  const btn=document.getElementById('sortToggleBtn');
+  if(sheet) sheet.classList.remove('open');
+  if(btn){
+    btn.classList.remove('active');
+    // Show active indicator if not default
+    btn.classList.toggle('active',order!=='value-desc');
+  }
+  renderList();
+}
 
 // ══════════════════════════════════════════
 // ADD ITEM
@@ -5548,7 +5691,7 @@ window.onerror = (msg, src, line, col, err) => {
       MyAurum stores only what you choose to enter: your name, email address, age, country, and the holding details you add — item names, metal type, purity, weight, purchase price, purchase date, nominated heirs, and any notes you attach. We do not collect behavioural analytics, device fingerprints, location data, or usage patterns. We do not build profiles. There is no advertising SDK, no tracking pixel, and no third-party analytics running in this application.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">2. Where your data lives</strong><br>
-      Your account and all holdings data are stored on a PostgreSQL database hosted on Railway's infrastructure, which runs on Amazon Web Services (AWS). AWS encrypts storage volumes at rest by default. Data in transit between your device and our servers is encrypted using TLS 1.2 or higher. We do not store anything in your browser's local storage or on your device beyond a session token.</p>
+      Your account and all holdings data are stored on a PostgreSQL database hosted on Amazon Web Services (AWS). AWS encrypts storage volumes at rest by default. Data in transit between your device and our servers is encrypted using TLS 1.2 or higher. We do not store anything in your browser's local storage or on your device beyond a session token.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">3. How we protect your data</strong><br>
       Passwords are hashed using bcrypt with a cost factor of 12 — they are never stored in readable form, and we cannot retrieve your password. Sensitive holding fields — item names, purity grades, notes, held-by names, nominee names — are encrypted at the application layer using AES-256-GCM before being written to the database. This means that even direct database access would not expose this information in readable form without the encryption key, which is stored separately from the data. Authentication tokens (JWTs) expire after 30 days. Login endpoints are rate-limited to mitigate brute-force attempts. Optional two-factor authentication via email OTP is available for users who want an additional layer of login security.</p>
@@ -5562,7 +5705,7 @@ window.onerror = (msg, src, line, col, err) => {
         <li><strong style="color:#2C2410">Metals price APIs</strong> — to retrieve live gold, silver, and platinum spot prices. No personal data is transmitted.</li>
         <li><strong style="color:#2C2410">Resend</strong> — to deliver transactional emails (verification, password reset, weekly digest). Your email address is transmitted to Resend solely for delivery. Resend does not receive any holdings data.</li>
         <li><strong style="color:#2C2410">Google OAuth</strong> — if you choose to sign in with Google. We receive only your name and email address. No data is shared back with Google.</li>
-        <li><strong style="color:#2C2410">Railway / AWS</strong> — infrastructure hosting. Your data resides on their servers subject to their security standards.</li>
+        <li><strong style="color:#2C2410">AWS</strong> — infrastructure hosting. Your data resides on their servers subject to their security standards.</li>
         <li><strong style="color:#2C2410">Razorpay</strong> — for payment processing. Your payment details are handled directly by Razorpay and are not stored on our servers. We receive only a subscription status confirmation.</li>
       </ul>
 
@@ -5570,7 +5713,7 @@ window.onerror = (msg, src, line, col, err) => {
       If you provide an email address, we may send transactional emails: account verification, password resets, a milestone notification at 20 holdings, and an optional weekly portfolio digest. The weekly digest can be disabled at any time via the unsubscribe link in each email or from Profile → Settings. We do not send promotional or marketing emails.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">7. Data retention and deletion</strong><br>
-      Your data is retained for as long as your account is active. You can permanently delete your account and all associated data at any time from Profile → Settings → Danger Zone. Deletion is immediate and irreversible. Backups are retained for up to 30 days on Railway's infrastructure before expiring.</p>
+      Your data is retained for as long as your account is active. You can permanently delete your account and all associated data at any time from Profile → Settings → Danger Zone. Deletion is immediate and irreversible. Backups are retained for up to 30 days before expiring.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">8. No KYC. No financial regulation.</strong><br>
       MyAurum is a personal record-keeping tool. It is not a financial product, a brokerage, a payment service, or a regulated financial instrument. We do not require identity documents, PAN, Aadhaar, or any government-issued identification. We have no visibility into your financial accounts and no ability to initiate transactions on your behalf.</p>
