@@ -287,7 +287,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 @keyframes fadeInScale{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 
 /* Currency bar */
-.currency-bar{display:flex;gap:6px;padding:10px 16px;background:#EDE6D6;border-bottom:1px solid #D4C9A8;overflow-x:auto;align-items:center}
+.currency-bar{display:flex;gap:6px;padding:10px 16px;background:#EDE6D6;border-bottom:1px solid #D4C9A8;overflow-x:auto;align-items:center;-webkit-overflow-scrolling:touch}
 .currency-label{font-size:11px;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;margin-right:2px}
 .currency-btn{padding:6px 13px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer;transition:all .2s;white-space:nowrap}
 .currency-btn.active{background:var(--brand);border-color:var(--brand);color:#FDF8F0;font-weight:500;box-shadow:0 2px 8px rgba(139,105,20,.25)}
@@ -314,7 +314,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .split-val.silver{color:var(--silver)}
 .split-val.pnl.pos{color:var(--green)}
 .split-val.pnl.neg{color:var(--red)}
-.split-sub{font-size:11px;color:var(--text-dim);margin-top:2px}
+.split-sub{font-size:11px;color:var(--text-dim);margin-top:2px;font-weight:300}
 
 /* Holdings tabs */
 .htabs{display:flex;flex-wrap:wrap;margin:0 14px 10px;background:var(--bg3);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border);gap:2px}
@@ -377,7 +377,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .profile-panel{padding:0 0 80px}
 .profile-section{padding:20px;border-bottom:1px solid var(--border)}
 .profile-section-title{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px;font-weight:500}
-.profile-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(46,42,24,.4)}
+.profile-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
 .profile-row:last-child{border-bottom:none}
 .profile-key{font-size:11px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase}
 .profile-val{font-size:13px;color:var(--text);text-align:right}
@@ -475,9 +475,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .vp-amt{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--brand)}
 .pnl-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
 .pnl-box-title{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);padding:9px 14px;border-bottom:1px solid var(--border);background:var(--bg4)}
-.pnl-row{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:1px solid rgba(46,42,24,.5)}
+.pnl-row{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border)}
 .pnl-row:last-child{border-bottom:none}
-.pnl-row.total{background:rgba(255,255,255,.02)}
+.pnl-row.total{background:rgba(139,105,20,.03)}
 .pnl-key{font-size:11px;color:var(--text-dim)}
 .pnl-val{font-size:12px;color:var(--text-mid)}
 .pnl-val.pos{color:var(--green)}
@@ -494,7 +494,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* Detail modal */
 .detail-section{padding:15px 20px;border-bottom:1px solid var(--border)}
 .detail-section-title{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-dim);margin-bottom:11px;font-weight:500}
-.detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(46,42,24,.4);gap:14px}
+.detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);gap:14px}
 .detail-row:last-child{border-bottom:none}
 .detail-key{font-size:11px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
 .detail-val{font-size:13px;color:var(--text);text-align:right;word-break:break-word}
@@ -518,7 +518,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 /* App footer */
 .app-footer{padding:14px 18px;text-align:center;border-top:1px solid var(--border);margin-top:8px}
-.app-footer p{font-size:11px;color:var(--text-dim);line-height:1.8}
+.app-footer p{font-size:11px;color:var(--text-dim);line-height:1.65}
 
 /* ═══════════════════════════════════════
    CHART PANEL
@@ -724,6 +724,62 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* ── Push permission note ── */
 #pushPermNote{font-size:11px;color:var(--text-dim);text-align:center;margin-top:6px;line-height:1.6}
 #pushPermNote span{color:var(--blue);cursor:pointer;text-decoration:underline}
+
+/* ══════════════════════════════════════════
+   FOCUS STYLES — keyboard navigation
+══════════════════════════════════════════ */
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:4px}
+.nav-tab:focus-visible{outline-offset:0;border-radius:0}
+.modal-close:focus-visible{outline-offset:2px;border-radius:50%}
+/* Suppress focus ring for mouse/touch users — only show for keyboard */
+:focus:not(:focus-visible){outline:none}
+
+/* ══════════════════════════════════════════
+   BTN-PRIMARY — text colour fix
+══════════════════════════════════════════ */
+.btn-primary{color:#FDF8F0}
+.btn-primary:hover{box-shadow:0 5px 20px rgba(139,105,20,.4)}
+.btn-primary:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+
+/* ══════════════════════════════════════════
+   CURRENCY BAR & LAST-UPDATED — CSS variables
+══════════════════════════════════════════ */
+.currency-bar{background:var(--bg4);border-bottom:1px solid var(--border2);scrollbar-width:none;-ms-overflow-style:none}
+.currency-bar::-webkit-scrollbar{display:none}
+.last-updated{background:var(--bg3);border-bottom:1px solid var(--border)}
+
+/* ══════════════════════════════════════════
+   FILTER BAR — hide scrollbar + momentum scroll
+══════════════════════════════════════════ */
+.filter-bar{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch}
+.filter-bar::-webkit-scrollbar{display:none}
+
+/* ══════════════════════════════════════════
+   MODAL — overscroll + GPU compositing
+══════════════════════════════════════════ */
+.modal-body{overscroll-behavior:contain}
+.modal{will-change:transform}
+
+/* ══════════════════════════════════════════
+   DETAIL ACTION BUTTONS — larger touch target
+══════════════════════════════════════════ */
+.detail-action-btn{padding:15px}
+
+/* ══════════════════════════════════════════
+   EMPTY CTA — hover state
+══════════════════════════════════════════ */
+.empty-cta:hover{background:rgba(139,105,20,.18);border-color:var(--brand);color:var(--brand-dim)}
+.empty-cta{transition:all .2s}
+
+/* ══════════════════════════════════════════
+   REDUCED MOTION
+══════════════════════════════════════════ */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+  .modal{animation:none}
+  .app-screen.active{animation:none}
+}
 </style>
   <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleSignIn()"></script>
   <!-- Google Analytics GA4 -->
@@ -1428,7 +1484,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
     <div style="display:flex;align-items:center;justify-content:space-between;padding:0 14px 4px">
       <div style="font-size:11px;color:var(--text-dim);letter-spacing:.04em">Group by person</div>
-      <button id="groupToggleBtn" onclick="toggleGroupedView()" style="font-size:11px;color:var(--brand);background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'Jost',sans-serif;letter-spacing:.04em">By Person ↕</button>
+      <button id="groupToggleBtn" onclick="toggleGroupedView()" style="font-size:11px;color:var(--brand);background:var(--brand-pale);border:1px solid var(--border-gold);border-radius:6px;padding:5px 11px;cursor:pointer;font-family:'Jost',sans-serif;letter-spacing:.04em;transition:all .2s">By Person ↕</button>
     </div>
 
     <!-- Purchase price nudge -->
@@ -5484,7 +5540,7 @@ window.onerror = (msg, src, line, col, err) => {
       If we make material changes to this policy, we will notify users by email and update the date below. We will not retroactively reduce the privacy protections described here without explicit consent.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">11. Contact</strong><br>
-      For privacy-related questions or data requests, write to us at <a href="mailto:hello@myaurum.app" style="color:#B8860B;text-decoration:none">hello@myaurum.app</a>. We will respond within 5 business days.</p>
+      For privacy-related questions or data requests, write to us at <a href="/cdn-cgi/l/email-protection#7a121f1616153a17031b0f080f17541b0a0a" style="color:#B8860B;text-decoration:none"><span class="__cf_email__" data-cfemail="95fdf0f9f9fad5f8ecf4e0e7e0f8bbf4e5e5">[email&#160;protected]</span></a>. We will respond within 5 business days.</p>
 
       <p style="color:#999;font-size:10px;border-top:1px solid #EEE;padding-top:12px;margin-top:4px">Last updated: March 2026 · MyAurum · Aurum Fintech, Mumbai, India · Registered under UDYAM</p>
     </div>
@@ -5520,7 +5576,7 @@ window.onerror = (msg, src, line, col, err) => {
       You retain ownership of all holdings data you enter. By using the service, you grant Aurum Fintech a limited, non-exclusive licence to store, process, and display your data solely for the purpose of providing the service to you. We do not claim ownership of your data, and we do not use it for any purpose other than operating the service. See our Privacy Policy for full details.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">7. Account security</strong><br>
-      You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. You must notify us immediately at hello@myaurum.app if you suspect any unauthorised use. MyAurum is not liable for loss resulting from unauthorised access caused by your failure to secure your credentials.</p>
+      You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. You must notify us immediately at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2e464b4242416e43574f5b5c5b43004f5e5e">[email&#160;protected]</a> if you suspect any unauthorised use. MyAurum is not liable for loss resulting from unauthorised access caused by your failure to secure your credentials.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">8. Subscriptions and payments</strong><br>
       Premium subscriptions are processed via Razorpay. Subscription fees are charged in advance on an annual basis. Cancellations take effect at the end of the current billing period — access continues until expiry and no partial refunds are issued. MyAurum reserves the right to change subscription pricing with 30 days' notice to existing subscribers.</p>
@@ -5535,9 +5591,4 @@ window.onerror = (msg, src, line, col, err) => {
       We may update these Terms from time to time. Material changes will be communicated by email to registered users. Continued use of the service after changes are posted constitutes acceptance of the revised Terms.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">12. Contact</strong><br>
-      For questions regarding these Terms, contact us at <a href="mailto:hello@myaurum.app" style="color:#B8860B;text-decoration:none">hello@myaurum.app</a>.</p>
-
-      <p style="color:#999;font-size:10px;border-top:1px solid #EEE;padding-top:12px;margin-top:4px">Last updated: March 2026 · MyAurum · Aurum Fintech, Mumbai, India · Registered under UDYAM · Trademark registered</p>
-    </div>
-  </div>
-</div>
+      For questions regarding these Terms, contact us at <a href="/cdn-cgi/l/email-protection#78101d141417381501190d0a0d1556190808" style="color:#B8860B;text-dec
