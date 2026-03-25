@@ -342,6 +342,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .summary-card-inner{display:flex;align-items:flex-start;gap:40px}
   .summary-left{flex:0 0 auto}
   .summary-right{flex:1;border-left:1px solid var(--border);padding-left:32px}
+  .summary-usd{margin-bottom:0}
   .summary-value{font-size:52px;margin-bottom:2px}
   .summary-split{border-top:none;padding-top:0;gap:16px}
 
@@ -919,9 +920,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 .sort-option.selected{color:var(--brand);font-weight:500}
 .sort-option.selected::after{content:'✓';font-size:11px}
 #sectionHeaderWrap{position:relative}
-/* Summary card inner wrappers — neutral on mobile, horizontal on desktop */
-.summary-card-inner{display:block}
-.summary-right{border-top:1px solid var(--border);padding-top:16px}
+/* Summary card inner wrappers — mobile stacked layout */
+@media(max-width:859px){
+  .summary-card-inner{display:block}
+  .summary-right{border-top:1px solid var(--border);padding-top:16px}
+}
 
 #pushPermNote{font-size:11px;color:var(--text-dim);text-align:center;margin-top:6px;line-height:1.6}
 #pushPermNote span{color:var(--blue);cursor:pointer;text-decoration:underline}
