@@ -383,10 +383,19 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .profile-val{font-size:13px;color:var(--text);text-align:right}
 .profile-val.muted{color:var(--text-dim)}
 
-.profile-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:16px}
-.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 10px;text-align:center}
+.profile-stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;padding:16px}
+.stat-card{border-radius:var(--radius-sm);padding:16px 10px;text-align:center;border:1px solid}
+.stat-card.card-holdings{background:rgba(139,105,20,.1);border-color:rgba(139,105,20,.25)}
+.stat-card.card-sold{background:rgba(26,122,74,.08);border-color:rgba(26,122,74,.2)}
+.stat-card.card-gifted{background:rgba(192,132,252,.08);border-color:rgba(192,132,252,.25)}
+.stat-card.card-portfolio{background:var(--brand);border-color:var(--brand-dim)}
+.stat-card.card-portfolio .stat-num{color:#FDF8F0}
+.stat-card.card-portfolio .stat-lbl{color:rgba(253,248,240,.7)}
 .stat-num{font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--brand);margin-bottom:3px}
 .stat-lbl{font-size:11px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase}
+@media(max-width:600px){
+  .profile-stats{grid-template-columns:1fr 1fr;gap:8px}
+}
 
 .btn-profile-action{width:100%;padding:14px;border:none;border-radius:var(--radius-sm);font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-bottom:8px}
 .btn-edit-profile{background:var(--bg3);color:var(--text-mid);border:1px solid var(--border)}
@@ -1706,15 +1715,19 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       </div>
 
       <div class="profile-stats">
-        <div class="stat-card">
+        <div class="stat-card card-holdings">
           <div class="stat-num" id="statItems">0</div>
           <div class="stat-lbl">Holdings</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-num" id="statSold">0</div>
+        <div class="stat-card card-sold">
+          <div class="stat-num" id="statSold" style="color:var(--green)">0</div>
           <div class="stat-lbl">Sold</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card card-gifted">
+          <div class="stat-num" id="statGifted" style="color:#c084fc">0</div>
+          <div class="stat-lbl">Gifted</div>
+        </div>
+        <div class="stat-card card-portfolio">
           <div class="stat-num" id="statValue">—</div>
           <div class="stat-lbl">Portfolio</div>
         </div>
@@ -3294,6 +3307,7 @@ function refreshProfile(){
   }
   document.getElementById('statItems').textContent=active;
   document.getElementById('statSold').textContent=sold;
+  document.getElementById('statGifted').textContent=gifted;
   document.getElementById('statValue').textContent=portVal;
 
   // 2FA status in security section
