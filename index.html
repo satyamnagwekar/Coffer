@@ -317,13 +317,20 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     border-right:1px solid var(--border);
   }
 
-  /* Nav tabs — compact on desktop, no need for big mobile touch targets */
-  .nav-tab{padding:10px 4px;font-size:12px}
+  /* Nav tabs — compact, natural width, left-aligned on desktop */
+  .nav-tabs{display:flex;justify-content:flex-start}
+  .nav-tab{flex:0 0 auto;min-width:100px;max-width:140px;padding:10px 4px;font-size:12px}
   .nav-tab .nav-icon svg{width:18px;height:18px}
   .nav-tab .nav-label{font-size:10px;letter-spacing:.08em}
-  /* Cap tab width so they don't stretch absurdly wide */
-  .nav-tabs{display:flex}
-  .nav-tab{max-width:140px}
+  .nav-tab.active::after{left:10%;right:10%}
+
+  /* Profile header — better proportions on desktop */
+  .profile-header{padding:36px 28px 28px}
+  .profile-name-big{font-size:34px}
+  .profile-avatar{width:72px;height:72px;font-size:30px}
+
+  /* Stat cards — taller on desktop */
+  .stat-card{padding:20px 16px}
 
   /* Larger logo */
   .logo{font-size:38px}
