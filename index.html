@@ -299,7 +299,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     padding-right:max(24px, calc(50% - 426px));
   }
 
-  /* Nav tabs and content panels centred, with a border to read as a column */
+  /* Nav tabs and content panels form a continuous bordered column */
   .nav-tabs{
     max-width:900px;
     margin-left:auto;
@@ -307,6 +307,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     width:100%;
     border-left:1px solid var(--border);
     border-right:1px solid var(--border);
+    display:flex;
+    justify-content:flex-start;
   }
   .content-panel{
     max-width:900px;
@@ -315,21 +317,21 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     width:100%;
     border-left:1px solid var(--border);
     border-right:1px solid var(--border);
+    border-bottom:1px solid var(--border);
   }
 
-  /* Nav tabs — compact, natural width, left-aligned on desktop */
-  .nav-tabs{display:flex;justify-content:flex-start}
+  /* Nav tabs — compact, natural width */
   .nav-tab{flex:0 0 auto;min-width:100px;max-width:140px;padding:10px 4px;font-size:12px}
   .nav-tab .nav-icon svg{width:18px;height:18px}
   .nav-tab .nav-label{font-size:10px;letter-spacing:.08em}
   .nav-tab.active::after{left:10%;right:10%}
 
-  /* Profile header — better proportions on desktop */
-  .profile-header{padding:36px 28px 28px}
+  /* Profile header — parchment background, not near-white */
+  .profile-header{background:var(--bg);padding:36px 28px 28px;border-left:3px solid var(--brand)}
   .profile-name-big{font-size:34px}
   .profile-avatar{width:72px;height:72px;font-size:30px}
 
-  /* Stat cards — taller on desktop */
+  /* Stat cards */
   .stat-card{padding:20px 16px}
 
   /* Larger logo */
@@ -346,7 +348,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   /* Two-column item cards */
   .inventory-list{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px}
 
-  /* Wider padding on vault panel elements */
+  /* Vault panel spacing */
   .htabs{margin:0 20px 10px}
   .filter-bar{padding:0 20px 10px}
   #sectionHeaderWrap{padding:0 20px 0}
@@ -354,7 +356,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .search-bar-wrap,.search-bar-wrap.open{padding-left:0;padding-right:0}
   #spotCardsGrid,#pricePaidNudge{margin-left:20px;margin-right:20px}
 
-  /* Spot cards — slightly more generous on desktop */
+  /* Spot cards */
   #spotCardsGrid > div{padding:20px 22px}
 
   /* FAB aligned to right edge of 900px column */
