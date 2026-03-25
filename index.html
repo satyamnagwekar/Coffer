@@ -337,14 +337,18 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   /* Larger logo */
   .logo{font-size:38px}
 
-  /* Summary card — horizontal layout on desktop */
+  /* Summary card — horizontal layout, balanced proportions */
   .summary-card{margin:18px 20px;padding:24px 28px}
-  .summary-card-inner{display:flex;align-items:flex-start;gap:40px}
-  .summary-left{flex:0 0 auto}
+  .summary-card-inner{display:flex;align-items:flex-start;gap:0}
+  .summary-left{flex:0 0 38%;padding-right:32px}
   .summary-right{flex:1;border-left:1px solid var(--border);padding-left:32px}
   .summary-usd{margin-bottom:0}
   .summary-value{font-size:52px;margin-bottom:2px}
-  .summary-split{border-top:none;padding-top:0;gap:16px}
+  /* 2-column grid in the right panel — platinum flows in naturally as 4th cell */
+  .summary-split{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px;padding-top:0;border-top:none}
+
+  /* FAB — hide label on desktop */
+  .fab-label{display:none}
 
   /* Two-column item cards */
   .inventory-list{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px}
@@ -357,8 +361,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .search-bar-wrap,.search-bar-wrap.open{padding-left:0;padding-right:0}
   #spotCardsGrid,#pricePaidNudge{margin-left:20px;margin-right:20px}
 
-  /* Spot cards */
-  #spotCardsGrid > div{padding:20px 22px}
+  /* Spot cards — compact on desktop */
+  #spotCardsGrid > div{padding:16px 18px}
 
   /* FAB aligned to right edge of 900px column */
   .fab-wrap{right:max(18px, calc(50% - 432px))}
@@ -1593,10 +1597,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
               <div class="split-val pnl" id="totalPnl">—</div>
               <div class="split-sub" id="totalPnlPct">vs cost paid</div>
             </div>
-          </div>
-          <div id="platinumSplitRow" style="display:none;padding:10px 12px;border-radius:8px;background:rgba(120,120,130,.07);border:1px solid rgba(120,120,130,.15);margin-top:12px">
-            <div class="split-label" style="margin-bottom:4px">🔷 Platinum</div>
-            <div style="display:flex;align-items:baseline;gap:10px">
+            <div id="platinumSplitRow" style="display:none">
+              <div class="split-label">🔷 Platinum</div>
               <div class="split-val" id="platinumTotal" style="color:var(--text)">—</div>
               <div class="split-sub" id="platinumWeight">0g</div>
             </div>
