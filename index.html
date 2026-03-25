@@ -297,14 +297,20 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .header{
     padding-left:max(24px, calc(50% - 426px));
     padding-right:max(24px, calc(50% - 426px));
-    border-left:1px solid var(--border);
-    border-right:1px solid var(--border);
-    max-width:900px;
-    margin-left:auto;
-    margin-right:auto;
-    width:100%;
-    box-sizing:border-box;
+    position:relative;
   }
+  .header::before,.header::after{
+    content:'';
+    position:absolute;
+    top:0;
+    bottom:0;
+    width:1px;
+    background:var(--border);
+    pointer-events:none;
+    z-index:1;
+  }
+  .header::before{left:calc(50% - 450px)}
+  .header::after{right:calc(50% - 450px)}
 
   /* Nav tabs and content panels form a continuous bordered column */
   .nav-tabs{
