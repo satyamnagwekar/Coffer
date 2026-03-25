@@ -284,6 +284,50 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .modal{width:100%;max-width:480px;border-radius:20px;animation:fadeInScale .3s cubic-bezier(.32,.72,0,1)}
   .modal-handle{display:none}
 }
+
+/* ── Desktop layout — two-column items, breathing room ── */
+/* ══════════════════════════════════════════
+   DESKTOP LAYOUT (≥860px)
+══════════════════════════════════════════ */
+@media (min-width:860px){
+  /* Slightly darker outer background so the app column reads as a card */
+  body{background:var(--bg4)}
+
+  /* Header spans full width but its content is centred to 900px */
+  .header{
+    padding-left:max(24px, calc(50% - 426px));
+    padding-right:max(24px, calc(50% - 426px));
+  }
+
+  /* Nav tabs and all content panels constrained to 900px, centred */
+  .nav-tabs,.content-panel{
+    max-width:900px;
+    margin-left:auto;
+    margin-right:auto;
+    width:100%;
+  }
+
+  /* Larger logo */
+  .logo{font-size:38px}
+
+  /* Two-column item cards */
+  .inventory-list{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px}
+
+  /* Wider padding on vault panel elements */
+  .summary-card{margin:18px 20px}
+  .htabs{margin:0 20px 10px}
+  .filter-bar{padding:0 20px 10px}
+  #sectionHeaderWrap{padding:0 20px 0}
+  .section-header{padding:0 0 10px}
+  .search-bar-wrap,.search-bar-wrap.open{padding-left:0;padding-right:0}
+  #spotCardsGrid,#pricePaidNudge{margin-left:20px;margin-right:20px}
+
+  /* Bigger portfolio value */
+  .summary-value{font-size:52px}
+
+  /* FAB aligned to right edge of 900px column */
+  .fab-wrap{right:max(18px, calc(50% - 432px))}
+}
 @keyframes fadeInScale{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 
 /* Currency bar */
