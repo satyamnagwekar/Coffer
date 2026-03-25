@@ -297,25 +297,15 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .header{
     padding-left:max(24px, calc(50% - 426px));
     padding-right:max(24px, calc(50% - 426px));
-    position:relative;
   }
-  .header::before,.header::after{
-    content:'';
-    position:absolute;
-    top:0;
-    bottom:0;
-    width:0;
-    pointer-events:none;
-    z-index:10;
-  }
-  .header::before{
-    left:calc(50% - 450px);
-    box-shadow:-2px 0 0 0 #6B4F1E,-3px 0 0 0 rgba(200,160,64,0.55),-1px 0 0 0 rgba(200,160,64,0.55);
-  }
-  .header::after{
-    right:calc(50% - 450px);
-    box-shadow:2px 0 0 0 #6B4F1E,3px 0 0 0 rgba(200,160,64,0.55),1px 0 0 0 rgba(200,160,64,0.55);
-  }
+  #desktopPoles{display:none}
+  /* Full-height double rule poles */
+  #desktopPoles{display:block;position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:9998;}
+  #desktopPoles .dp{position:absolute;top:0;bottom:0;width:3px;display:flex;gap:0;}
+  #desktopPoles .dp-l{left:calc(50% - 450px);}
+  #desktopPoles .dp-r{right:calc(50% - 450px);}
+  #desktopPoles .dp-hair{width:1px;background:rgba(200,160,64,0.55);height:100%;}
+  #desktopPoles .dp-body{width:2px;background:#5A3F14;height:100%;}
 
   /* Nav tabs and content panels form a continuous bordered column */
   .nav-tabs{
@@ -325,7 +315,6 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     width:100%;
     border-left:none;
     border-right:none;
-    box-shadow:-1px 0 0 0 rgba(200,160,64,0.55),-2px 0 0 0 #6B4F1E,-3px 0 0 0 rgba(200,160,64,0.55),1px 0 0 0 rgba(200,160,64,0.55),2px 0 0 0 #6B4F1E,3px 0 0 0 rgba(200,160,64,0.55);
     display:flex;
     justify-content:flex-start;
   }
@@ -336,7 +325,6 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     width:100%;
     border-left:none;
     border-right:none;
-    box-shadow:-1px 0 0 0 rgba(200,160,64,0.55),-2px 0 0 0 #6B4F1E,-3px 0 0 0 rgba(200,160,64,0.55),1px 0 0 0 rgba(200,160,64,0.55),2px 0 0 0 #6B4F1E,3px 0 0 0 rgba(200,160,64,0.55);
     border-bottom:1px solid var(--border);
   }
 
@@ -1528,6 +1516,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 .ptr-spinning{animation:ptr-spin .65s linear infinite}
 </style>
 
+  <div id="desktopPoles"><div class="dp dp-l"><div class="dp-hair"></div><div class="dp-body"></div><div class="dp-hair"></div></div><div class="dp dp-r"><div class="dp-hair"></div><div class="dp-body"></div><div class="dp-hair"></div></div></div>
   <div class="header" id="appHeader">
     <!-- Logo + spot strip row -->
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%">
