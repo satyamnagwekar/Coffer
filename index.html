@@ -2963,8 +2963,10 @@ const WARNING_MS    = 60 * 1000;       // warn 60s before lock
 let _inactivityTimer   = null;
 let _warningTimer      = null;
 let _countdownInterval = null;
+let _lastActiveAt      = null;
 
 function startInactivityTimer(){
+  _lastActiveAt = _lastActiveAt || Date.now();
   stopInactivityTimer();
   _inactivityTimer = setTimeout(()=>{
     showInactivityWarning();
@@ -2981,6 +2983,7 @@ function stopInactivityTimer(){
 }
 
 function resetInactivityTimer(){
+  _lastActiveAt = Date.now();
   stopInactivityTimer();
   if(currentUser) startInactivityTimer();
 }
@@ -3067,9 +3070,30 @@ function doLogoutFromLock(){
   document.addEventListener(evt, ()=>{ if(currentUser) resetInactivityTimer(); }, {passive:true});
 });
 
-// Reset on visibility change (user returns to tab/app)
-document.addEventListener('visibilitychange',()=>{
-  if(!document.hidden && currentUser) resetInactivityTimer();
+// On visibility change: enforce elapsed-time check (survives sleep/hibernate)
+// and refresh data to stay in sync with other devices
+document.addEventListener('visibilitychange', async ()=>{
+  if(document.hidden || !currentUser) return;
+
+  // Check if elapsed wall-clock time exceeds inactivity threshold
+  const elapsed = Date.now() - (_lastActiveAt || Date.now());
+  if(elapsed >= INACTIVITY_MS){
+    lockSession();
+    return;
+  }
+
+  // Reset the timer for the remaining time
+  stopInactivityTimer();
+  const remaining = INACTIVITY_MS - elapsed;
+  _inactivityTimer = setTimeout(()=>{ showInactivityWarning(); },
+    Math.max(0, remaining - WARNING_MS));
+
+  // Refresh items from server to sync across devices
+  try{
+    const fresh = await api('GET','/items');
+    items = fresh;
+    updateAll();
+  }catch(_){}
 });
 
 async function deleteAccount(){
@@ -3121,7 +3145,7 @@ function updateHeaderWelcome(){
   }
   // Purchase price nudge
   if(!sessionStorage.getItem('nudgeDismissed')){
-    const noPriceCount = items.filter(i=>!i.sold&&!i.gifted&&!i.pricePaid).length;
+    const noPriceCount = items.filter(i=>!i.sold&&!i.gifted&&!i.receivedAsGift&&!i.pricePaid).length;
     const nudge = document.getElementById('pricePaidNudge');
     if(nudge && noPriceCount > 0){
       nudge.style.display = 'flex';
