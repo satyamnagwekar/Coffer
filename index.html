@@ -290,31 +290,56 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
    DESKTOP LAYOUT (≥860px)
 ══════════════════════════════════════════ */
 @media (min-width:860px){
-  /* Slightly darker outer background so the app column reads as a card */
+  /* Slightly darker outer background */
   body{background:var(--bg4)}
 
-  /* Header spans full width but its content is centred to 900px */
+  /* Header spans full width, content centred to 900px */
   .header{
     padding-left:max(24px, calc(50% - 426px));
     padding-right:max(24px, calc(50% - 426px));
   }
 
-  /* Nav tabs and all content panels constrained to 900px, centred */
-  .nav-tabs,.content-panel{
+  /* Nav tabs and content panels centred, with a border to read as a column */
+  .nav-tabs{
     max-width:900px;
     margin-left:auto;
     margin-right:auto;
     width:100%;
+    border-left:1px solid var(--border);
+    border-right:1px solid var(--border);
   }
+  .content-panel{
+    max-width:900px;
+    margin-left:auto;
+    margin-right:auto;
+    width:100%;
+    border-left:1px solid var(--border);
+    border-right:1px solid var(--border);
+  }
+
+  /* Nav tabs — compact on desktop, no need for big mobile touch targets */
+  .nav-tab{padding:10px 4px;font-size:12px}
+  .nav-tab .nav-icon svg{width:18px;height:18px}
+  .nav-tab .nav-label{font-size:10px;letter-spacing:.08em}
+  /* Cap tab width so they don't stretch absurdly wide */
+  .nav-tabs{display:flex}
+  .nav-tab{max-width:140px}
 
   /* Larger logo */
   .logo{font-size:38px}
+
+  /* Summary card — horizontal layout on desktop */
+  .summary-card{margin:18px 20px;padding:24px 28px}
+  .summary-card-inner{display:flex;align-items:flex-start;gap:40px}
+  .summary-left{flex:0 0 auto}
+  .summary-right{flex:1;border-left:1px solid var(--border);padding-left:32px}
+  .summary-value{font-size:52px;margin-bottom:2px}
+  .summary-split{border-top:none;padding-top:0;gap:16px}
 
   /* Two-column item cards */
   .inventory-list{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px}
 
   /* Wider padding on vault panel elements */
-  .summary-card{margin:18px 20px}
   .htabs{margin:0 20px 10px}
   .filter-bar{padding:0 20px 10px}
   #sectionHeaderWrap{padding:0 20px 0}
@@ -322,8 +347,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .search-bar-wrap,.search-bar-wrap.open{padding-left:0;padding-right:0}
   #spotCardsGrid,#pricePaidNudge{margin-left:20px;margin-right:20px}
 
-  /* Bigger portfolio value */
-  .summary-value{font-size:52px}
+  /* Spot cards — slightly more generous on desktop */
+  #spotCardsGrid > div{padding:20px 22px}
 
   /* FAB aligned to right edge of 900px column */
   .fab-wrap{right:max(18px, calc(50% - 432px))}
@@ -351,7 +376,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .summary-eyebrow{font-size:14px;letter-spacing:.16em;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px}
 .summary-value{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;color:var(--brand);line-height:1;margin-bottom:3px}
 .summary-usd{font-size:12px;color:var(--text-dim);margin-bottom:16px;min-height:16px}
-.summary-split{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding-top:16px;border-top:1px solid var(--border)}
+.summary-split{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding-top:16px}
 .split-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px}
 .split-val{font-size:18px;font-weight:500}
 .split-val.gold{color:var(--brand)}
@@ -885,6 +910,10 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 .sort-option.selected{color:var(--brand);font-weight:500}
 .sort-option.selected::after{content:'✓';font-size:11px}
 #sectionHeaderWrap{position:relative}
+/* Summary card inner wrappers — neutral on mobile, horizontal on desktop */
+.summary-card-inner{display:block}
+.summary-right{border-top:1px solid var(--border);padding-top:16px}
+
 #pushPermNote{font-size:11px;color:var(--text-dim);text-align:center;margin-top:6px;line-height:1.6}
 #pushPermNote span{color:var(--blue);cursor:pointer;text-decoration:underline}
 
@@ -1529,31 +1558,37 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     </div>
 
     <div class="summary-card">
-      <div class="summary-eyebrow">Active Portfolio Value</div>
-      <div class="summary-value" id="totalValue">—</div>
-      <div class="summary-usd" id="totalUSD"></div>
-      <div class="summary-split">
-        <div>
-          <div class="split-label">🥇 Gold</div>
-          <div class="split-val gold" id="goldTotal">—</div>
-          <div class="split-sub" id="goldWeight">0g</div>
+      <div class="summary-card-inner">
+        <div class="summary-left">
+          <div class="summary-eyebrow">Active Portfolio Value</div>
+          <div class="summary-value" id="totalValue">—</div>
+          <div class="summary-usd" id="totalUSD"></div>
         </div>
-        <div>
-          <div class="split-label">🥈 Silver</div>
-          <div class="split-val silver" id="silverTotal">—</div>
-          <div class="split-sub" id="silverWeight">0g</div>
-        </div>
-        <div>
-          <div class="split-label">◈ G/L</div>
-          <div class="split-val pnl" id="totalPnl">—</div>
-          <div class="split-sub" id="totalPnlPct">vs cost paid</div>
-        </div>
-      </div>
-      <div id="platinumSplitRow" style="display:none;padding:10px 12px;border-radius:8px;background:rgba(120,120,130,.07);border:1px solid rgba(120,120,130,.15);margin-top:12px">
-        <div class="split-label" style="margin-bottom:4px">🔷 Platinum</div>
-        <div style="display:flex;align-items:baseline;gap:10px">
-          <div class="split-val" id="platinumTotal" style="color:var(--text)">—</div>
-          <div class="split-sub" id="platinumWeight">0g</div>
+        <div class="summary-right">
+          <div class="summary-split">
+            <div>
+              <div class="split-label">🥇 Gold</div>
+              <div class="split-val gold" id="goldTotal">—</div>
+              <div class="split-sub" id="goldWeight">0g</div>
+            </div>
+            <div>
+              <div class="split-label">🥈 Silver</div>
+              <div class="split-val silver" id="silverTotal">—</div>
+              <div class="split-sub" id="silverWeight">0g</div>
+            </div>
+            <div>
+              <div class="split-label">◈ G/L</div>
+              <div class="split-val pnl" id="totalPnl">—</div>
+              <div class="split-sub" id="totalPnlPct">vs cost paid</div>
+            </div>
+          </div>
+          <div id="platinumSplitRow" style="display:none;padding:10px 12px;border-radius:8px;background:rgba(120,120,130,.07);border:1px solid rgba(120,120,130,.15);margin-top:12px">
+            <div class="split-label" style="margin-bottom:4px">🔷 Platinum</div>
+            <div style="display:flex;align-items:baseline;gap:10px">
+              <div class="split-val" id="platinumTotal" style="color:var(--text)">—</div>
+              <div class="split-sub" id="platinumWeight">0g</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
