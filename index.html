@@ -257,7 +257,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .spot-strip{display:flex;gap:10px;font-size:11px;color:var(--text-dim);text-transform:uppercase;flex-shrink:0}
 .spot-item{display:flex;flex-direction:column;align-items:flex-end}
 .spot-item .metal{font-size:11px;color:var(--text-dim);margin-bottom:1px}
-.spot-item .price{font-size:12px;font-weight:500}
+.spot-item .price{font-size:13px;font-weight:500}
 .spot-item.gold .price{color:var(--gold-light)}
 .spot-item.silver .price{color:var(--silver)}
 @media(max-width:639px){.spot-strip,.benchmark-wrap{display:none!important}}
@@ -348,12 +348,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .item-card.silver .item-value{color:var(--silver-bright)}
 .item-card.sold .item-value{color:var(--green)}
 .item-meta{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:3px}
-.badge{font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:20px;border:1px solid}
+.badge{font-size:10px;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:20px;border:1px solid}
 .badge-type{border-color:var(--border);color:var(--text-dim);background:var(--bg3)}
 .badge-grade{border-color:rgba(139,105,20,.3);color:var(--brand);background:rgba(139,105,20,.07)}
 .badge-grade.silver{border-color:var(--silver-dim);color:var(--silver);background:rgba(200,216,232,.06)}
 .badge-weight{border-color:var(--border);color:var(--text-mid);background:transparent}
-.badge-provenance{border-color:#2a3a2a;color:#5acc90;background:rgba(46,204,138,.06)}
+.badge-provenance{border-color:var(--green-dim);color:var(--green);background:rgba(26,122,74,.06)}
 .badge-date{border-color:var(--border);color:var(--text-dim);background:transparent}
 .item-pnl{font-size:11px;margin-top:5px}
 .item-pnl.pos{color:var(--green)}
@@ -400,7 +400,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .modal-overlay.open{display:flex}
 .modal{width:100%;background:var(--bg2);border-radius:24px 24px 0 0;border-top:2px solid var(--brand);padding:0 0 env(safe-area-inset-bottom);animation:slideUp .3s cubic-bezier(.32,.72,0,1);max-height:93vh;display:flex;flex-direction:column}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.modal-handle{width:44px;height:4px;background:var(--border);border-radius:2px;margin:14px auto 0}
+.modal-handle{width:48px;height:5px;background:var(--border2);border-radius:3px;margin:12px auto 0;cursor:pointer;transition:background .2s}
+.modal-handle:hover{background:var(--text-dim)}
 .modal-header{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 20px 14px;border-bottom:1px solid var(--border)}
 .modal-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--text)}
 .modal-subtitle{font-size:11px;color:var(--text-dim);margin-top:2px}
@@ -721,65 +722,76 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 }
 
 
-/* ── Push permission note ── */
-#pushPermNote{font-size:11px;color:var(--text-dim);text-align:center;margin-top:6px;line-height:1.6}
-#pushPermNote span{color:var(--blue);cursor:pointer;text-decoration:underline}
+/* ── Modal handle — tap zone ── */
+.modal-handle::before{content:'';display:block;height:20px;margin:-20px -20px 0;cursor:pointer}
 
-/* ══════════════════════════════════════════
-   FOCUS STYLES — keyboard navigation
-══════════════════════════════════════════ */
+/* ── Focus states — keyboard navigation ── */
 :focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:4px}
 .nav-tab:focus-visible{outline-offset:0;border-radius:0}
 .modal-close:focus-visible{outline-offset:2px;border-radius:50%}
-/* Suppress focus ring for mouse/touch users — only show for keyboard */
+.chart-export-btn:focus-visible,.range-tab:focus-visible,
+.upgrade-price-opt:focus-visible,.htab:focus-visible,
+.currency-btn:focus-visible,.filter-btn:focus-visible{
+  outline:2px solid var(--brand);outline-offset:2px;border-radius:20px
+}
+.range-tab:focus-visible{border-radius:8px}
+.htab:focus-visible{border-radius:9px}
 :focus:not(:focus-visible){outline:none}
 
-/* ══════════════════════════════════════════
-   BTN-PRIMARY — text colour fix
-══════════════════════════════════════════ */
+/* ── btn-primary — text colour and hover ── */
 .btn-primary{color:#FDF8F0}
 .btn-primary:hover{box-shadow:0 5px 20px rgba(139,105,20,.4)}
 .btn-primary:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
 
-/* ══════════════════════════════════════════
-   CURRENCY BAR & LAST-UPDATED — CSS variables
-══════════════════════════════════════════ */
-.currency-bar{background:var(--bg4);border-bottom:1px solid var(--border2);scrollbar-width:none;-ms-overflow-style:none}
+/* ── Currency bar — CSS variables, hide scrollbar, momentum ── */
+.currency-bar{background:var(--bg4);border-bottom:1px solid var(--border2);scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch}
 .currency-bar::-webkit-scrollbar{display:none}
 .last-updated{background:var(--bg3);border-bottom:1px solid var(--border)}
 
-/* ══════════════════════════════════════════
-   FILTER BAR — hide scrollbar + momentum scroll
-══════════════════════════════════════════ */
+/* ── Filter bar — hide scrollbar, momentum ── */
 .filter-bar{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch}
 .filter-bar::-webkit-scrollbar{display:none}
 
-/* ══════════════════════════════════════════
-   MODAL — overscroll + GPU compositing
-══════════════════════════════════════════ */
+/* ── Modal — overscroll containment, GPU compositing ── */
 .modal-body{overscroll-behavior:contain}
 .modal{will-change:transform}
 
-/* ══════════════════════════════════════════
-   DETAIL ACTION BUTTONS — larger touch target
-══════════════════════════════════════════ */
+/* ── Detail action buttons — larger touch target ── */
 .detail-action-btn{padding:15px}
 
-/* ══════════════════════════════════════════
-   EMPTY CTA — hover state
-══════════════════════════════════════════ */
-.empty-cta:hover{background:rgba(139,105,20,.18);border-color:var(--brand);color:var(--brand-dim)}
+/* ── Empty CTA — hover state ── */
 .empty-cta{transition:all .2s}
+.empty-cta:hover{background:rgba(139,105,20,.18);border-color:var(--brand);color:var(--brand-dim)}
 
-/* ══════════════════════════════════════════
-   REDUCED MOTION
-══════════════════════════════════════════ */
+/* ── Item count badge ── */
+.item-count{letter-spacing:.04em}
+
+/* ── Section header eyebrow ── */
+.section-title{font-size:11px}
+
+/* ── Spot strip metal label ── */
+.spot-item .metal{font-size:10px;letter-spacing:.08em}
+
+/* ── Alert icon ── */
+.alert-icon{display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+
+/* ── Value preview on mobile ── */
+@media(max-width:600px){
+  .vp-amt{font-size:28px}
+}
+
+/* ── Reduced motion ── */
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
   .modal{animation:none}
   .app-screen.active{animation:none}
 }
+
+/* ── Push permission note ── */
+#pushPermNote{font-size:11px;color:var(--text-dim);text-align:center;margin-top:6px;line-height:1.6}
+#pushPermNote span{color:var(--blue);cursor:pointer;text-decoration:underline}
+
 </style>
   <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleSignIn()"></script>
   <!-- Google Analytics GA4 -->
@@ -4975,9 +4987,12 @@ function renderAlertsList(){
       spotDisplay=sym+(spot*rate).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'/oz';
     }
     return `<div class="alert-card ${a.fired||triggered?'triggered':''}">
-      <div class="alert-icon">${a.metal==='gold'?'🥇':'🥈'}</div>
+      <div class="alert-icon">${a.metal==='gold'
+        ? `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--brand)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>`
+        : `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--silver-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>`
+      }</div>
       <div class="alert-info">
-        <div class="alert-metal-name">${a.metal==='gold'?'🥇 Gold':'🥈 Silver'}</div>
+        <div class="alert-metal-name">${a.metal==='gold'?'Gold':'Silver'}</div>
         <div class="alert-target">${dirLabel} ${priceDisplay}</div>
         ${a.note?`<div class="alert-note-text">${escHtml(a.note)}</div>`:''}
         <div class="alert-status ${statusCls}">${statusTxt} · Now ${spotDisplay}</div>
@@ -5540,7 +5555,7 @@ window.onerror = (msg, src, line, col, err) => {
       If we make material changes to this policy, we will notify users by email and update the date below. We will not retroactively reduce the privacy protections described here without explicit consent.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">11. Contact</strong><br>
-      For privacy-related questions or data requests, write to us at <a href="/cdn-cgi/l/email-protection#7a121f1616153a17031b0f080f17541b0a0a" style="color:#B8860B;text-decoration:none"><span class="__cf_email__" data-cfemail="95fdf0f9f9fad5f8ecf4e0e7e0f8bbf4e5e5">[email&#160;protected]</span></a>. We will respond within 5 business days.</p>
+      For privacy-related questions or data requests, write to us at <a href="mailto:hello@myaurum.app" style="color:#B8860B;text-decoration:none">hello@myaurum.app</a>. We will respond within 5 business days.</p>
 
       <p style="color:#999;font-size:10px;border-top:1px solid #EEE;padding-top:12px;margin-top:4px">Last updated: March 2026 · MyAurum · Aurum Fintech, Mumbai, India · Registered under UDYAM</p>
     </div>
@@ -5576,7 +5591,7 @@ window.onerror = (msg, src, line, col, err) => {
       You retain ownership of all holdings data you enter. By using the service, you grant Aurum Fintech a limited, non-exclusive licence to store, process, and display your data solely for the purpose of providing the service to you. We do not claim ownership of your data, and we do not use it for any purpose other than operating the service. See our Privacy Policy for full details.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">7. Account security</strong><br>
-      You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. You must notify us immediately at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2e464b4242416e43574f5b5c5b43004f5e5e">[email&#160;protected]</a> if you suspect any unauthorised use. MyAurum is not liable for loss resulting from unauthorised access caused by your failure to secure your credentials.</p>
+      You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. You must notify us immediately at hello@myaurum.app if you suspect any unauthorised use. MyAurum is not liable for loss resulting from unauthorised access caused by your failure to secure your credentials.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">8. Subscriptions and payments</strong><br>
       Premium subscriptions are processed via Razorpay. Subscription fees are charged in advance on an annual basis. Cancellations take effect at the end of the current billing period — access continues until expiry and no partial refunds are issued. MyAurum reserves the right to change subscription pricing with 30 days' notice to existing subscribers.</p>
@@ -5591,4 +5606,9 @@ window.onerror = (msg, src, line, col, err) => {
       We may update these Terms from time to time. Material changes will be communicated by email to registered users. Continued use of the service after changes are posted constitutes acceptance of the revised Terms.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">12. Contact</strong><br>
-      For questions regarding these Terms, contact us at <a href="/cdn-cgi/l/email-protection#78101d141417381501190d0a0d1556190808" style="color:#B8860B;text-dec
+      For questions regarding these Terms, contact us at <a href="mailto:hello@myaurum.app" style="color:#B8860B;text-decoration:none">hello@myaurum.app</a>.</p>
+
+      <p style="color:#999;font-size:10px;border-top:1px solid #EEE;padding-top:12px;margin-top:4px">Last updated: March 2026 · MyAurum · Aurum Fintech, Mumbai, India · Registered under UDYAM · Trademark registered</p>
+    </div>
+  </div>
+</div>
