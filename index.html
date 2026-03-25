@@ -3412,7 +3412,7 @@ function updateHeaderWelcome(){
       if(hasItems){
         const total = fmtDisp(items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0));
         const count = items.filter(i=>!i.sold&&!i.gifted).length;
-        const dates = items.map(i=>i.updatedAt||i.createdAt||i.purchaseDate).filter(Boolean).sort().reverse();
+        const dates = items.map(i=>i.updatedAt||i.giftDate||i.soldDate||i.createdAt||i.purchaseDate).filter(Boolean).sort().reverse();
         const lastDate = dates.length ? new Date(dates[0]).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}) : null;
         subEl.textContent = total + ' across ' + count + ' holding' + (count!==1?'s':'') + (lastDate ? ' · Last updated ' + lastDate : '');
       } else {
