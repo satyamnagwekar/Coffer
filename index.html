@@ -377,7 +377,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .fab-wrap{right:max(18px, calc(50% - 432px))}
 
   /* G/L — larger and more prominent on desktop */
-  #pnlGain,#spGain{font-size:22px;font-weight:600;letter-spacing:-.01em}
+  #pnlGain.pnl-val,#spGain.pnl-val{font-size:22px;font-weight:600;letter-spacing:-.01em}
 }
 @keyframes fadeInScale{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 
@@ -1791,6 +1791,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         <div style="font-size:11px;color:#888;margin-top:8px;line-height:1.6">Google may show an "unverified app" warning during Sheets sign-in — this is expected while verification is in progress. Click <em>Advanced → Go to myaurum.app</em> to proceed safely.</div>
       </div>
       </div><!-- /chartContent -->
+    </div><!-- /chart-panel -->
     <div class="app-footer">
       <p>MyAurum is a personal record tool for estimating precious metal value at live spot prices.<br>
       Values are indicative only — not financial advice. All data encrypted and stored on secure servers.<br>
