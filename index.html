@@ -377,7 +377,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .fab-wrap{right:max(18px, calc(50% - 432px))}
 
   /* G/L — larger and more prominent on desktop */
-  #pnlGain.pnl-val,#spGain.pnl-val{font-size:22px;font-weight:600;letter-spacing:-.01em}
+  #pnlGain.pnl-val,#spGain.pnl-val{font-size:28px;font-weight:600;letter-spacing:-.02em}
+  #totalPnl{font-size:26px!important;font-weight:600;letter-spacing:-.02em}
 }
 @keyframes fadeInScale{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 
@@ -587,10 +588,16 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .pnl-row:last-child{border-bottom:none}
 .pnl-row.total{background:rgba(139,105,20,.03)}
 .pnl-key{font-size:11px;color:var(--text-dim)}
+.pnl-info{font-size:10px;color:var(--text-dim);cursor:help;opacity:.7;vertical-align:middle;margin-left:3px}
+/* G/L tooltip */
+.gl-tooltip-wrap{position:relative;display:inline-block}
+.gl-tooltip-wrap .gl-tip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);width:230px;background:#2C2410;color:#F5F0E8;font-size:11px;line-height:1.6;padding:9px 12px;border-radius:6px;z-index:999;font-family:'Jost',sans-serif;letter-spacing:0;text-transform:none;font-weight:400;pointer-events:none}
+.gl-tooltip-wrap .gl-tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#2C2410}
+.gl-tooltip-wrap:hover .gl-tip,.gl-tooltip-wrap.tip-open .gl-tip{display:block}
 .pnl-val{font-size:12px;color:var(--text-mid)}
 .pnl-val.pos{color:var(--green)}
 .pnl-val.neg{color:var(--red)}
-.pnl-val.hi{font-size:16px;font-family:'Cormorant Garamond',serif}
+.pnl-val.hi{font-size:22px;font-family:'Cormorant Garamond',serif;font-weight:600}
 
 /* Shared buttons */
 .btn-primary{width:100%;padding:16px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border:none;border-radius:var(--radius);color:#0c0a06;font-family:'Jost',sans-serif;font-size:12px;letter-spacing:.15em;text-transform:uppercase;font-weight:500;cursor:pointer;transition:all .2s;box-shadow:0 3px 14px rgba(139,105,20,.3)}
@@ -1608,7 +1615,15 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
             <div>
               <div class="split-label">◈ G/L</div>
               <div class="split-val pnl" id="totalPnl">—</div>
-              <div class="split-sub" id="totalPnlPct">vs cost paid</div>
+              <div class="split-sub">
+                <span class="gl-tooltip-wrap" id="glPctWrap">
+                  <span id="totalPnlPct">vs cost paid</span>
+                  <span class="gl-tooltip-wrap" onclick="this.classList.toggle('tip-open')">
+                    <span style="cursor:help;opacity:.5;font-size:10px;margin-left:3px">ⓘ</span>
+                    <span class="gl-tip">How it's calculated: today's spot value of your holdings minus what you paid. The % shows how much your portfolio has grown relative to its cost.<br><br>This is an approximation — both spot prices and exchange rates change daily, so the figure reflects current market conditions, not what you'd realise on a sale.</span>
+                  </span>
+                </span>
+              </div>
             </div>
             <div id="platinumSplitRow" style="display:none">
               <div class="split-label">🔷 Platinum</div>
@@ -1769,12 +1784,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           <span class="hl-dot silver-dot"></span><span class="hl-lbl">Silver spot</span>
         </div>
         <div class="history-note" id="historyNote">Price history simulated from current spot</div>
-      </div>
-
-      <div style="margin:0 14px 16px;padding:10px 14px;background:rgba(80,90,110,.07);border:1px solid rgba(80,90,110,.15);border-radius:8px">
-        <div style="font-size:10px;color:var(--text-dim);line-height:1.75;font-family:'Jost',sans-serif">
-          <strong style="color:var(--text-mid);letter-spacing:.04em">About this chart</strong><br>
-          Price data is sourced from global spot markets and is displayed for informational purposes only. Historical prices are daily closes in USD and do not account for historical exchange rate fluctuations, import duties, making charges, or local market premiums. The chart does not constitute financial advice, a valuation, or a recommendation to buy or sell. Past price performance is not indicative of future results. Actual resale values may differ materially from spot estimates. MyAurum is a personal record-keeping tool — not a regulated financial service.
+        <div style="margin:14px 0 4px;padding:10px 14px;background:rgba(80,90,110,.07);border:1px solid rgba(80,90,110,.15);border-radius:8px">
+          <div style="font-size:10px;color:var(--text-dim);line-height:1.75;font-family:'Jost',sans-serif">
+            <strong style="color:var(--text-mid);letter-spacing:.04em">About this chart</strong><br>
+            Price data is sourced from global spot markets and is displayed for informational purposes only. Historical prices are daily closes in USD and do not account for historical exchange rate fluctuations, import duties, making charges, or local market premiums. The chart does not constitute financial advice, a valuation, or a recommendation to buy or sell. Past price performance is not indicative of future results. Actual resale values may differ materially from spot estimates. MyAurum is a personal record-keeping tool — not a regulated financial service.
+          </div>
         </div>
       </div>
       <div class="export-section">
@@ -2271,7 +2285,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         <div class="pnl-box-title">Gain / Loss Preview</div>
         <div class="pnl-row"><div class="pnl-key">You paid</div><div class="pnl-val" id="pnlPaid">—</div></div>
         <div class="pnl-row"><div class="pnl-key">Spot value now</div><div class="pnl-val" id="pnlSpot">—</div></div>
-        <div class="pnl-row total"><div class="pnl-key">Unrealised G/L</div><div class="pnl-val hi" id="pnlGain">—</div></div>
+        <div class="pnl-row total"><div class="pnl-key">Unrealised G/L <span class="pnl-info" title="% = (spot value now − cost paid) ÷ cost paid × 100&#10;&#10;Spot value uses live MCX / COMEX prices adjusted to your display currency. Cost basis is what you paid, converted to the same currency. Making charges are excluded from cost basis.">ⓘ</span></div><div class="pnl-val hi" id="pnlGain">—</div></div>
       </div>
 
       <div class="form-divider" style="margin:16px 0 14px">
@@ -3757,8 +3771,8 @@ function updateSummary(){
   }
   if(ptCard) ptCard.style.display = ptD>0 ? '' : 'none';
   const pEl=document.getElementById('totalPnl'),pPct=document.getElementById('totalPnlPct');
-  if(pD>0){const g=spD-pD,p=(g/pD)*100,s=g>=0?'+':'';pEl.textContent=s+fmtDisp(g);pEl.className='split-val pnl '+(g>=0?'pos':'neg');pPct.textContent=s+p.toFixed(1)+'%'}
-  else{pEl.textContent='—';pEl.className='split-val pnl';pPct.textContent='add cost to track'}
+  if(pD>0){const g=spD-pD,p=(g/pD)*100,s=g>=0?'+':'';pEl.textContent=s+fmtDisp(g);pEl.className='split-val pnl '+(g>=0?'pos':'neg');if(pPct)pPct.textContent=s+p.toFixed(1)+'%'}
+  else{pEl.textContent='—';pEl.className='split-val pnl';if(pPct)pPct.textContent='add cost to track'}
 }
 
 function renderList(){
