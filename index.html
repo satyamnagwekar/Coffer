@@ -4535,11 +4535,48 @@ function openDetail(idx){
         ${item.giftTo?`<div class="detail-row"><div class="detail-key">Gifted To</div><div class="detail-val">${escHtml(item.giftTo)}</div></div>`:''}
         ${item.giftNotes?`<div class="detail-row"><div class="detail-key">Occasion</div><div class="detail-val">${escHtml(item.giftNotes)}</div></div>`:''}
         <div class="detail-row"><div class="detail-key">Value at Gift</div><div class="detail-val">${item.giftValueUSD?fmtDisp(item.giftValueUSD*(benchmark==='MCX'&&item.metal!=='platinum'?rates.INR*1.054:rates[currency]||1)):'—'}</div></div>
-        ${gRow}</div>`;
+        ${gRow}
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;color:var(--text-dim);line-height:1.7;margin-bottom:10px">If this item remains in the family, you can re-attribute it to a new holder — it will be added as a fresh holding under their name.</div>
+          <button onclick="reattributeItem(${idx})" style="width:100%;padding:10px;background:transparent;border:1px solid var(--border-gold);border-radius:var(--radius-xs);color:var(--brand);font-family:'Jost',sans-serif;font-size:12px;letter-spacing:.06em;cursor:pointer">↩ Re-attribute to another holder</button>
+        </div></div>`;
     })()}
     <div class="detail-actions">${editBtn}${actionBtn}</div>
     <button class="btn-danger" onclick="deleteItem(${idx})">Remove from MyAurum</button>`;
   openModalWithHistory('detailModal');
+}
+
+function reattributeItem(idx){
+  const item = items[idx];
+  closeModal('detailModal');
+  // Pre-fill add modal with original item details, heldBy cleared for user to set
+  openAddModal();
+  document.getElementById('itemName').value = item.name || '';
+  document.getElementById('itemHeldBy').value = '';
+  document.getElementById('itemHeldBy').placeholder = 'Who holds this now?';
+  document.getElementById('itemHeldBy').focus();
+  // Metal
+  selectedMetal = item.metal || 'gold';
+  ['gold','silver','platinum'].forEach(m=>{
+    document.getElementById('metal'+m.charAt(0).toUpperCase()+m.slice(1)).className='metal-btn '+m+(selectedMetal===m?' selected':'');
+  });
+  // Type & grade
+  selectedType = item.type || 'jewellery';
+  if(item.gradeName){
+    const gradeList = selectedMetal==='gold'?GOLD_GRADES:selectedMetal==='platinum'?PLATINUM_GRADES:SILVER_GRADES;
+    selectedGrade = gradeList.find(g=>g.name===item.gradeName) || gradeList[1];
+  }
+  renderGradeGrid(); renderTypeGrid();
+  // Weight
+  document.getElementById('itemWeight').value = item.grams || '';
+  // Purchase date blank — this is a new entry
+  document.getElementById('purchaseDate').value = new Date().toISOString().slice(0,10);
+  // Notes
+  document.getElementById('itemNotes').value = item.notes || '';
+  // Nominee
+  if(document.getElementById('itemNominee')) document.getElementById('itemNominee').value = item.nominee || '';
+  updatePreview();
+  showToast('Fill in the new holder and confirm details', 'info', 4000);
 }
 
 async function deleteItem(idx){
@@ -4585,14 +4622,20 @@ function setChartRange(r,btn){
 }
 
 function updateChartPanel(){
-  const active=items.filter(i=>!i.sold);
-  const tot=active.reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0);
+  const active=items.filter(i=>!i.sold&&!i.gifted);
+  const sold=items.filter(i=>i.sold);
+
+  // Active holdings: current spot value
+  const activeTot=active.reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0);
+  // Sold holdings: realised sale price converted to display currency
+  const realisedTot=sold.reduce((s,i)=>s+(i.sellPriceUSD||0)*(rates[currency]||1),0);
+  const tot=activeTot+realisedTot;
 
   // Show/hide empty state overlay for chart
   const chartEmpty = document.getElementById('chartEmptyState');
   const chartContent = document.getElementById('chartContent');
   if(chartEmpty && chartContent){
-    if(!active.length){
+    if(!active.length && !sold.length){
       chartEmpty.style.display='flex';
       chartContent.style.display='none';
     } else {
@@ -4601,8 +4644,11 @@ function updateChartPanel(){
     }
   }
 
+  // Sub-line: e.g. "8 active · 2 closed"
+  const activePart=active.length+' active';
+  const soldPart=sold.length?(' · '+sold.length+' closed'):'';
   document.getElementById('chartHeadline').textContent=fmtDisp(tot);
-  document.getElementById('chartSub').textContent=active.length+' active holding'+(active.length!==1?'s':'');
+  document.getElementById('chartSub').textContent=activePart+soldPart;
   document.getElementById('donutTotal').textContent=fmtDisp(tot);
   if(chartRange==='composition')drawDonut();
   if(chartRange==='performance')renderPerfGrid();
