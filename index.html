@@ -2386,6 +2386,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       </div>
 
       <div class="field">
+        <div class="field-label-row"><label>Source</label><span class="field-hint">optional · for your records</span></div>
+        <input type="text" id="itemSource" placeholder="e.g. Tanishq Mumbai, Dubai Gold Souk, family jeweller, inherited from Nani…" autocomplete="off">
+      </div>
+
+      <div class="field">
         <div class="field-label-row"><label>Held By</label><span class="field-hint">who owns this item</span></div>
         <input type="text" id="itemHeldBy" placeholder="e.g. Self, Mum, Spouse…" autocomplete="off" required>
       </div>
@@ -2463,7 +2468,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           </select>
         </div>
       </div>
-      <div class="field"><div class="field-label-row"><label>Buyer / Platform</label><span class="field-hint">optional</span></div><input type="text" id="sellNotes" placeholder="Jeweller, exchange, private sale…"></div>
+      <div class="field"><div class="field-label-row"><label>Sold To</label><span class="field-hint">optional · for your records</span></div><input type="text" id="sellNotes" placeholder="e.g. Malabar buyback, Zaveri Bazaar jeweller, Caratlane, private buyer…"></div>
       <div class="pnl-box">
         <div class="pnl-box-title">Sale Summary</div>
         <div class="pnl-row"><div class="pnl-key">Cost basis</div><div class="pnl-val" id="spPaid">—</div></div>
@@ -2713,6 +2718,10 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <div class="field">
         <div class="field-label-row"><label>Notes</label><span class="field-hint">optional</span></div>
         <input type="text" id="editNotes" placeholder="Jeweller, occasion, cert. number…">
+      </div>
+      <div class="field">
+        <div class="field-label-row"><label>Source</label><span class="field-hint">optional · for your records</span></div>
+        <input type="text" id="editSource" placeholder="e.g. Tanishq Mumbai, Dubai Gold Souk, family jeweller, inherited from Nani…" autocomplete="off">
       </div>
       <div class="field">
         <div class="field-label-row"><label>Held By</label><span class="field-hint">who owns this item</span></div>
@@ -4143,7 +4152,7 @@ function haptic(ms=10){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(
 function openAddModal(){
   haptic();
   selectedMetal='gold';selectedType='jewellery';selectedGrade=GOLD_GRADES[1];photosBase64=[];
-  ['itemName','itemWeight','itemNotes','pricePaid','makingCharge','itemNominee'].forEach(id=>document.getElementById(id).value='');
+  ['itemName','itemWeight','itemNotes','pricePaid','makingCharge','itemNominee','itemSource'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('itemHeldBy').value='Self';
   document.getElementById('hasMakingCharge').checked=false;
   document.getElementById('makingChargeRow').style.display='none';
@@ -4354,6 +4363,7 @@ async function addItem(){
   const weight=parseFloat(document.getElementById('itemWeight').value);
   const unit=document.getElementById('weightUnit').value;
   const notes=document.getElementById('itemNotes').value.trim();
+  const source=document.getElementById('itemSource').value.trim();
   const isGift=document.getElementById('isGiftReceived').checked;
   const paidRaw=isGift?0:(parseFloat(document.getElementById('pricePaid').value)||0);
   const paidCurr=document.getElementById('pricePaidCurrency').value;
@@ -4381,6 +4391,7 @@ async function addItem(){
     photos:photosBase64.length?photosBase64:null,
     heldBy:heldBy||null,
     nominee:nominee||null,
+    source:source||null,
     addedAt:new Date().toISOString(),
   };
   try{
@@ -4418,6 +4429,7 @@ function openEditModal(idx){
   document.getElementById('editMakingChargeRow').style.display=hasMC?'':  'none';
   document.getElementById('editMakingCharge').value=item.makingCharge||'';
   document.getElementById('editNotes').value=item.notes||'';
+  document.getElementById('editSource').value=item.source||'';
   document.getElementById('editHeldBy').value=item.heldBy||'Self';
   document.getElementById('editNominee').value=item.nominee||'';
   closeModal('detailModal');
@@ -4433,6 +4445,7 @@ async function saveEditItem(){
   const paidRaw=parseFloat(document.getElementById('editPricePaid').value)||0;
   const paidCurr=document.getElementById('editPricePaidCurrency').value;
   const notes=document.getElementById('editNotes').value.trim();
+  const source=document.getElementById('editSource').value.trim();
   const heldBy=(document.getElementById('editHeldBy').value.trim())||'Self';
   const nominee=document.getElementById('editNominee').value.trim();
   if(!name){showMsg('editItemMsg','Please enter a name.','error');return}
@@ -4451,6 +4464,7 @@ async function saveEditItem(){
     goldCostBasisUSD:paidRaw?(toUSD(paidRaw,paidCurr)-(hasMC?toUSD(mcAmt,paidCurr):0)):null,
     heldBy:heldBy||null,
     nominee:nominee||null,
+    source:source||null,
   };
   try{
     const updated=await api('PUT','/items/'+item.id,payload);
@@ -4602,6 +4616,7 @@ function openDetail(idx){
   ];
   if(item.notes)acqRows.push(['Notes',escHtml(item.notes)]);
   if(item.heldBy)acqRows.push(['Held By',escHtml(item.heldBy)]);
+  if(item.source)acqRows.push(['Source',escHtml(item.source)]);
   if(item.nominee)acqRows.push(['Nominee',`<span style="color:#c084fc">${escHtml(item.nominee)}</span>`]);
   const spotLabel = isMCX&&item.metal!=='platinum' ? 'Spot (INR /10g)' : `Spot (${bLabel} /oz)`;
   const spotDisp = isMCX&&item.metal!=='platinum'
@@ -4630,7 +4645,7 @@ function openDetail(idx){
     soldHTML=`<div class="detail-section"><div class="detail-section-title">Sale Record</div>
       <div class="detail-row"><div class="detail-key">Date Sold</div><div class="detail-val">${item.sellDate||'—'}</div></div>
       <div class="detail-row"><div class="detail-key">Price Received</div><div class="detail-val">${fmtCurr(item.sellPrice,item.sellCurrency)}</div></div>
-      ${item.sellNotes?`<div class="detail-row"><div class="detail-key">Buyer/Notes</div><div class="detail-val">${escHtml(item.sellNotes)}</div></div>`:''}${rRow}</div>`;
+      ${item.sellNotes?`<div class="detail-row"><div class="detail-key">Sold To</div><div class="detail-val">${escHtml(item.sellNotes)}</div></div>`:''}${rRow}</div>`;
   }
   let actionBtn;
   if(item.sold){
@@ -4699,6 +4714,7 @@ function reattributeItem(idx){
   document.getElementById('purchaseDate').value = new Date().toISOString().slice(0,10);
   // Notes
   document.getElementById('itemNotes').value = item.notes || '';
+  document.getElementById('itemSource').value = item.source || '';
   // Nominee
   if(document.getElementById('itemNominee')) document.getElementById('itemNominee').value = item.nominee || '';
   updatePreview();
