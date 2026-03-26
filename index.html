@@ -4659,43 +4659,77 @@ function drawDonut(){
   const canvas=document.getElementById('donutChart');
   if(!canvas)return;
   const ctx=canvas.getContext('2d');
-  const active=items.filter(i=>!i.sold);
+  // Active only (not sold, not gifted) — group by metal
+  const active=items.filter(i=>!i.sold&&!i.gifted);
+  const sold=items.filter(i=>i.sold);
+
+  // Build metal groups: active spot value + sold realised value per metal
+  const metals=[
+    {key:'gold',   label:'Gold',     color:'#C8971A', activeItems:active.filter(i=>i.metal==='gold'),   soldItems:sold.filter(i=>i.metal==='gold')},
+    {key:'silver', label:'Silver',   color:'#8AAFC4', activeItems:active.filter(i=>i.metal==='silver'), soldItems:sold.filter(i=>i.metal==='silver')},
+    {key:'platinum',label:'Platinum',color:'#6A9AB8', activeItems:active.filter(i=>i.metal==='platinum'),soldItems:sold.filter(i=>i.metal==='platinum')},
+  ].map(m=>{
+    const spotVal=m.activeItems.reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0);
+    const realisedVal=m.soldItems.reduce((s,i)=>s+(i.sellPriceUSD||0)*(rates[currency]||1),0);
+    const totalVal=spotVal+realisedVal;
+    const totalGrams=m.activeItems.reduce((s,i)=>s+i.grams,0);
+    const count=m.activeItems.length+m.soldItems.length;
+    return {...m,spotVal,realisedVal,totalVal,totalGrams,count};
+  }).filter(m=>m.count>0);
+
+  const grandTot=metals.reduce((s,m)=>s+m.totalVal,0)||1;
+
   const cx=110,cy=110,R=90,r=62;
   ctx.clearRect(0,0,220,220);
-  const goldItems=active.filter(i=>i.metal==='gold');
-  const silverItems=active.filter(i=>i.metal==='silver');
-  const allSlices=[...goldItems,...silverItems];
-  const vals=allSlices.map(i=>spotDisplayValue(i.metal,i.grams,i.purity));
-  const tot=vals.reduce((a,b)=>a+b,0)||1;
-  const GOLD_COLORS=['#F0B429','#FFD166','#D4920A','#E8A020','#B87800'];
-  const SILVER_COLORS=['#C8D8E8','#E0EDF8','#90A8C0','#A8C0D8','#788898'];
-  let angle=-Math.PI/2,gI=0,sI=0;
-  const legendData=[];
-  allSlices.forEach((item,i)=>{
-    const slice=(vals[i]/tot)*2*Math.PI;
-    const color=item.metal==='gold'?GOLD_COLORS[gI++%GOLD_COLORS.length]:SILVER_COLORS[sI++%SILVER_COLORS.length];
-    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,angle,angle+slice);ctx.closePath();
-    ctx.fillStyle=color;ctx.fill();angle+=slice;
-    legendData.push({name:item.name,color,val:vals[i],pct:((vals[i]/tot)*100).toFixed(1),grams:item.grams});
-  });
-  if(tot===1){ctx.beginPath();ctx.arc(cx,cy,R,-Math.PI/2,3*Math.PI/2);ctx.fillStyle='#1a1a10';ctx.fill()}
-  ctx.beginPath();ctx.arc(cx,cy,r,0,2*Math.PI);ctx.fillStyle='#0c0a06';ctx.fill();
+
   const leg=document.getElementById('compositionLegend');
-  if(!legendData.length){leg.innerHTML='<div style="text-align:center;padding:16px;font-size:11px;color:var(--text-dim)">Add holdings to see composition</div>';return}
-  leg.innerHTML=legendData.map(d=>`
-    <div class="legend-item">
-      <div class="legend-left"><div class="legend-dot" style="background:${d.color}"></div>
-        <div><div class="legend-name">${escHtml(d.name)}</div><div class="legend-sub">${d.grams.toFixed(2)}g · ${d.pct}%</div></div>
+  if(!metals.length){
+    leg.innerHTML='<div style="text-align:center;padding:16px;font-size:11px;color:var(--text-dim)">Add holdings to see composition</div>';
+    return;
+  }
+
+  // Draw donut segments — one per metal
+  let angle=-Math.PI/2;
+  metals.forEach(m=>{
+    const slice=(m.totalVal/grandTot)*2*Math.PI;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,angle,angle+slice);ctx.closePath();
+    ctx.fillStyle=m.color;ctx.fill();
+    angle+=slice;
+  });
+  // Donut hole
+  ctx.beginPath();ctx.arc(cx,cy,r,0,2*Math.PI);
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--bg2').trim()||'#FDFBF7';
+  ctx.fill();
+
+  // Legend — one row per metal, macro view
+  leg.innerHTML=metals.map(m=>{
+    const pct=((m.totalVal/grandTot)*100).toFixed(1);
+    const activePart=m.activeItems.length+' active';
+    const soldPart=m.soldItems.length?' · '+m.soldItems.length+' closed':'';
+    const weightPart=m.totalGrams>0?' · '+m.totalGrams.toFixed(2)+'g':'';
+    return `<div class="legend-item">
+      <div class="legend-left">
+        <div class="legend-dot" style="background:${m.color}"></div>
+        <div>
+          <div class="legend-name">${m.label}</div>
+          <div class="legend-sub">${activePart}${soldPart}${weightPart}</div>
+        </div>
       </div>
-      <div class="legend-right"><div class="legend-val">${fmtDisp(d.val)}</div></div>
-    </div>`).join('');
+      <div class="legend-right">
+        <div class="legend-val">${fmtDisp(m.totalVal)}</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:2px">${pct}%</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function renderPerfGrid(){
-  const active=items.filter(i=>!i.sold);
+  const active=items.filter(i=>!i.sold&&!i.gifted);
+  const sold=items.filter(i=>i.sold);
   const grid=document.getElementById('perfGrid');
-  if(!active.length){grid.innerHTML='<div style="text-align:center;padding:24px;font-size:11px;color:var(--text-dim)">No active holdings to display</div>';return}
-  grid.innerHTML=active.map(item=>{
+  if(!active.length&&!sold.length){grid.innerHTML='<div style="text-align:center;padding:24px;font-size:11px;color:var(--text-dim)">No holdings to display</div>';return}
+
+  const activeCards=active.map(item=>{
     const sD=spotDisplayValue(item.metal,item.grams,item.purity);
     const isINR=currency==='INR';
     const rate=rates[currency]||1;
@@ -4715,7 +4749,26 @@ function renderPerfGrid(){
         <div class="perf-row"><div class="perf-key">G / L</div>${glHTML}</div>
       </div>
     </div>`;
-  }).join('');
+  });
+
+  const soldCards=sold.map(item=>{
+    const saleDisp=(item.sellPriceUSD||0)*(rates[currency]||1);
+    const sym=SYMBOLS[currency]||'$';
+    let glHTML='<div class="perf-val">—</div>';
+    const cbD=costBasisDisplay(item);
+    if(cbD&&item.sellPriceUSD){const g=saleDisp-cbD,p=(g/cbD)*100,s=g>=0?'+':'';glHTML=`<div class="perf-val ${g>=0?'pos':'neg'}">${s}${fmtDisp(Math.abs(g))}<br><span style="font-size:11px">${s}${Math.abs(p).toFixed(1)}%</span></div>`}
+    return `<div class="perf-card" onclick="openDetail(${items.indexOf(item)})" style="opacity:.75;border-style:dashed">
+      <div class="perf-card-name" style="display:flex;align-items:center;gap:6px">${escHtml(item.name)}<span style="font-size:10px;letter-spacing:.06em;color:var(--text-dim);background:var(--bg3);padding:2px 6px;border-radius:4px">CLOSED</span></div>
+      <div class="perf-rows">
+        <div class="perf-row"><div class="perf-key">Sale Price</div><div class="perf-val">${fmtDisp(saleDisp)}</div></div>
+        <div class="perf-row"><div class="perf-key">Sold</div><div class="perf-val">${item.sellDate||'—'}</div></div>
+        <div class="perf-row"><div class="perf-key">Weight</div><div class="perf-val">${item.grams.toFixed(3)}g</div></div>
+        <div class="perf-row"><div class="perf-key">Realised G/L</div>${glHTML}</div>
+      </div>
+    </div>`;
+  });
+
+  grid.innerHTML=activeCards.join('')+(sold.length?`<div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);padding:16px 4px 6px">Closed Positions</div>`+soldCards.join(''):'');
 }
 
 let priceHistoryCache=null;
