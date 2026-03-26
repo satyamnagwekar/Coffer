@@ -682,6 +682,33 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .perf-val.gold-c{color:var(--gold-bright)}
 .perf-val.silver-c{color:var(--silver-bright)}
 
+/* ── Performance table view (15+ holdings) ── */
+.perf-toolbar{display:flex;align-items:center;gap:8px;padding:0 16px 10px;flex-wrap:wrap}
+.perf-search{flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-xs);padding:8px 11px;font-family:'Jost',sans-serif;font-size:12px;color:var(--text);outline:none}
+.perf-search::placeholder{color:var(--text-dim)}
+.perf-sort-select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-xs);padding:8px 10px;font-family:'Jost',sans-serif;font-size:11px;color:var(--text-mid);outline:none;cursor:pointer;-webkit-appearance:none;letter-spacing:.04em}
+.perf-table{width:100%;border-collapse:collapse;font-family:'Jost',sans-serif}
+.perf-table th{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);padding:7px 12px;text-align:left;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+.perf-table th:last-child,.perf-table td:last-child{text-align:right}
+.perf-table th.sort-active{color:var(--brand)}
+.perf-table th .sort-arrow{margin-left:3px;opacity:.5;font-size:9px}
+.perf-table th.sort-active .sort-arrow{opacity:1}
+.perf-table td{padding:10px 12px;font-size:13px;color:var(--text);border-bottom:1px solid var(--border);vertical-align:middle}
+.perf-table tr:last-child td{border-bottom:none}
+.perf-table tr:hover td{background:var(--bg3);cursor:pointer}
+.perf-table .td-name{font-size:13px;color:var(--text);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.perf-table .td-metal{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.perf-table .td-sub{font-size:11px;color:var(--text-dim);margin-top:1px}
+.perf-table .td-pos{color:var(--green)}
+.perf-table .td-neg{color:var(--red)}
+.perf-table .td-gold{color:var(--gold-bright)}
+.perf-table .td-silver{color:var(--silver-bright)}
+.perf-closed-toggle{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);cursor:pointer;border-top:1px solid var(--border);margin-top:4px;user-select:none}
+.perf-closed-toggle:hover{color:var(--text-mid)}
+.perf-closed-body{overflow:hidden;transition:max-height .25s ease}
+.perf-table tr.closed-row td{opacity:.65}
+.perf-table tr.closed-row:hover td{opacity:1}
+
 /* History chart */
 .history-chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px;overflow:hidden}
 .history-legend{display:flex;align-items:center;gap:14px;padding:0 4px;margin-bottom:8px}
@@ -4723,12 +4750,134 @@ function drawDonut(){
   }).join('');
 }
 
+// ── Performance view state ──
+let _perfSort='value-desc';
+let _perfSearch='';
+let _perfClosedOpen=false;
+const PERF_TABLE_THRESHOLD=15;
+
 function renderPerfGrid(){
   const active=items.filter(i=>!i.sold&&!i.gifted);
   const sold=items.filter(i=>i.sold);
   const grid=document.getElementById('perfGrid');
-  if(!active.length&&!sold.length){grid.innerHTML='<div style="text-align:center;padding:24px;font-size:11px;color:var(--text-dim)">No holdings to display</div>';return}
+  if(!active.length&&!sold.length){
+    grid.innerHTML='<div style="text-align:center;padding:24px;font-size:11px;color:var(--text-dim)">No holdings to display</div>';
+    return;
+  }
+  const useTable=(active.length+sold.length)>=PERF_TABLE_THRESHOLD;
+  if(useTable) _renderPerfTable(active,sold,grid);
+  else _renderPerfCards(active,sold,grid);
+}
 
+function _metalColor(metal){
+  return metal==='gold'?'#C8971A':metal==='platinum'?'#6A9AB8':'#8AAFC4';
+}
+
+function _sortItems(arr,sortKey){
+  return [...arr].sort((a,b)=>{
+    if(sortKey==='value-desc'||sortKey==='value-asc'){
+      const vA=a.sold?(a.sellPriceUSD||0)*(rates[currency]||1):spotDisplayValue(a.metal,a.grams,a.purity);
+      const vB=b.sold?(b.sellPriceUSD||0)*(rates[currency]||1):spotDisplayValue(b.metal,b.grams,b.purity);
+      return sortKey==='value-desc'?vB-vA:vA-vB;
+    }
+    if(sortKey==='gl-desc'||sortKey==='gl-asc'){
+      const gA=()=>{const v=a.sold?(a.sellPriceUSD||0)*(rates[currency]||1):spotDisplayValue(a.metal,a.grams,a.purity);const c=costBasisDisplay(a);return c?v-c:null;};
+      const gB=()=>{const v=b.sold?(b.sellPriceUSD||0)*(rates[currency]||1):spotDisplayValue(b.metal,b.grams,b.purity);const c=costBasisDisplay(b);return c?v-c:null;};
+      const ga=gA(),gb=gB();
+      if(ga===null&&gb===null)return 0;if(ga===null)return 1;if(gb===null)return -1;
+      return sortKey==='gl-desc'?gb-ga:ga-gb;
+    }
+    if(sortKey==='weight-desc')return b.grams-a.grams;
+    if(sortKey==='name-asc')return (a.name||'').localeCompare(b.name||'');
+    return 0;
+  });
+}
+
+function _renderPerfTable(active,sold,grid){
+  const SORT_LABELS={
+    'value-desc':'Value ↓','value-asc':'Value ↑',
+    'gl-desc':'G/L ↓','gl-asc':'G/L ↑',
+    'weight-desc':'Weight ↓','name-asc':'Name A–Z'
+  };
+
+  // Filter by search
+  const q=_perfSearch.toLowerCase();
+  let filtered=active.filter(i=>!q||(i.name||'').toLowerCase().includes(q));
+  let filteredSold=sold.filter(i=>!q||(i.name||'').toLowerCase().includes(q));
+
+  // Sort
+  filtered=_sortItems(filtered,_perfSort);
+  filteredSold=_sortItems(filteredSold,_perfSort);
+
+  const activeRows=filtered.map(item=>{
+    const idx=items.indexOf(item);
+    const sD=spotDisplayValue(item.metal,item.grams,item.purity);
+    const cbD=costBasisDisplay(item);
+    const glVal=cbD?(sD-cbD):null;
+    const glPct=cbD?((sD-cbD)/cbD*100):null;
+    const glStr=glVal!==null?(glVal>=0?'+':'')+fmtDisp(Math.abs(glVal)):'—';
+    const glPctStr=glPct!==null?(glPct>=0?'+':'')+glPct.toFixed(1)+'%':'';
+    const glClass=glVal===null?'':(glVal>=0?'td-pos':'td-neg');
+    const metalClass=item.metal==='gold'?'td-gold':'td-silver';
+    return `<tr onclick="openDetail(${idx})">
+      <td><div style="display:flex;align-items:center;gap:7px"><span class="td-metal" style="background:${_metalColor(item.metal)}"></span><div><div class="td-name">${escHtml(item.name)}</div><div class="td-sub">${item.grams.toFixed(2)}g</div></div></div></td>
+      <td class="${metalClass}">${fmtDisp(sD)}</td>
+      <td class="${glClass}">${glStr}${glPctStr?`<div style="font-size:10px;opacity:.8">${glPctStr}</div>`:''}</td>
+    </tr>`;
+  }).join('');
+
+  const closedRows=filteredSold.map(item=>{
+    const idx=items.indexOf(item);
+    const saleDisp=(item.sellPriceUSD||0)*(rates[currency]||1);
+    const cbD=costBasisDisplay(item);
+    const glVal=cbD&&item.sellPriceUSD?(saleDisp-cbD):null;
+    const glPct=cbD&&item.sellPriceUSD?((saleDisp-cbD)/cbD*100):null;
+    const glStr=glVal!==null?(glVal>=0?'+':'')+fmtDisp(Math.abs(glVal)):'—';
+    const glPctStr=glPct!==null?(glPct>=0?'+':'')+glPct.toFixed(1)+'%':'';
+    const glClass=glVal===null?'':(glVal>=0?'td-pos':'td-neg');
+    return `<tr class="closed-row" onclick="openDetail(${idx})">
+      <td><div style="display:flex;align-items:center;gap:7px"><span class="td-metal" style="background:${_metalColor(item.metal)}"></span><div><div class="td-name">${escHtml(item.name)}</div><div class="td-sub">${item.grams.toFixed(2)}g · ${item.sellDate||'closed'}</div></div></div></td>
+      <td>${fmtDisp(saleDisp)}</td>
+      <td class="${glClass}">${glStr}${glPctStr?`<div style="font-size:10px;opacity:.8">${glPctStr}</div>`:''}</td>
+    </tr>`;
+  }).join('');
+
+  const sortOpts=Object.entries(SORT_LABELS).map(([v,l])=>`<option value="${v}"${_perfSort===v?' selected':''}>${l}</option>`).join('');
+  const closedSection=sold.length?`
+    <div class="perf-closed-toggle" onclick="_togglePerfClosed(this)">
+      <span>Closed positions (${filteredSold.length})</span>
+      <span>${_perfClosedOpen?'▲':'▼'}</span>
+    </div>
+    <div class="perf-closed-body" style="max-height:${_perfClosedOpen?'9999px':'0'}">
+      <table class="perf-table" style="padding:0 16px">
+        <tbody>${closedRows||'<tr><td colspan="3" style="text-align:center;padding:14px;font-size:11px;color:var(--text-dim)">No matches</td></tr>'}</tbody>
+      </table>
+    </div>`:'';
+
+  grid.innerHTML=`
+    <div class="perf-toolbar">
+      <input class="perf-search" placeholder="Search holdings…" value="${escHtml(_perfSearch)}" oninput="_perfSearchChange(this.value)">
+      <select class="perf-sort-select" onchange="_perfSortChange(this.value)">${sortOpts}</select>
+    </div>
+    <table class="perf-table">
+      <thead><tr>
+        <th>Holding</th>
+        <th>Value</th>
+        <th>G / L</th>
+      </tr></thead>
+      <tbody>${activeRows||'<tr><td colspan="3" style="text-align:center;padding:14px;font-size:11px;color:var(--text-dim)">No matches</td></tr>'}</tbody>
+    </table>
+    ${closedSection}`;
+}
+
+function _perfSearchChange(val){_perfSearch=val;renderPerfGrid();}
+function _perfSortChange(val){_perfSort=val;renderPerfGrid();}
+function _togglePerfClosed(el){
+  _perfClosedOpen=!_perfClosedOpen;
+  renderPerfGrid();
+}
+
+function _renderPerfCards(active,sold,grid){
   const activeCards=active.map(item=>{
     const sD=spotDisplayValue(item.metal,item.grams,item.purity);
     const isINR=currency==='INR';
@@ -4753,7 +4902,6 @@ function renderPerfGrid(){
 
   const soldCards=sold.map(item=>{
     const saleDisp=(item.sellPriceUSD||0)*(rates[currency]||1);
-    const sym=SYMBOLS[currency]||'$';
     let glHTML='<div class="perf-val">—</div>';
     const cbD=costBasisDisplay(item);
     if(cbD&&item.sellPriceUSD){const g=saleDisp-cbD,p=(g/cbD)*100,s=g>=0?'+':'';glHTML=`<div class="perf-val ${g>=0?'pos':'neg'}">${s}${fmtDisp(Math.abs(g))}<br><span style="font-size:11px">${s}${Math.abs(p).toFixed(1)}%</span></div>`}
