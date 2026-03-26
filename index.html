@@ -640,11 +640,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
    CHART PANEL
 ═══════════════════════════════════════ */
 .chart-panel{padding-bottom:100px}
-.chart-header{padding:16px 16px 0}
+.chart-header{padding:20px 16px 0;background:linear-gradient(160deg,rgba(139,105,20,.07) 0%,transparent 60%);border-bottom:1px solid var(--border-gold);margin-bottom:4px}
 .chart-title-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
-.chart-eyebrow{font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px}
-.chart-headline{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:300;color:var(--brand);line-height:1}
-.chart-sub{font-size:11px;color:var(--text-dim);margin-top:2px}
+.chart-eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--brand-dim);margin-bottom:6px}
+.chart-headline{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;color:var(--brand);line-height:1}
+.chart-sub{font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.04em}
 .chart-export-btn{display:flex;align-items:center;gap:5px;padding:8px 14px;border-radius:20px;border:1px solid var(--brand-dim);background:rgba(139,105,20,.07);color:var(--brand);font-size:11px;cursor:pointer;letter-spacing:.06em;white-space:nowrap;transition:all .2s;flex-shrink:0}
 .chart-export-btn:hover{background:rgba(240,180,41,.15)}
 .chart-range-tabs{display:flex;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px;margin-bottom:16px}
@@ -671,15 +671,23 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 /* Performance grid */
 .perf-grid{display:flex;flex-direction:column;gap:8px;padding:0 16px 16px}
-.perf-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:15px 16px}
-.perf-card-name{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text);margin-bottom:10px}
+.perf-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:15px 16px;border-left-width:3px}
+.perf-card.metal-gold{border-left-color:#C8971A;background:linear-gradient(135deg,rgba(200,151,26,.04) 0%,var(--bg2) 40%)}
+.perf-card.metal-silver{border-left-color:#8AAFC4;background:linear-gradient(135deg,rgba(138,175,196,.05) 0%,var(--bg2) 40%)}
+.perf-card.metal-platinum{border-left-color:#6A9AB8;background:linear-gradient(135deg,rgba(106,154,184,.05) 0%,var(--bg2) 40%)}
+.perf-card.metal-closed{border-left-color:var(--border2);opacity:.72;border-style:dashed dashed dashed solid}
+.perf-card-name{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.perf-card-name .metal-pip{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .perf-rows{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .perf-row{background:var(--bg4);border-radius:var(--radius-xs);padding:9px 11px}
-.perf-key{font-size:11px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+.perf-row.perf-row-value{background:rgba(139,105,20,.06);border:1px solid rgba(139,105,20,.12)}
+.perf-row.perf-row-gl.pos-bg{background:var(--green-dim);border:1px solid rgba(26,122,74,.18)}
+.perf-row.perf-row-gl.neg-bg{background:var(--red-dim);border:1px solid rgba(176,48,48,.18)}
+.perf-key{font-size:10px;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
 .perf-val{font-size:14px;color:var(--text)}
 .perf-val.pos{color:var(--green)}
 .perf-val.neg{color:var(--red)}
-.perf-val.gold-c{color:var(--gold-bright)}
+.perf-val.gold-c{color:var(--gold)}
 .perf-val.silver-c{color:var(--silver-bright)}
 
 /* ── Performance table view (15+ holdings) ── */
@@ -4887,31 +4895,42 @@ function _renderPerfCards(active,sold,grid){
     const spotPriceDisplay=isINR
       ?'₹'+Math.round(rawSpot*rates.INR*(10/31.1035)*1.054).toLocaleString('en-IN')+'/10g'
       :sym+(rawSpot*rate).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'/oz';
-    let glHTML='<div class="perf-val">—</div>';
-    const cbD=costBasisDisplay(item);if(cbD){const g=sD-cbD,p=(g/cbD)*100,s=g>=0?'+':'';glHTML=`<div class="perf-val ${g>=0?'pos':'neg'}">${s}${fmtDisp(Math.abs(g))}<br><span style="font-size:11px">${s}${Math.abs(p).toFixed(1)}%</span></div>`}
-    return `<div class="perf-card" onclick="openDetail(${items.indexOf(item)})">
-      <div class="perf-card-name">${escHtml(item.name)}</div>
+    const cbD=costBasisDisplay(item);
+    const glVal=cbD?(sD-cbD):null;
+    const glPct=cbD?((sD-cbD)/cbD*100):null;
+    const glBg=glVal===null?'':(glVal>=0?' pos-bg':' neg-bg');
+    const glHTML=glVal===null
+      ?'<div class="perf-val">—</div>'
+      :`<div class="perf-val ${glVal>=0?'pos':'neg'}">${glVal>=0?'+':''}${fmtDisp(Math.abs(glVal))}<br><span style="font-size:11px">${glVal>=0?'+':''}${Math.abs(glPct).toFixed(1)}%</span></div>`;
+    const pipColor=_metalColor(item.metal);
+    const valClass=item.metal==='gold'?'gold-c':item.metal==='platinum'?'silver-c':'silver-c';
+    return `<div class="perf-card metal-${item.metal}" onclick="openDetail(${items.indexOf(item)})">
+      <div class="perf-card-name"><span class="metal-pip" style="background:${pipColor}"></span>${escHtml(item.name)}</div>
       <div class="perf-rows">
-        <div class="perf-row"><div class="perf-key">Current Value</div><div class="perf-val ${item.metal==='gold'?'gold-c':'silver-c'}">${fmtDisp(sD)}</div></div>
+        <div class="perf-row perf-row-value"><div class="perf-key">Current Value</div><div class="perf-val ${valClass}">${fmtDisp(sD)}</div></div>
         <div class="perf-row"><div class="perf-key">Spot Price</div><div class="perf-val">${spotPriceDisplay}</div></div>
         <div class="perf-row"><div class="perf-key">Weight</div><div class="perf-val">${item.grams.toFixed(3)}g</div></div>
-        <div class="perf-row"><div class="perf-key">G / L</div>${glHTML}</div>
+        <div class="perf-row perf-row-gl${glBg}"><div class="perf-key">G / L</div>${glHTML}</div>
       </div>
     </div>`;
   });
 
   const soldCards=sold.map(item=>{
     const saleDisp=(item.sellPriceUSD||0)*(rates[currency]||1);
-    let glHTML='<div class="perf-val">—</div>';
     const cbD=costBasisDisplay(item);
-    if(cbD&&item.sellPriceUSD){const g=saleDisp-cbD,p=(g/cbD)*100,s=g>=0?'+':'';glHTML=`<div class="perf-val ${g>=0?'pos':'neg'}">${s}${fmtDisp(Math.abs(g))}<br><span style="font-size:11px">${s}${Math.abs(p).toFixed(1)}%</span></div>`}
-    return `<div class="perf-card" onclick="openDetail(${items.indexOf(item)})" style="opacity:.75;border-style:dashed">
-      <div class="perf-card-name" style="display:flex;align-items:center;gap:6px">${escHtml(item.name)}<span style="font-size:10px;letter-spacing:.06em;color:var(--text-dim);background:var(--bg3);padding:2px 6px;border-radius:4px">CLOSED</span></div>
+    const glVal=cbD&&item.sellPriceUSD?(saleDisp-cbD):null;
+    const glPct=cbD&&item.sellPriceUSD?((saleDisp-cbD)/cbD*100):null;
+    const glBg=glVal===null?'':(glVal>=0?' pos-bg':' neg-bg');
+    const glHTML=glVal===null
+      ?'<div class="perf-val">—</div>'
+      :`<div class="perf-val ${glVal>=0?'pos':'neg'}">${glVal>=0?'+':''}${fmtDisp(Math.abs(glVal))}<br><span style="font-size:11px">${glVal>=0?'+':''}${Math.abs(glPct).toFixed(1)}%</span></div>`;
+    return `<div class="perf-card metal-closed" onclick="openDetail(${items.indexOf(item)})">
+      <div class="perf-card-name"><span class="metal-pip" style="background:${_metalColor(item.metal)};opacity:.5"></span>${escHtml(item.name)}<span style="font-size:10px;letter-spacing:.06em;color:var(--text-dim);background:var(--bg3);padding:2px 6px;border-radius:4px;margin-left:auto">CLOSED</span></div>
       <div class="perf-rows">
-        <div class="perf-row"><div class="perf-key">Sale Price</div><div class="perf-val">${fmtDisp(saleDisp)}</div></div>
+        <div class="perf-row perf-row-value"><div class="perf-key">Sale Price</div><div class="perf-val">${fmtDisp(saleDisp)}</div></div>
         <div class="perf-row"><div class="perf-key">Sold</div><div class="perf-val">${item.sellDate||'—'}</div></div>
         <div class="perf-row"><div class="perf-key">Weight</div><div class="perf-val">${item.grams.toFixed(3)}g</div></div>
-        <div class="perf-row"><div class="perf-key">Realised G/L</div>${glHTML}</div>
+        <div class="perf-row perf-row-gl${glBg}"><div class="perf-key">Realised G/L</div>${glHTML}</div>
       </div>
     </div>`;
   });
