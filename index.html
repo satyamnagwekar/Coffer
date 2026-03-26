@@ -301,10 +301,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   #desktopPoles{display:none}
   /* Full-height filigree columns */
   #desktopPoles{display:block;position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:9998;}
-  #desktopPoles .dp{position:absolute;top:0;bottom:0;width:76px;overflow:visible;}
-  #desktopPoles .dp-l{left:calc(50% - 450px);transform:translateX(-76px);}
-  #desktopPoles .dp-r{right:calc(50% - 450px);transform:translateX(76px);}
-  #desktopPoles svg{position:absolute;top:0;left:0;width:76px;height:100%;}
+  #desktopPoles .dp{position:absolute;top:0;bottom:0;width:80px;}
+  /* Left: SVG right edge = content left edge. Pole at x=78 aligns with content boundary. */
+  #desktopPoles .dp-l{left:calc(50% - 530px);}
+  /* Right: SVG left edge = content right edge. Pole at x=1 aligns with content boundary. */
+  #desktopPoles .dp-r{left:calc(50% + 450px);}
+  #desktopPoles svg{position:absolute;top:0;left:0;width:80px;height:100%;}
 
   /* Nav tabs and content panels form a continuous bordered column */
   .nav-tabs{
@@ -1576,7 +1578,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 
   <div id="desktopPoles">
 <div class="dp dp-l">
-<svg viewBox="0 0 36 900" preserveAspectRatio="xMidYMin meet" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 80 900" preserveAspectRatio="xMidYMin meet" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <g id="mA"><path d="M0,-14 L12,0 L0,14 L-12,0 Z" fill="none" stroke="rgba(139,105,20,0.55)" stroke-width="0.75" stroke-linejoin="round"/><path d="M0,-11 L9,0 L0,11 L-9,0 Z" fill="none" stroke="rgba(139,105,20,0.28)" stroke-width="0.4" stroke-linejoin="round"/><line x1="0" y1="-11" x2="0" y2="11" stroke="rgba(139,105,20,0.20)" stroke-width="0.32"/><line x1="-9" y1="0" x2="9" y2="0" stroke="rgba(139,105,20,0.20)" stroke-width="0.32"/><line x1="-7" y1="-7" x2="7" y2="7" stroke="rgba(139,105,20,0.16)" stroke-width="0.28"/><line x1="7" y1="-7" x2="-7" y2="7" stroke="rgba(139,105,20,0.16)" stroke-width="0.28"/><path d="M0,-9 C2.5,-6 2.5,-2 0,0 C-2.5,-2 -2.5,-6 0,-9 Z" fill="rgba(139,105,20,0.20)" stroke="rgba(139,105,20,0.40)" stroke-width="0.4"/><path d="M0,9 C2.5,6 2.5,2 0,0 C-2.5,2 -2.5,6 0,9 Z" fill="rgba(139,105,20,0.20)" stroke="rgba(139,105,20,0.40)" stroke-width="0.4"/><path d="M-9,0 C-6,2.5 -2,2.5 0,0 C-2,-2.5 -6,-2.5 -9,0 Z" fill="rgba(139,105,20,0.20)" stroke="rgba(139,105,20,0.40)" stroke-width="0.4"/><path d="M9,0 C6,2.5 2,2.5 0,0 C2,-2.5 6,-2.5 9,0 Z" fill="rgba(139,105,20,0.20)" stroke="rgba(139,105,20,0.40)" stroke-width="0.4"/><circle cx="0" cy="0" r="1.7" fill="rgba(139,105,20,0.58)" stroke="rgba(200,160,64,0.45)" stroke-width="0.4"/><circle cx="0" cy="-14" r="1.2" fill="rgba(139,105,20,0.50)"/><circle cx="12" cy="0" r="1.2" fill="rgba(139,105,20,0.50)"/><circle cx="0" cy="14" r="1.2" fill="rgba(139,105,20,0.50)"/><circle cx="-12" cy="0" r="1.2" fill="rgba(139,105,20,0.50)"/><circle cx="0" cy="-6" r="0.7" fill="rgba(139,105,20,0.35)"/><circle cx="0" cy="6" r="0.7" fill="rgba(139,105,20,0.35)"/><circle cx="-5" cy="0" r="0.7" fill="rgba(139,105,20,0.35)"/><circle cx="5" cy="0" r="0.7" fill="rgba(139,105,20,0.35)"/></g>
 <g id="mB"><path d="M0,-13 L11,-6.5 L11,6.5 L0,13 L-11,6.5 L-11,-6.5 Z" fill="none" stroke="rgba(139,105,20,0.52)" stroke-width="0.7" stroke-linejoin="round"/><path d="M0,-8 L7,-4 L7,4 L0,8 L-7,4 L-7,-4 Z" fill="none" stroke="rgba(139,105,20,0.28)" stroke-width="0.38" stroke-linejoin="round"/><line x1="0" y1="-13" x2="0" y2="-8" stroke="rgba(139,105,20,0.30)" stroke-width="0.35"/><line x1="11" y1="-6.5" x2="7" y2="-4" stroke="rgba(139,105,20,0.30)" stroke-width="0.35"/><line x1="11" y1="6.5" x2="7" y2="4" stroke="rgba(139,105,20,0.30)" stroke-width="0.35"/><line x1="0" y1="13" x2="0" y2="8" stroke="rgba(139,105,20,0.30)" stroke-width="0.35"/><line x1="-11" y1="6.5" x2="-7" y2="4" stroke="rgba(139,105,20,0.30)" stroke-width="0.35"/><line x1="-11" y1="-6.5" x2="-7" y2="-4" stroke="rgba(139,105,20,0.30)" stroke-width="0.35"/><path d="M0,-8 C1.5,-10 1.5,-12 0,-13 C-1.5,-12 -1.5,-10 0,-8 Z" fill="rgba(139,105,20,0.22)" stroke="rgba(139,105,20,0.42)" stroke-width="0.4"/><path d="M7,-4 C9,-5.5 10.5,-6 11,-6.5 C10,-5 9,-3 7,-4 Z" fill="rgba(139,105,20,0.22)" stroke="rgba(139,105,20,0.42)" stroke-width="0.4"/><path d="M7,4 C9,5.5 10.5,6 11,6.5 C10,5 9,3 7,4 Z" fill="rgba(139,105,20,0.22)" stroke="rgba(139,105,20,0.42)" stroke-width="0.4"/><path d="M0,8 C1.5,10 1.5,12 0,13 C-1.5,12 -1.5,10 0,8 Z" fill="rgba(139,105,20,0.22)" stroke="rgba(139,105,20,0.42)" stroke-width="0.4"/><path d="M-7,4 C-9,5.5 -10.5,6 -11,6.5 C-10,5 -9,3 -7,4 Z" fill="rgba(139,105,20,0.22)" stroke="rgba(139,105,20,0.42)" stroke-width="0.4"/><path d="M-7,-4 C-9,-5.5 -10.5,-6 -11,-6.5 C-10,-5 -9,-3 -7,-4 Z" fill="rgba(139,105,20,0.22)" stroke="rgba(139,105,20,0.42)" stroke-width="0.4"/><circle cx="0" cy="0" r="3" fill="none" stroke="rgba(139,105,20,0.40)" stroke-width="0.5"/><circle cx="0" cy="0" r="1.6" fill="rgba(139,105,20,0.58)" stroke="rgba(200,160,64,0.45)" stroke-width="0.4"/><circle cx="0" cy="-13" r="1.1" fill="rgba(139,105,20,0.48)"/><circle cx="11" cy="-6.5" r="1.1" fill="rgba(139,105,20,0.48)"/><circle cx="11" cy="6.5" r="1.1" fill="rgba(139,105,20,0.48)"/><circle cx="0" cy="13" r="1.1" fill="rgba(139,105,20,0.48)"/><circle cx="-11" cy="6.5" r="1.1" fill="rgba(139,105,20,0.48)"/><circle cx="-11" cy="-6.5" r="1.1" fill="rgba(139,105,20,0.48)"/></g>
@@ -1586,34 +1588,34 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 <g id="conn"><path d="M0,-6 L5,0 L0,6 L-5,0 Z" fill="none" stroke="rgba(139,105,20,0.42)" stroke-width="0.55" stroke-linejoin="round"/><line x1="0" y1="-6" x2="0" y2="6" stroke="rgba(139,105,20,0.20)" stroke-width="0.30"/><line x1="-5" y1="0" x2="5" y2="0" stroke="rgba(139,105,20,0.20)" stroke-width="0.30"/><circle cx="0" cy="0" r="1.1" fill="rgba(139,105,20,0.48)"/><circle cx="0" cy="-6" r="0.7" fill="rgba(139,105,20,0.40)"/><circle cx="0" cy="6" r="0.7" fill="rgba(139,105,20,0.40)"/><circle cx="-5" cy="0" r="0.7" fill="rgba(139,105,20,0.36)"/><circle cx="5" cy="0" r="0.7" fill="rgba(139,105,20,0.36)"/></g>
 <g id="cap"><path d="M0,0 C-9,-3 -12,-12 -7,-19 C-4,-14 -2,-8 0,-4 C2,-8 4,-14 7,-19 C12,-12 9,-3 0,0 Z" fill="rgba(139,105,20,0.16)" stroke="rgba(139,105,20,0.48)" stroke-width="0.65" stroke-linejoin="round"/><path d="M0,-4 C-4,-8 -5,-15 -3,-20 C-1,-16 0,-10 0,-6" fill="none" stroke="rgba(139,105,20,0.28)" stroke-width="0.32"/><path d="M0,-4 C4,-8 5,-15 3,-20 C1,-16 0,-10 0,-6" fill="none" stroke="rgba(139,105,20,0.28)" stroke-width="0.32"/><path d="M0,0 C-10,-1 -17,-8 -15,-16 C-11,-10 -7,-5 -2,-2 Z" fill="rgba(139,105,20,0.13)" stroke="rgba(139,105,20,0.40)" stroke-width="0.55"/><path d="M0,0 C10,-1 17,-8 15,-16 C11,-10 7,-5 2,-2 Z" fill="rgba(139,105,20,0.13)" stroke="rgba(139,105,20,0.40)" stroke-width="0.55"/><circle cx="0" cy="0" r="1.6" fill="rgba(139,105,20,0.58)"/><circle cx="-7" cy="-2" r="0.8" fill="rgba(139,105,20,0.42)"/><circle cx="7" cy="-2" r="0.8" fill="rgba(139,105,20,0.42)"/><circle cx="-13" cy="-9" r="0.7" fill="rgba(139,105,20,0.36)"/><circle cx="13" cy="-9" r="0.7" fill="rgba(139,105,20,0.36)"/><circle cx="0" cy="-20" r="1.0" fill="rgba(139,105,20,0.46)"/></g>
 </defs>
-<!-- Triple spine -->
-<line x1="18" y1="0" x2="18" y2="900" stroke="rgba(139,105,20,0.40)" stroke-width="0.9"/>
-<line x1="16" y1="0" x2="16" y2="900" stroke="rgba(139,105,20,0.18)" stroke-width="0.35"/>
-<line x1="20" y1="0" x2="20" y2="900" stroke="rgba(200,160,64,0.14)" stroke-width="0.28"/>
-<!-- Gold pole line -->
-<line x1="34" y1="0" x2="34" y2="900" stroke="rgba(200,160,64,0.5)" stroke-width="1"/>
-<line x1="35" y1="0" x2="35" y2="900" stroke="#5A3F14" stroke-width="2"/>
-<use href="#cap" transform="translate(18,32)"/>
-<use href="#mA"  transform="translate(18,80)"/><use href="#conn" transform="translate(18,107)"/>
-<use href="#mB"  transform="translate(18,133)"/><use href="#conn" transform="translate(18,160)"/>
-<use href="#mC"  transform="translate(18,186)"/><use href="#conn" transform="translate(18,213)"/>
-<use href="#mD"  transform="translate(18,241)"/><use href="#conn" transform="translate(18,270)"/>
-<use href="#mE"  transform="translate(18,298)"/><use href="#conn" transform="translate(18,326)"/>
-<use href="#mA"  transform="translate(18,352)"/><use href="#conn" transform="translate(18,379)"/>
-<use href="#mB"  transform="translate(18,405)"/><use href="#conn" transform="translate(18,432)"/>
-<use href="#mC"  transform="translate(18,458)"/><use href="#conn" transform="translate(18,485)"/>
-<use href="#mD"  transform="translate(18,513)"/><use href="#conn" transform="translate(18,542)"/>
-<use href="#mE"  transform="translate(18,570)"/><use href="#conn" transform="translate(18,598)"/>
-<use href="#mA"  transform="translate(18,624)"/><use href="#conn" transform="translate(18,651)"/>
-<use href="#mB"  transform="translate(18,677)"/><use href="#conn" transform="translate(18,704)"/>
-<use href="#mC"  transform="translate(18,730)"/><use href="#conn" transform="translate(18,757)"/>
-<use href="#mD"  transform="translate(18,785)"/><use href="#conn" transform="translate(18,814)"/>
-<use href="#mE"  transform="translate(18,842)"/>
-<use href="#cap" transform="translate(18,874) rotate(180)"/>
+<!-- Gold pole line at right edge x=78 -->
+<line x1="78" y1="0" x2="78" y2="900" stroke="rgba(200,160,64,0.5)" stroke-width="1"/>
+<line x1="79" y1="0" x2="79" y2="900" stroke="#5A3F14" stroke-width="2"/>
+<!-- Triple filigree spine centred at x=40 -->
+<line x1="40" y1="0" x2="40" y2="900" stroke="rgba(139,105,20,0.40)" stroke-width="0.9"/>
+<line x1="38" y1="0" x2="38" y2="900" stroke="rgba(139,105,20,0.18)" stroke-width="0.35"/>
+<line x1="42" y1="0" x2="42" y2="900" stroke="rgba(200,160,64,0.14)" stroke-width="0.28"/>
+<use href="#cap" transform="translate(40,32)"/>
+<use href="#mA"  transform="translate(40,80)"/><use href="#conn" transform="translate(40,107)"/>
+<use href="#mB"  transform="translate(40,133)"/><use href="#conn" transform="translate(40,160)"/>
+<use href="#mC"  transform="translate(40,186)"/><use href="#conn" transform="translate(40,213)"/>
+<use href="#mD"  transform="translate(40,241)"/><use href="#conn" transform="translate(40,270)"/>
+<use href="#mE"  transform="translate(40,298)"/><use href="#conn" transform="translate(40,326)"/>
+<use href="#mA"  transform="translate(40,352)"/><use href="#conn" transform="translate(40,379)"/>
+<use href="#mB"  transform="translate(40,405)"/><use href="#conn" transform="translate(40,432)"/>
+<use href="#mC"  transform="translate(40,458)"/><use href="#conn" transform="translate(40,485)"/>
+<use href="#mD"  transform="translate(40,513)"/><use href="#conn" transform="translate(40,542)"/>
+<use href="#mE"  transform="translate(40,570)"/><use href="#conn" transform="translate(40,598)"/>
+<use href="#mA"  transform="translate(40,624)"/><use href="#conn" transform="translate(40,651)"/>
+<use href="#mB"  transform="translate(40,677)"/><use href="#conn" transform="translate(40,704)"/>
+<use href="#mC"  transform="translate(40,730)"/><use href="#conn" transform="translate(40,757)"/>
+<use href="#mD"  transform="translate(40,785)"/><use href="#conn" transform="translate(40,814)"/>
+<use href="#mE"  transform="translate(40,842)"/>
+<use href="#cap" transform="translate(40,874) rotate(180)"/>
 </svg>
 </div>
 <div class="dp dp-r">
-<svg viewBox="0 0 36 900" preserveAspectRatio="xMidYMin meet" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 80 900" preserveAspectRatio="xMidYMin meet" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <g id="mA2"><path d="M0,-14 L12,0 L0,14 L-12,0 Z" fill="none" stroke="rgba(139,105,20,0.55)" stroke-width="0.75" stroke-linejoin="round"/><path d="M0,-11 L9,0 L0,11 L-9,0 Z" fill="none" stroke="rgba(139,105,20,0.28)" stroke-width="0.4" stroke-linejoin="round"/><line x1="0" y1="-11" x2="0" y2="11" stroke="rgba(139,105,20,0.20)" stroke-width="0.32"/><line x1="-9" y1="0" x2="9" y2="0" stroke="rgba(139,105,20,0.20)" stroke-width="0.32"/><line x1="-7" y1="-7" x2="7" y2="7" stroke="rgba(139,105,20,0.16)" stroke-width="0.28"/><line x1="7" y1="-7" x2="-7" y2="7" stroke="rgba(139,105,20,0.16)" stroke-width="0.28"/><path d="M0,-9 C2.5,-6 2.5,-2 0,0 C-2.5,-2 -2.5,-6 0,-9 Z" fill="rgba(139,105,20,0.20)" stroke="rgba(139,105,20,0.40)" stroke-width="0.4"/><path d="M0,9 C2.5,6 2.5,2 0,0 C-2.5,2 -2.5,6 0,9 Z" fill="rgba(139,105,20,0.20)" stroke="rgba(139,105,20,0.40)" stroke-width="0.4"/><path d="M-9,0 C-6,2.5 -2,2.5 0,0 C-2,-2.5 -6,-2.5 -9,0 Z" fill="rgba(139,105,20,0.20)" stroke="rgba(139,105,20,0.40)" stroke-width="0.4"/><path d="M9,0 C6,2.5 2,2.5 0,0 C2,-2.5 6,-2.5 9,0 Z" fill="rgba(139,105,20,0.20)" stroke="rgba(139,105,20,0.40)" stroke-width="0.4"/><circle cx="0" cy="0" r="1.7" fill="rgba(139,105,20,0.58)" stroke="rgba(200,160,64,0.45)" stroke-width="0.4"/><circle cx="0" cy="-14" r="1.2" fill="rgba(139,105,20,0.50)"/><circle cx="12" cy="0" r="1.2" fill="rgba(139,105,20,0.50)"/><circle cx="0" cy="14" r="1.2" fill="rgba(139,105,20,0.50)"/><circle cx="-12" cy="0" r="1.2" fill="rgba(139,105,20,0.50)"/><circle cx="0" cy="-6" r="0.7" fill="rgba(139,105,20,0.35)"/><circle cx="0" cy="6" r="0.7" fill="rgba(139,105,20,0.35)"/><circle cx="-5" cy="0" r="0.7" fill="rgba(139,105,20,0.35)"/><circle cx="5" cy="0" r="0.7" fill="rgba(139,105,20,0.35)"/></g>
 <g id="mB2"><path d="M0,-13 L11,-6.5 L11,6.5 L0,13 L-11,6.5 L-11,-6.5 Z" fill="none" stroke="rgba(139,105,20,0.52)" stroke-width="0.7" stroke-linejoin="round"/><path d="M0,-8 L7,-4 L7,4 L0,8 L-7,4 L-7,-4 Z" fill="none" stroke="rgba(139,105,20,0.28)" stroke-width="0.38" stroke-linejoin="round"/><line x1="0" y1="-13" x2="0" y2="-8" stroke="rgba(139,105,20,0.30)" stroke-width="0.35"/><line x1="11" y1="-6.5" x2="7" y2="-4" stroke="rgba(139,105,20,0.30)" stroke-width="0.35"/><line x1="11" y1="6.5" x2="7" y2="4" stroke="rgba(139,105,20,0.30)" stroke-width="0.35"/><line x1="0" y1="13" x2="0" y2="8" stroke="rgba(139,105,20,0.30)" stroke-width="0.35"/><line x1="-11" y1="6.5" x2="-7" y2="4" stroke="rgba(139,105,20,0.30)" stroke-width="0.35"/><line x1="-11" y1="-6.5" x2="-7" y2="-4" stroke="rgba(139,105,20,0.30)" stroke-width="0.35"/><path d="M0,-8 C1.5,-10 1.5,-12 0,-13 C-1.5,-12 -1.5,-10 0,-8 Z" fill="rgba(139,105,20,0.22)" stroke="rgba(139,105,20,0.42)" stroke-width="0.4"/><path d="M7,-4 C9,-5.5 10.5,-6 11,-6.5 C10,-5 9,-3 7,-4 Z" fill="rgba(139,105,20,0.22)" stroke="rgba(139,105,20,0.42)" stroke-width="0.4"/><path d="M7,4 C9,5.5 10.5,6 11,6.5 C10,5 9,3 7,4 Z" fill="rgba(139,105,20,0.22)" stroke="rgba(139,105,20,0.42)" stroke-width="0.4"/><path d="M0,8 C1.5,10 1.5,12 0,13 C-1.5,12 -1.5,10 0,8 Z" fill="rgba(139,105,20,0.22)" stroke="rgba(139,105,20,0.42)" stroke-width="0.4"/><path d="M-7,4 C-9,5.5 -10.5,6 -11,6.5 C-10,5 -9,3 -7,4 Z" fill="rgba(139,105,20,0.22)" stroke="rgba(139,105,20,0.42)" stroke-width="0.4"/><path d="M-7,-4 C-9,-5.5 -10.5,-6 -11,-6.5 C-10,-5 -9,-3 -7,-4 Z" fill="rgba(139,105,20,0.22)" stroke="rgba(139,105,20,0.42)" stroke-width="0.4"/><circle cx="0" cy="0" r="3" fill="none" stroke="rgba(139,105,20,0.40)" stroke-width="0.5"/><circle cx="0" cy="0" r="1.6" fill="rgba(139,105,20,0.58)" stroke="rgba(200,160,64,0.45)" stroke-width="0.4"/><circle cx="0" cy="-13" r="1.1" fill="rgba(139,105,20,0.48)"/><circle cx="11" cy="-6.5" r="1.1" fill="rgba(139,105,20,0.48)"/><circle cx="11" cy="6.5" r="1.1" fill="rgba(139,105,20,0.48)"/><circle cx="0" cy="13" r="1.1" fill="rgba(139,105,20,0.48)"/><circle cx="-11" cy="6.5" r="1.1" fill="rgba(139,105,20,0.48)"/><circle cx="-11" cy="-6.5" r="1.1" fill="rgba(139,105,20,0.48)"/></g>
@@ -1623,30 +1625,30 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 <g id="conn2"><path d="M0,-6 L5,0 L0,6 L-5,0 Z" fill="none" stroke="rgba(139,105,20,0.42)" stroke-width="0.55" stroke-linejoin="round"/><line x1="0" y1="-6" x2="0" y2="6" stroke="rgba(139,105,20,0.20)" stroke-width="0.30"/><line x1="-5" y1="0" x2="5" y2="0" stroke="rgba(139,105,20,0.20)" stroke-width="0.30"/><circle cx="0" cy="0" r="1.1" fill="rgba(139,105,20,0.48)"/><circle cx="0" cy="-6" r="0.7" fill="rgba(139,105,20,0.40)"/><circle cx="0" cy="6" r="0.7" fill="rgba(139,105,20,0.40)"/><circle cx="-5" cy="0" r="0.7" fill="rgba(139,105,20,0.36)"/><circle cx="5" cy="0" r="0.7" fill="rgba(139,105,20,0.36)"/></g>
 <g id="cap2"><path d="M0,0 C-9,-3 -12,-12 -7,-19 C-4,-14 -2,-8 0,-4 C2,-8 4,-14 7,-19 C12,-12 9,-3 0,0 Z" fill="rgba(139,105,20,0.16)" stroke="rgba(139,105,20,0.48)" stroke-width="0.65" stroke-linejoin="round"/><path d="M0,-4 C-4,-8 -5,-15 -3,-20 C-1,-16 0,-10 0,-6" fill="none" stroke="rgba(139,105,20,0.28)" stroke-width="0.32"/><path d="M0,-4 C4,-8 5,-15 3,-20 C1,-16 0,-10 0,-6" fill="none" stroke="rgba(139,105,20,0.28)" stroke-width="0.32"/><path d="M0,0 C-10,-1 -17,-8 -15,-16 C-11,-10 -7,-5 -2,-2 Z" fill="rgba(139,105,20,0.13)" stroke="rgba(139,105,20,0.40)" stroke-width="0.55"/><path d="M0,0 C10,-1 17,-8 15,-16 C11,-10 7,-5 2,-2 Z" fill="rgba(139,105,20,0.13)" stroke="rgba(139,105,20,0.40)" stroke-width="0.55"/><circle cx="0" cy="0" r="1.6" fill="rgba(139,105,20,0.58)"/><circle cx="-7" cy="-2" r="0.8" fill="rgba(139,105,20,0.42)"/><circle cx="7" cy="-2" r="0.8" fill="rgba(139,105,20,0.42)"/><circle cx="-13" cy="-9" r="0.7" fill="rgba(139,105,20,0.36)"/><circle cx="13" cy="-9" r="0.7" fill="rgba(139,105,20,0.36)"/><circle cx="0" cy="-20" r="1.0" fill="rgba(139,105,20,0.46)"/></g>
 </defs>
-<!-- Triple spine -->
-<line x1="18" y1="0" x2="18" y2="900" stroke="rgba(139,105,20,0.40)" stroke-width="0.9"/>
-<line x1="20" y1="0" x2="20" y2="900" stroke="rgba(139,105,20,0.18)" stroke-width="0.35"/>
-<line x1="16" y1="0" x2="16" y2="900" stroke="rgba(200,160,64,0.14)" stroke-width="0.28"/>
-<!-- Gold pole line -->
+<!-- Gold pole at left edge x=1 -->
 <line x1="2" y1="0" x2="2" y2="900" stroke="rgba(200,160,64,0.5)" stroke-width="1"/>
 <line x1="1" y1="0" x2="1" y2="900" stroke="#5A3F14" stroke-width="2"/>
-<use href="#cap"  transform="translate(18,32)"/>
-<use href="#mA"   transform="translate(18,80)"/><use href="#conn" transform="translate(18,107)"/>
-<use href="#mB"   transform="translate(18,133)"/><use href="#conn" transform="translate(18,160)"/>
-<use href="#mC"   transform="translate(18,186)"/><use href="#conn" transform="translate(18,213)"/>
-<use href="#mD"   transform="translate(18,241)"/><use href="#conn" transform="translate(18,270)"/>
-<use href="#mE"   transform="translate(18,298)"/><use href="#conn" transform="translate(18,326)"/>
-<use href="#mA"   transform="translate(18,352)"/><use href="#conn" transform="translate(18,379)"/>
-<use href="#mB"   transform="translate(18,405)"/><use href="#conn" transform="translate(18,432)"/>
-<use href="#mC"   transform="translate(18,458)"/><use href="#conn" transform="translate(18,485)"/>
-<use href="#mD"   transform="translate(18,513)"/><use href="#conn" transform="translate(18,542)"/>
-<use href="#mE"   transform="translate(18,570)"/><use href="#conn" transform="translate(18,598)"/>
-<use href="#mA"   transform="translate(18,624)"/><use href="#conn" transform="translate(18,651)"/>
-<use href="#mB"   transform="translate(18,677)"/><use href="#conn" transform="translate(18,704)"/>
-<use href="#mC"   transform="translate(18,730)"/><use href="#conn" transform="translate(18,757)"/>
-<use href="#mD"   transform="translate(18,785)"/><use href="#conn" transform="translate(18,814)"/>
-<use href="#mE"   transform="translate(18,842)"/>
-<use href="#cap"  transform="translate(18,874) rotate(180)"/>
+<!-- Filigree spine centred at x=40 -->
+<line x1="40" y1="0" x2="40" y2="900" stroke="rgba(139,105,20,0.40)" stroke-width="0.9"/>
+<line x1="38" y1="0" x2="38" y2="900" stroke="rgba(139,105,20,0.18)" stroke-width="0.35"/>
+<line x1="42" y1="0" x2="42" y2="900" stroke="rgba(200,160,64,0.14)" stroke-width="0.28"/>
+<use href="#cap"  transform="translate(40,32)"/>
+<use href="#mA"   transform="translate(40,80)"/><use href="#conn" transform="translate(40,107)"/>
+<use href="#mB"   transform="translate(40,133)"/><use href="#conn" transform="translate(40,160)"/>
+<use href="#mC"   transform="translate(40,186)"/><use href="#conn" transform="translate(40,213)"/>
+<use href="#mD"   transform="translate(40,241)"/><use href="#conn" transform="translate(40,270)"/>
+<use href="#mE"   transform="translate(40,298)"/><use href="#conn" transform="translate(40,326)"/>
+<use href="#mA"   transform="translate(40,352)"/><use href="#conn" transform="translate(40,379)"/>
+<use href="#mB"   transform="translate(40,405)"/><use href="#conn" transform="translate(40,432)"/>
+<use href="#mC"   transform="translate(40,458)"/><use href="#conn" transform="translate(40,485)"/>
+<use href="#mD"   transform="translate(40,513)"/><use href="#conn" transform="translate(40,542)"/>
+<use href="#mE"   transform="translate(40,570)"/><use href="#conn" transform="translate(40,598)"/>
+<use href="#mA"   transform="translate(40,624)"/><use href="#conn" transform="translate(40,651)"/>
+<use href="#mB"   transform="translate(40,677)"/><use href="#conn" transform="translate(40,704)"/>
+<use href="#mC"   transform="translate(40,730)"/><use href="#conn" transform="translate(40,757)"/>
+<use href="#mD"   transform="translate(40,785)"/><use href="#conn" transform="translate(40,814)"/>
+<use href="#mE"   transform="translate(40,842)"/>
+<use href="#cap"  transform="translate(40,874) rotate(180)"/>
 </svg>
 </div>
 </div>
