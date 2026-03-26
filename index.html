@@ -5039,25 +5039,6 @@ function generateHoldingsStatement(){
   <span>Personal record — not a certified valuation. Values are live-spot estimates.</span>
 </div>
 
-<!-- G/L floating tooltip — lives at body level to escape overflow:hidden -->
-<div id="glTip" class="gl-tip">How it's calculated: today's spot value of your holdings minus what you paid. The % shows how much your portfolio has grown relative to its cost.<br><br>This is an approximation — both spot prices and exchange rates change daily, so the figure reflects current market conditions, not what you'd realise on a sale.</div>
-
-<script>
-function toggleGlTip(e){
-  e.stopPropagation();
-  const tip=document.getElementById('glTip');
-  const btn=document.getElementById('glInfoBtn');
-  if(tip.classList.contains('tip-visible')){tip.classList.remove('tip-visible');return}
-  const r=btn.getBoundingClientRect();
-  tip.style.left=Math.min(r.left, window.innerWidth-252)+'px';
-  tip.style.top=(r.bottom+8)+'px';
-  // flip caret if needed (tip always opens downward here)
-  tip.classList.add('tip-visible');
-}
-document.addEventListener('click',function(e){
-  if(e.target.id!=='glInfoBtn') document.getElementById('glTip').classList.remove('tip-visible');
-});
-</script>
 </body>
 </html>`;
 
@@ -5568,7 +5549,23 @@ function handleUnauthorised(){
     hideSplash();
   }
 })();
+
+function toggleGlTip(e){
+  e.stopPropagation();
+  const tip=document.getElementById('glTip');
+  const btn=document.getElementById('glInfoBtn');
+  if(tip.classList.contains('tip-visible')){tip.classList.remove('tip-visible');return}
+  const r=btn.getBoundingClientRect();
+  tip.style.left=Math.min(r.left, window.innerWidth-252)+'px';
+  tip.style.top=(r.bottom+8)+'px';
+  tip.classList.add('tip-visible');
+}
+document.addEventListener('click',function(e){
+  if(e.target.id!=='glInfoBtn') document.getElementById('glTip').classList.remove('tip-visible');
+});
 </script>
+<!-- G/L floating tooltip — lives at body level to escape overflow:hidden -->
+<div id="glTip" class="gl-tip">How it's calculated: today's spot value of your holdings minus what you paid. The % shows how much your portfolio has grown relative to its cost.<br><br>This is an approximation — both spot prices and exchange rates change daily, so the figure reflects current market conditions, not what you'd realise on a sale.</div>
 <!-- FORGOT / RESET PASSWORD OVERLAYS -->
 <div id="forgotOverlay" style="display:none;position:fixed;inset:0;background:rgba(245,240,232,0.97);z-index:1000;align-items:center;justify-content:center">
   <div style="background:#fff;border:1px solid #DDD5C0;border-radius:14px;padding:28px 24px;width:300px;box-shadow:0 4px 24px rgba(0,0,0,.1)">
