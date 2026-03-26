@@ -2692,10 +2692,11 @@ const API_BASE = window.location.origin;
 let authToken = localStorage.getItem('myaurum_token') || null;
 function setToken(t){authToken=t;if(t)localStorage.setItem('myaurum_token',t);else localStorage.removeItem('myaurum_token')}
 
-async function api(method, path, body){
+async function api(method, path, body, signal){
   const opts={method,headers:{'Content-Type':'application/json'}};
   if(authToken) opts.headers['Authorization']='Bearer '+authToken;
   if(body) opts.body=JSON.stringify(body);
+  if(signal) opts.signal=signal;
   const res=await fetch(API_BASE+'/api'+path,opts);
   const data=await res.json().catch(()=>({}));
   if(res.status===401 && path !== '/auth/login' && path !== '/auth/register'){
@@ -5549,7 +5550,11 @@ function handleUnauthorised(){
     const token=localStorage.getItem('myaurum_token');
     if(token){
       try{
-        const data=await api('GET','/auth/me');
+        // 10s timeout — prevents Railway cold-start from hanging the splash indefinitely
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const data = await api('GET','/auth/me', null, controller.signal);
+        clearTimeout(timeoutId);
         setToken(token);
         await loginUser(data);
         return;
