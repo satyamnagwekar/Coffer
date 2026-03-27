@@ -55,7 +55,7 @@
   --red:#B03030;--red-dim:rgba(176,48,48,.12);
   --blue:#2A6EA0;--blue-dim:rgba(42,110,160,.12);
   /* Light parchment backgrounds */
-  --bg:#F5F0E8;--bg2:#FDFBF7;--bg3:#F0EBE0;--bg4:#EAE4D8;
+  --bg:#F5F0E8;--bg2:#FFFFFF;--bg3:#F0EBE0;--bg4:#EAE4D8;
   --border:#DDD5C0;--border2:#CFC7B0;--border-gold:rgba(139,105,20,.25);
   /* Text on light */
   --text:#2C2410;--text-dim:#8A7A5A;--text-mid:#5A4A2A;
@@ -402,7 +402,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 @keyframes panelFadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 
 /* Summary */
-.summary-card{margin:14px 14px;background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--brand);border-radius:var(--radius);padding:22px;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(139,105,20,.08)}
+.summary-card{margin:14px 14px;background:var(--bg2);border:1.5px solid var(--border2);border-left:3px solid var(--brand);border-radius:var(--radius);padding:22px;position:relative;overflow:hidden;box-shadow:0 2px 16px rgba(139,105,20,.10)}
 .summary-card::before{content:'';position:absolute;top:-60px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(139,105,20,.07) 0%,transparent 70%);pointer-events:none;border-radius:50%}
 .summary-card::after{content:'';position:absolute;bottom:-30px;left:60px;width:140px;height:100px;background:radial-gradient(ellipse,rgba(184,146,26,.05) 0%,transparent 70%);pointer-events:none}
 .summary-eyebrow{font-size:11px;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px}
@@ -433,7 +433,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 /* Item cards */
 .inventory-list{padding:0 14px;display:flex;flex-direction:column;gap:10px}
-.item-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:border-color .18s,background .18s,box-shadow .18s,transform .12s;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.item-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:border-color .18s,background .18s,box-shadow .18s,transform .12s;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07)}
 .item-card:active{transform:scale(.985)}
 .item-card:hover{border-color:var(--border-gold);box-shadow:0 4px 16px rgba(139,105,20,.1)}
 .item-card.gold{background:linear-gradient(145deg,rgba(139,105,20,.035) 0%,var(--bg2) 50%)}
@@ -449,7 +449,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .item-card.gifted .item-value{padding-right:64px}
 .item-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px}
 .item-name{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:400;color:var(--text);line-height:1.1;padding-right:8px}
-.item-value{font-size:17px;font-weight:500;text-align:right;flex-shrink:0;letter-spacing:-.01em}
+.item-value{font-size:18px;font-weight:500;text-align:right;flex-shrink:0;letter-spacing:-.01em}
 .item-card.gold .item-value{color:var(--brand)}
 .item-card.silver .item-value{color:var(--silver-bright)}
 .item-card.sold .item-value{color:var(--green)}
@@ -517,7 +517,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* ── MODALS ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(44,36,16,.52);backdrop-filter:blur(10px);z-index:500;display:none;align-items:flex-end}
 .modal-overlay.open{display:flex}
-.modal{width:100%;background:var(--bg2);border-radius:24px 24px 0 0;border-top:2px solid var(--brand);padding:0 0 env(safe-area-inset-bottom);animation:slideUp .3s cubic-bezier(.32,.72,0,1);max-height:93vh;display:flex;flex-direction:column}
+.modal{width:100%;background:var(--bg2);border-radius:24px 24px 0 0;border-top:2.5px solid var(--brand);padding:0 0 env(safe-area-inset-bottom);animation:slideUp .3s cubic-bezier(.32,.72,0,1);max-height:93vh;display:flex;flex-direction:column}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .modal-handle{width:48px;height:5px;background:var(--border2);border-radius:3px;margin:12px auto 0;cursor:pointer;transition:background .2s}
 .modal-handle:hover{background:var(--text-dim)}
@@ -675,7 +675,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .donut-val{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--brand)}
 .donut-lbl{font-size:11px;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase}
 .legend-list{display:flex;flex-direction:column;gap:8px}
-.legend-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);transition:background .15s,border-color .15s}
+.legend-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius-sm);transition:background .15s,border-color .15s}
 .legend-item:hover{background:var(--bg3);border-color:var(--border-gold)}
 .legend-left{display:flex;align-items:center;gap:10px}
 .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
@@ -687,7 +687,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 /* Performance grid */
 .perf-grid{display:flex;flex-direction:column;gap:8px;padding:0 16px 16px}
-.perf-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:15px 16px;border-left-width:3px}
+.perf-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:15px 16px;border-left-width:3px}
 .perf-card.metal-gold{border-left-color:#C8971A;background:linear-gradient(135deg,rgba(200,151,26,.04) 0%,var(--bg2) 40%)}
 .perf-card.metal-silver{border-left-color:#8AAFC4;background:linear-gradient(135deg,rgba(138,175,196,.05) 0%,var(--bg2) 40%)}
 .perf-card.metal-platinum{border-left-color:#6A9AB8;background:linear-gradient(135deg,rgba(106,154,184,.05) 0%,var(--bg2) 40%)}
@@ -734,7 +734,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .perf-table tr.closed-row:hover td{opacity:1}
 
 /* History chart */
-.history-chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px;overflow:hidden}
+.history-chart-wrap{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px;overflow:hidden}
 .history-legend{display:flex;align-items:center;gap:14px;padding:0 4px;margin-bottom:8px}
 .hl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .gold-dot{background:var(--brand)}
@@ -779,7 +779,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .perm-link{color:var(--blue);cursor:pointer;text-decoration:underline}
 .active-alerts-header{display:flex;align-items:center;justify-content:space-between;padding:4px 18px 10px}
 .alerts-list{padding:0 16px;display:flex;flex-direction:column;gap:8px}
-.alert-card{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--border-gold);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;transition:border-color .2s,box-shadow .2s}
+.alert-card{background:var(--bg2);border:1.5px solid var(--border);border-left:3px solid var(--border-gold);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;transition:border-color .2s,box-shadow .2s}
 .alert-card:hover{border-color:var(--border-gold);box-shadow:0 2px 10px rgba(139,105,20,.08)}
 .alert-card.triggered{border-left-color:var(--green);border-color:var(--green-dim);background:rgba(26,122,74,.04)}
 .alert-icon{font-size:24px;flex-shrink:0;margin-top:1px}
@@ -1759,19 +1759,19 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 14px 14px" id="spotCardsGrid">
-      <div style="background:rgba(139,105,20,.07);border:1px solid rgba(139,105,20,.2);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
+      <div style="background:rgba(139,105,20,.06);border:1.5px solid rgba(139,105,20,.30);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
         <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(139,105,20,.1),transparent 70%);border-radius:50%"></div>
         <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🥇 Gold spot</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--brand);line-height:1;margin-bottom:3px" id="homeGoldSpot">—</div>
         <div style="font-size:11px;color:var(--text-dim)" id="homeGoldUnit">per oz · USD</div>
       </div>
-      <div style="background:rgba(100,130,160,.07);border:1px solid rgba(100,130,160,.2);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
+      <div style="background:rgba(100,130,160,.06);border:1.5px solid rgba(100,130,160,.30);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
         <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(100,130,160,.1),transparent 70%);border-radius:50%"></div>
         <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🥈 Silver spot</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--silver-bright);line-height:1;margin-bottom:3px" id="homeSilverSpot">—</div>
         <div style="font-size:11px;color:var(--text-dim)" id="homeSilverUnit">per oz · USD</div>
       </div>
-      <div id="platSpotCard" style="display:none;background:rgba(120,120,130,.07);border:1px solid rgba(120,120,130,.2);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;grid-column:span 2">
+      <div id="platSpotCard" style="display:none;background:rgba(120,120,130,.06);border:1.5px solid rgba(120,120,130,.30);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;grid-column:span 2">
         <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🔷 Platinum spot</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:#757575;line-height:1;margin-bottom:3px" id="homePlatSpot">—</div>
         <div style="font-size:11px;color:var(--text-dim)" id="homePlatUnit">per oz · USD</div>
