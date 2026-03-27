@@ -371,7 +371,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   #spotCardsGrid,#pricePaidNudge{margin-left:20px;margin-right:20px}
 
   /* Spot cards — compact on desktop */
-  #spotCardsGrid > div{padding:16px 18px}
+  #spotCardsGrid > div{padding:16px 18px;transition:border-color .22s,background .22s,box-shadow .22s,transform .15s;cursor:default}
+#spotCardsGrid > div:hover{transform:translateY(-2px)}
+#spotCardsGrid > div:nth-child(1):hover{background:rgba(139,105,20,.13);border-color:rgba(139,105,20,.45);box-shadow:0 6px 24px rgba(139,105,20,.14)}
+#spotCardsGrid > div:nth-child(2):hover{background:rgba(100,130,160,.13);border-color:rgba(100,130,160,.45);box-shadow:0 6px 24px rgba(100,130,160,.12)}
+#platSpotCard:hover{background:rgba(120,120,130,.13) !important;border-color:rgba(120,120,130,.45) !important;box-shadow:0 6px 24px rgba(120,120,130,.10)}
 
   /* FAB aligned to right edge of 900px column */
   .fab-wrap{right:max(18px, calc(50% - 432px))}
