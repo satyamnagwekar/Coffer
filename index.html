@@ -804,7 +804,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .toast.show{opacity:1;transform:translateY(0) scale(1)}
 .toast.warn{background:rgba(122,69,0,.95);color:#FFE8C0;border-left-color:#F0A030}
 .toast.error{background:rgba(107,28,28,.95);color:#FFD0D0;border-left-color:var(--red)}
-.toast.success{background:rgba(26,74,48,.95);color:#C0FFD8;border-left-color:var(--green)}
+.toast.success{background:rgba(44,32,8,.96);color:#F5E6C0;border-left-color:#C8971A}
+.toast.sold{background:rgba(12,38,28,.96);color:#C8F0DC;border-left-color:#1D9E75}
+.toast.gifted{background:rgba(38,18,48,.96);color:#EDD8F8;border-left-color:#9B6BC4}
 
 /* iOS keyboard — ensure focused inputs scroll into view inside modals */
 .modal{scroll-behavior:smooth}
@@ -4451,12 +4453,12 @@ async function addItem(){
     },80);
     // Celebratory toast
     setTimeout(()=>{
-      const t=showToast(newItem.name+' added to your vault','success',3000);
+      const t=showToast(newItem.name+' — recorded for posterity','success',3200);
       if(t){t.classList.add('celebrate');}
     },120);
     if(activeCount+1===20){
       try{ await api('POST','/auth/milestone-20',{}); }catch(_){}
-      setTimeout(()=>showToast('20 holdings — your vault is taking shape','success',4000),400);
+      setTimeout(()=>showToast('Twenty pieces. A vault worth passing on.','success',4500),400);
     }
   }catch(e){alert('Could not save item: '+e.message)}
 }
@@ -4589,6 +4591,11 @@ async function confirmSell(){
     const updated=await api('PUT','/items/'+item.id,payload);
     items[viewingItem]=updated;
     closeModal('sellModal');updateAll();
+    const sellDisp=fmtDisp((toUSD(sR,sC))*(rates[currency]||1));
+    setTimeout(()=>{
+      const t=showToast(item.name+' — sold. The record stands.','sold',3500);
+      if(t){t.classList.add('celebrate');}
+    },120);
   }catch(e){alert('Could not record sale: '+e.message)}
 }
 
@@ -4647,6 +4654,11 @@ async function confirmGift(){
     closeModal('giftModal');
     closeModal('detailModal');
     updateAll();
+    const giftMsg = gTo ? item.name+' — given to '+gTo+'. A generous record.' : item.name+' — gifted. A generous record.';
+    setTimeout(()=>{
+      const t=showToast(giftMsg,'gifted',3500);
+      if(t){t.classList.add('celebrate');}
+    },200);
   }catch(e){alert('Could not record gift: '+e.message)}
 }
 
