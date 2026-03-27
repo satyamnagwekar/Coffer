@@ -448,19 +448,19 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .item-card.gifted::after{content:'GIFTED';position:absolute;top:10px;right:12px;font-size:10px;letter-spacing:.12em;color:#c084fc;border:1px solid rgba(192,132,252,.3);background:rgba(192,132,252,.08);padding:2px 6px;border-radius:10px}
 .item-card.gifted .item-value{padding-right:64px}
 .item-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px}
-.item-name{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:400;color:var(--text);line-height:1.1;padding-right:8px}
+.item-name{font-family:'Cormorant Garamond',serif;font-size:23px;font-weight:400;color:var(--text);line-height:1.1;padding-right:8px}
 .item-value{font-size:18px;font-weight:500;text-align:right;flex-shrink:0;letter-spacing:-.01em}
 .item-card.gold .item-value{color:var(--brand)}
 .item-card.silver .item-value{color:var(--silver-bright)}
 .item-card.sold .item-value{color:var(--green)}
 .item-meta{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:3px}
 .badge{font-size:10px;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:20px;border:1px solid}
-.badge-type{border-color:var(--border);color:var(--text-dim);background:var(--bg3)}
+.badge-type{border-color:var(--border);color:var(--text-dim);background:var(--bg3);opacity:.8}
 .badge-grade{border-color:rgba(139,105,20,.3);color:var(--brand);background:rgba(139,105,20,.07)}
 .badge-grade.silver{border-color:var(--silver-dim);color:var(--silver);background:rgba(200,216,232,.06)}
-.badge-weight{border-color:var(--border);color:var(--text-mid);background:transparent}
+.badge-weight{border-color:var(--border);color:var(--text-mid);background:transparent;font-weight:500}
 .badge-provenance{border-color:var(--green-dim);color:var(--green);background:rgba(26,122,74,.06)}
-.badge-date{border-color:var(--border);color:var(--text-dim);background:transparent}
+.badge-date{border-color:var(--border);color:var(--text-dim);background:transparent;opacity:.7}
 .item-pnl{font-size:12px;margin-top:6px;font-weight:500}
 .item-pnl.pos{color:var(--green)}
 .item-pnl.neg{color:var(--red)}
@@ -964,6 +964,27 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
   .modal{animation:none}
   .app-screen.active{animation:none}
 }
+
+/* ── Value shimmer on price refresh ── */
+@keyframes valueShimmer{0%{opacity:1}40%{opacity:.45}100%{opacity:1}}
+.value-shimmer{animation:valueShimmer .55s ease}
+
+/* ── Holding card entrance ── */
+@keyframes cardEntrance{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.item-card.just-added{animation:cardEntrance .4s cubic-bezier(.32,.72,0,1)}
+
+/* ── Success toast ceremony ── */
+@keyframes toastCelebrate{0%{transform:translateY(12px) scale(.96)}60%{transform:translateY(-3px) scale(1.02)}100%{transform:translateY(0) scale(1)}}
+.toast.celebrate{animation:toastCelebrate .45s cubic-bezier(.32,.72,0,1)}
+
+/* ── Empty state — more presence ── */
+.empty-state{text-align:center;padding:56px 24px}
+.empty-state-logo{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:300;color:var(--brand);letter-spacing:.22em;margin-bottom:4px;opacity:.7}
+.empty-state-rings{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:20px;opacity:.25}
+.empty-state-ring{width:36px;height:36px;border-radius:50%;border:2.5px solid var(--brand)}
+.empty-state-ring:last-child{margin-left:-12px}
+.empty-state-headline{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--text);margin-bottom:10px;line-height:1.2}
+.empty-state-sub{font-size:13px;color:var(--text-dim);line-height:1.8;max-width:280px;margin:0 auto 24px}
 
 /* ── Search bar ── */
 .search-bar-wrap{overflow:hidden;max-height:0;transition:max-height .25s cubic-bezier(.32,.72,0,1),opacity .2s ease;opacity:0;padding:0 14px}
@@ -3809,8 +3830,21 @@ async function fetchPrices(){
     return;
   }
   updatePriceDisplay();updateAll();
+  _shimmerPrices();
   const t=new Date();
   document.getElementById('lastUpdatedText').textContent=`Prices as of ${t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} — tap to refresh`;
+}
+
+function _shimmerPrices(){
+  const ids=['totalValue','goldSpot','silverSpot','platinumSpot','homeGoldSpot','homeSilverSpot','homePlatSpot'];
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.classList.remove('value-shimmer');
+    void el.offsetWidth;
+    el.classList.add('value-shimmer');
+    setTimeout(()=>el.classList.remove('value-shimmer'),600);
+  });
 }
 
 // ══════════════════════════════════════════
@@ -3948,21 +3982,22 @@ function renderList(){
         ? '₹'+inrPer10g('silver').toLocaleString('en-IN')+' /10g'
         : sym+( prices.silver*(rates[currency]||1) ).toFixed(2)+' /oz';
       list.innerHTML=`<div class="empty-state" id="emptyOnboarding">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--text);margin-bottom:6px">You're one item away</div>
-        <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:18px;max-width:260px;margin-left:auto;margin-right:auto">Add any piece of gold or silver — jewellery, a coin, anything — and see its live market value in seconds.</div>
-        <div style="display:flex;gap:10px;justify-content:center;margin-bottom:18px">
-          <div style="background:rgba(139,105,20,.07);border:1px solid var(--brand-dim);border-radius:10px;padding:10px 16px;text-align:center;min-width:110px">
-            <div style="font-size:10px;color:var(--brand);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px">🥇 Gold</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--text);font-weight:500">${goldDisp}</div>
-            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">live spot</div>
+        <div class="empty-state-rings"><div class="empty-state-ring"></div><div class="empty-state-ring"></div></div>
+        <div class="empty-state-headline">Your family's gold,<br>recorded for posterity.</div>
+        <div class="empty-state-sub">Add any piece — jewellery, a coin, a bar — and see its live market value, your gain, and a record your family can rely on.</div>
+        <div style="display:flex;gap:10px;justify-content:center;margin-bottom:24px">
+          <div style="background:#fff;border:1.5px solid rgba(139,105,20,.22);border-radius:12px;padding:12px 18px;text-align:center;min-width:116px;box-shadow:0 2px 12px rgba(139,105,20,.08)">
+            <div style="font-size:10px;color:var(--brand);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px">Gold</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--brand);font-weight:300">${goldDisp}</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:3px;letter-spacing:.04em">live spot</div>
           </div>
-          <div style="background:rgba(180,200,220,.07);border:1px solid rgba(180,200,220,.3);border-radius:10px;padding:10px 16px;text-align:center;min-width:110px">
-            <div style="font-size:10px;color:var(--silver);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px">🥈 Silver</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--text);font-weight:500">${silverDisp}</div>
-            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">live spot</div>
+          <div style="background:#fff;border:1.5px solid rgba(100,130,160,.22);border-radius:12px;padding:12px 18px;text-align:center;min-width:116px;box-shadow:0 2px 12px rgba(100,130,160,.08)">
+            <div style="font-size:10px;color:var(--silver-bright);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px">Silver</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--silver-bright);font-weight:300">${silverDisp}</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:3px;letter-spacing:.04em">live spot</div>
           </div>
         </div>
-        <div class="empty-cta" onclick="openAddModal()">+ Add First Holding</div>
+        <div class="empty-cta" onclick="openAddModal()">+ Record Your First Holding</div>
         <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--text-dim);line-height:1.9;letter-spacing:.04em">
           Prices update every 5 minutes${isINR?' · INR includes 15% import duty + 3% GST':''}
         </div>
@@ -4406,10 +4441,22 @@ async function addItem(){
       if(newItem.purchaseDate < priceHistoryCache.from) priceHistoryCache=null;
     }
     closeModal('addModal');updateAll();
+    // Ceremonial confirmation — brief shimmer on portfolio value
+    const tvEl=document.getElementById('totalValue');
+    if(tvEl){tvEl.classList.remove('value-shimmer');void tvEl.offsetWidth;tvEl.classList.add('value-shimmer');setTimeout(()=>tvEl.classList.remove('value-shimmer'),600);}
+    // Animate the newly added card
+    setTimeout(()=>{
+      const cards=document.querySelectorAll('.item-card');
+      if(cards.length){cards[0].classList.add('just-added');setTimeout(()=>cards[0].classList.remove('just-added'),500);}
+    },80);
+    // Celebratory toast
+    setTimeout(()=>{
+      const t=showToast(newItem.name+' added to your vault','success',3000);
+      if(t){t.classList.add('celebrate');}
+    },120);
     if(activeCount+1===20){
-      // Fire 20-holdings milestone email (fire and forget)
       try{ await api('POST','/auth/milestone-20',{}); }catch(_){}
-      setTimeout(()=>showToast('20 holdings — your vault is taking shape 🏛','ok',4000),400);
+      setTimeout(()=>showToast('20 holdings — your vault is taking shape','success',4000),400);
     }
   }catch(e){alert('Could not save item: '+e.message)}
 }
@@ -5868,7 +5915,7 @@ function hideSplash(){
 // ══════════════════════════════════════════
 function showToast(msg, type='info', duration=3500){
   const c = document.getElementById('toastContainer');
-  if(!c) return;
+  if(!c) return null;
   const t = document.createElement('div');
   t.className = 'toast' + (type !== 'info' ? ' ' + type : '');
   t.textContent = msg;
@@ -5878,6 +5925,7 @@ function showToast(msg, type='info', duration=3500){
     t.classList.remove('show');
     setTimeout(() => t.remove(), 300);
   }, duration);
+  return t;
 }
 
 // ══════════════════════════════════════════
