@@ -376,11 +376,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 /* ── Succession action cards ── */
 .succ-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 20px 8px;justify-items:center}
-.succ-card{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0;padding:0;position:relative;width:100%;max-width:180px;transition:transform .18s}
+.succ-card{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0;padding:0;position:relative;width:auto;max-width:180px;transition:transform .18s}
 .succ-card:hover{transform:translateY(-4px)}
 .succ-card:active{transform:scale(.97)}
-.succ-circle{width:220px;height:220px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:box-shadow .22s,border-color .22s;position:relative;margin-bottom:20px;border:1.5px solid}
-.succ-circle svg{width:68px;height:68px;position:relative;z-index:1}
+.succ-circle{width:220px;height:220px;aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:box-shadow .22s,border-color .22s;position:relative;margin-bottom:20px;border:1.5px solid;flex-shrink:0;box-sizing:border-box}
+.succ-circle svg{width:68px;height:68px;position:relative;z-index:1;flex-shrink:0}
 .sc-statement .succ-circle{background:rgba(139,105,20,.07);border-color:rgba(139,105,20,.25);color:var(--brand)}
 .sc-statement:hover .succ-circle{box-shadow:0 8px 28px rgba(139,105,20,.22);border-color:rgba(139,105,20,.5)}
 .sc-succession .succ-circle{background:rgba(155,107,196,.08);border-color:rgba(155,107,196,.28);color:#9B6BC4}
@@ -922,8 +922,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .succ-cards{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:16px;margin:12px 0 4px}
   .succ-tooltip{display:none !important}
   .succ-card{width:auto;max-width:none;flex:0 0 auto}
-  .succ-circle{width:96px;height:96px;min-width:96px;min-height:96px;border-radius:50% !important;margin-bottom:10px}
-  .succ-circle svg{width:30px;height:30px}
+  .succ-circle{width:96px !important;height:96px !important;aspect-ratio:1 !important;min-width:96px;min-height:96px;border-radius:50% !important;margin-bottom:10px;flex-shrink:0}
+  .succ-circle svg{width:30px !important;height:30px !important;flex-shrink:0}
   .succ-title{font-size:14px}
   .succ-desc{font-size:9px}
   .profile-section{padding:16px}
