@@ -373,6 +373,41 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   /* Spot cards — compact on desktop */
   #spotCardsGrid > div{padding:16px 18px;transition:border-color .22s,background .22s,box-shadow .22s,transform .15s;cursor:default}
 #spotCardsGrid > div:hover{transform:translateY(-2px)}
+#portfolioActions button:hover{border-color:var(--border2) !important;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+
+/* ── Succession action cards ── */
+.succ-cards{display:grid;grid-template-columns:1fr;gap:10px;margin:0 14px 14px}
+.succ-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:18px 20px;cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .15s;position:relative;overflow:hidden;display:flex;align-items:flex-start;gap:14px}
+.succ-card:active{transform:scale(.99)}
+.succ-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s}
+.succ-card:hover{transform:translateY(-2px)}
+.succ-card.sc-statement{border-left:3px solid var(--brand)}
+.succ-card.sc-statement:hover{border-color:rgba(139,105,20,.5);box-shadow:0 6px 24px rgba(139,105,20,.15)}
+.succ-card.sc-statement::before{background:linear-gradient(135deg,rgba(139,105,20,.04),transparent 60%)}
+.succ-card.sc-statement:hover::before{opacity:1}
+.succ-card.sc-succession{border-left:3px solid #9B6BC4}
+.succ-card.sc-succession:hover{border-color:rgba(155,107,196,.5);box-shadow:0 6px 24px rgba(155,107,196,.15)}
+.succ-card.sc-succession::before{background:linear-gradient(135deg,rgba(155,107,196,.04),transparent 60%)}
+.succ-card.sc-succession:hover::before{opacity:1}
+.succ-card.sc-share{border-left:3px solid var(--green)}
+.succ-card.sc-share:hover{border-color:rgba(26,122,74,.5);box-shadow:0 6px 24px rgba(26,122,74,.12)}
+.succ-card.sc-share::before{background:linear-gradient(135deg,rgba(26,122,74,.04),transparent 60%)}
+.succ-card.sc-share:hover::before{opacity:1}
+.succ-icon{width:36px;height:36px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.succ-icon svg{width:18px;height:18px}
+.sc-statement .succ-icon{background:rgba(139,105,20,.08);color:var(--brand)}
+.sc-succession .succ-icon{background:rgba(155,107,196,.1);color:#9B6BC4}
+.sc-share .succ-icon{background:rgba(26,122,74,.08);color:var(--green)}
+.succ-body{flex:1;min-width:0}
+.succ-title{font-size:13px;font-weight:500;letter-spacing:.04em;margin-bottom:3px}
+.sc-statement .succ-title{color:var(--brand)}
+.sc-succession .succ-title{color:#9B6BC4}
+.sc-share .succ-title{color:var(--green)}
+.succ-desc{font-size:11px;color:var(--text-dim);line-height:1.65}
+.succ-chevron{color:var(--border2);font-size:16px;align-self:center;flex-shrink:0;transition:transform .18s}
+.succ-card:hover .succ-chevron{transform:translateX(3px)}
+/* Share expand panel inside vault */
+.succ-share-panel{display:none;margin:-4px 14px 14px;padding:18px;background:#fff;border:1.5px solid rgba(26,122,74,.25);border-top:none;border-radius:0 0 var(--radius) var(--radius)}
 #spotCardsGrid > div:nth-child(1):hover{background:rgba(139,105,20,.13);border-color:rgba(139,105,20,.55);box-shadow:0 8px 32px rgba(184,146,26,.45)}
 #spotCardsGrid > div:nth-child(2):hover{background:rgba(100,130,160,.13);border-color:rgba(100,130,160,.55);box-shadow:0 8px 32px rgba(100,130,160,.40)}
 #platSpotCard:hover{background:rgba(120,120,130,.13) !important;border-color:rgba(120,120,130,.55) !important;box-shadow:0 8px 32px rgba(120,120,130,.35)}
@@ -1723,7 +1758,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     <button class="nav-tab active" id="navMyAurum" onclick="setNavTab('vault',this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V10l9-7 9 7v11"/><path d="M9 21v-6h6v6"/><path d="M3 10h18"/></svg></span><span class="nav-label">MyAurum</span></button>
     <button class="nav-tab" id="navChart" onclick="setNavTab('chart',this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="nav-label">Chart</span></button>
     <button class="nav-tab" id="navAlerts" onclick="setNavTab('alerts',this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span><span class="nav-label">Alerts</span></button>
-    <button class="nav-tab" id="navProfile" onclick="setNavTab('profile',this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="nav-label">Profile</span></button>
+    <button class="nav-tab" id="navProfile" onclick="setNavTab('profile',this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="nav-label">Succession</span></button>
   </div>
 
   <!-- ── MYAURUM PANEL ── -->
@@ -1781,6 +1816,24 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       </div>
     </div>
 
+    <!-- ── Portfolio Actions ── -->
+    <div id="portfolioActions" style="margin:0 14px 14px;display:none;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <button onclick="generateHoldingsStatement()" style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:13px 8px;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.06em;color:var(--brand);cursor:pointer;text-align:center;transition:border-color .18s,box-shadow .18s;display:flex;flex-direction:column;align-items:center;gap:5px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>Statement</span>
+      </button>
+      <button onclick="exportSuccessionPDF()" style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:13px 8px;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.06em;color:#9B6BC4;cursor:pointer;text-align:center;transition:border-color .18s,box-shadow .18s;display:flex;flex-direction:column;align-items:center;gap:5px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span>Succession</span>
+      </button>
+      <button onclick="openSharePanel()" style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:13px 8px;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.06em;color:var(--green);cursor:pointer;text-align:center;transition:border-color .18s,box-shadow .18s;display:flex;flex-direction:column;align-items:center;gap:5px" id="vaultShareBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        <span>Share</span>
+      </button>
+    </div>
+    <!-- Share panel — shown below actions when expanded -->
+    <div id="vaultSharePanel" style="display:none;margin:-6px 14px 14px;padding:16px;background:#fff;border-radius:var(--radius-sm);border:1.5px solid var(--border)"></div>
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 14px 14px" id="spotCardsGrid">
       <div style="background:rgba(139,105,20,.06);border:1.5px solid rgba(139,105,20,.30);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
         <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(139,105,20,.1),transparent 70%);border-radius:50%"></div>
@@ -1808,6 +1861,59 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <button class="htab" onclick="setHTab('platinum',this)">Platinum</button>
       <button class="htab" onclick="setHTab('sold',this)">Sold</button>
       <button class="htab" onclick="setHTab('gifted',this)">Gifted</button>
+    </div>
+
+    <!-- ── Succession & Sharing Actions ── -->
+    <div class="succ-cards" id="succCards" style="display:none">
+      <button class="succ-card sc-statement" onclick="generateHoldingsStatement()">
+        <div class="succ-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="succ-body">
+          <div class="succ-title">Holdings Statement</div>
+          <div class="succ-desc">Your holdings, formatted for your records or CA</div>
+        </div>
+        <div class="succ-chevron">›</div>
+      </button>
+      <button class="succ-card sc-succession" onclick="exportSuccessionPDF()">
+        <div class="succ-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        </div>
+        <div class="succ-body">
+          <div class="succ-title">Succession Document</div>
+          <div class="succ-desc">A document your family can act on</div>
+        </div>
+        <div class="succ-chevron">›</div>
+      </button>
+      <button class="succ-card sc-share" onclick="toggleSuccSharePanel()">
+        <div class="succ-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </div>
+        <div class="succ-body">
+          <div class="succ-title">Share Portfolio</div>
+          <div class="succ-desc">A live link for your spouse, lawyer, or heir — can be revoked at any time</div>
+        </div>
+        <div class="succ-chevron" id="succShareChevron">›</div>
+      </button>
+    </div>
+    <!-- Share expand panel -->
+    <div class="succ-share-panel" id="succSharePanel">
+      <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:6px;letter-spacing:.04em;font-family:'Jost',sans-serif">Share your live portfolio</div>
+      <div style="font-size:11px;color:var(--text-dim);line-height:1.75;margin-bottom:14px;font-family:'Jost',sans-serif">A private link that shows your current holdings and live values — always up to date. Share it with a spouse, adult child, CA, or estate planner. No login required to view.<br><br>If something were to happen to you unexpectedly, the people who matter most will know exactly what your family holds and what it is worth.</div>
+      <div id="succLinkBox" style="display:none;margin-bottom:10px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="succLinkInput" type="text" readonly style="flex:1;font-size:11px;padding:8px 10px;border:1.5px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text-dim);font-family:'Jost',sans-serif">
+          <button onclick="copySuccShareLink()" style="padding:8px 14px;background:var(--brand);color:#FDF8F0;border:none;border-radius:6px;font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;white-space:nowrap;letter-spacing:.04em">Copy</button>
+        </div>
+        <button onclick="revokeSuccShareLink()" style="margin-top:8px;background:transparent;border:none;color:var(--red);font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;padding:0;letter-spacing:.04em">✕ Revoke link</button>
+      </div>
+      <div id="succGenerateSection">
+        <div style="background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.2);border-radius:8px;padding:14px;text-align:center">
+          <div style="font-size:13px;color:var(--brand);font-family:'Cormorant Garamond',serif;font-weight:400;letter-spacing:.04em;margin-bottom:4px">MyAurum Premium</div>
+          <div style="font-size:11px;color:var(--text-dim);line-height:1.65;margin-bottom:12px;font-family:'Jost',sans-serif">Live portfolio sharing is a premium feature. Unlimited holdings, share links, and advanced succession tools.</div>
+          <button onclick="premiumWaitlist()" style="padding:9px 20px;background:var(--brand);color:#FDF8F0;border:none;border-radius:20px;font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.06em">Upgrade to Premium →</button>
+        </div>
+      </div>
     </div>
 
     <!-- Held By grouped view (shown when toggled) -->
@@ -2119,34 +2225,14 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <div class="profile-section" id="vaultNotesSection"></div>
 
       <div class="profile-section" style="border-bottom:none">
-        <div class="profile-section-title" style="text-align:center">Actions</div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
           <button onclick="openSettings()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text-dim);border-radius:20px;padding:11px 24px;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;min-width:160px;text-align:center">⚙ Settings</button>
-          <button onclick="exportSuccessionPDF()" style="background:rgba(192,132,252,.06);border:1px solid rgba(192,132,252,.2);color:#c084fc;border-radius:20px;padding:11px 24px;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;min-width:160px;text-align:center">📄 Succession PDF</button>
-          <button onclick="generateHoldingsStatement()" style="background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.25);color:var(--brand);border-radius:20px;padding:11px 24px;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;min-width:160px;text-align:center">🗒 Holdings Statement</button>
-          <button onclick="openSharePanel()" style="background:rgba(46,204,138,.06);border:1px solid rgba(46,204,138,.25);color:var(--green);border-radius:20px;padding:11px 24px;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;min-width:160px;text-align:center">🔗 Share Portfolio</button>
           <button onclick="doLogout()" style="background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:20px;padding:11px 24px;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;min-width:160px;text-align:center">Sign Out</button>
         </div>
-
-        <!-- Share panel -->
-        <div id="sharePanel" style="display:none;margin-top:20px;padding:16px;background:var(--bg2);border-radius:12px;border:1px solid var(--border)">
-          <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:6px;letter-spacing:.04em;font-family:'Jost',sans-serif">Share your live portfolio</div>
-          <div style="font-size:11px;color:var(--text-dim);line-height:1.75;margin-bottom:14px;font-family:'Jost',sans-serif">A private link that shows your current holdings and live values — always up to date. Share it with a spouse, adult child, CA, or estate planner. No login required to view.<br><br>If something were to happen to you unexpectedly, the people who matter most will know exactly what your family holds and what it is worth — without having to search for a document that may already be out of date.</div>
-          <div id="shareLinkBox" style="display:none;margin-bottom:10px">
-            <div style="display:flex;gap:8px;align-items:center">
-              <input id="shareLinkInput" type="text" readonly style="flex:1;font-size:11px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text-dim);font-family:'Jost',sans-serif">
-              <button onclick="copyShareLink()" style="padding:8px 14px;background:var(--brand);color:#FDF8F0;border:none;border-radius:6px;font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;white-space:nowrap;letter-spacing:.04em">Copy</button>
-            </div>
-            <button onclick="revokeShareLink()" style="margin-top:8px;background:transparent;border:none;color:var(--red);font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;padding:0;letter-spacing:.04em">Revoke link</button>
-          </div>
-          <div id="shareGenerateSection">
-            <div style="background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.2);border-radius:8px;padding:14px;text-align:center">
-              <div style="font-size:13px;color:var(--brand);font-family:'Cormorant Garamond',serif;font-weight:400;letter-spacing:.04em;margin-bottom:4px">MyAurum Premium</div>
-              <div style="font-size:11px;color:var(--text-dim);line-height:1.65;margin-bottom:12px;font-family:'Jost',sans-serif">Live portfolio sharing is a premium feature. Premium is coming soon — unlimited holdings, share links, and advanced succession tools.</div>
-              <button onclick="premiumWaitlist()" style="padding:9px 20px;background:var(--brand);color:#FDF8F0;border:none;border-radius:20px;font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.06em">Upgrade to Premium →</button>
-            </div>
-          </div>
-        </div>
+        <!-- Legacy share panel — kept for JS compatibility -->
+        <div id="sharePanel" style="display:none"></div>
+        <div id="shareLinkBox" style="display:none"><input id="shareLinkInput" type="text" readonly style="opacity:0;position:absolute;pointer-events:none"></div>
+        <div id="shareGenerateSection" style="display:none"></div>
       </div>
 
     </div>
@@ -3035,7 +3121,30 @@ async function verifyOTP(){
   }
 }
 
+function _syncSharePanel(panel){
+  // Copy live share link state into the vault panel
+  const srcBox=document.getElementById('shareLinkBox');
+  const srcGen=document.getElementById('shareGenerateSection');
+  const dstBox=panel.querySelector('#shareLinkBox');
+  const dstGen=panel.querySelector('#shareGenerateSection');
+  if(srcBox&&dstBox) dstBox.style.display=srcBox.style.display;
+  if(srcGen&&dstGen) dstGen.style.display=srcGen.style.display;
+  const srcInput=document.getElementById('shareLinkInput');
+  const dstInput=panel.querySelector('#shareLinkInput');
+  if(srcInput&&dstInput) dstInput.value=srcInput.value;
+}
+
 function openSharePanel(){
+  // Support both vault inline panel and profile panel
+  const vaultPanel = document.getElementById('vaultSharePanel');
+  if(vaultPanel){
+    if(vaultPanel.style.display==='block'){vaultPanel.style.display='none';return;}
+    vaultPanel.innerHTML=document.getElementById('sharePanel').innerHTML;
+    vaultPanel.style.display='block';
+    // Sync state from profile sharePanel into vault panel
+    _syncSharePanel(vaultPanel);
+    return;
+  }
   const panel = document.getElementById('sharePanel');
   if(!panel) return;
   panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
@@ -3837,6 +3946,38 @@ async function fetchPrices(){
   document.getElementById('lastUpdatedText').textContent=`Prices as of ${t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} — tap to refresh`;
 }
 
+function toggleSuccSharePanel(){
+  const panel=document.getElementById('succSharePanel');
+  const chevron=document.getElementById('succShareChevron');
+  if(!panel)return;
+  const open=panel.style.display==='block';
+  panel.style.display=open?'none':'block';
+  if(chevron)chevron.textContent=open?'›':'∨';
+  if(!open){
+    // Sync state from legacy share elements
+    const srcLink=document.getElementById('shareLinkInput');
+    const srcLinkBox=document.getElementById('shareLinkBox');
+    const srcGenSection=document.getElementById('shareGenerateSection');
+    const dstLink=document.getElementById('succLinkInput');
+    const dstLinkBox=document.getElementById('succLinkBox');
+    const dstGenSection=document.getElementById('succGenerateSection');
+    if(srcLink&&dstLink) dstLink.value=srcLink.value;
+    if(dstLinkBox&&srcLinkBox) dstLinkBox.style.display=srcLink&&srcLink.value?'block':'none';
+    if(dstGenSection&&srcGenSection) dstGenSection.style.display=srcLink&&srcLink.value?'none':'block';
+  }
+}
+function copySuccShareLink(){
+  const inp=document.getElementById('succLinkInput');
+  if(!inp||!inp.value)return;
+  navigator.clipboard.writeText(inp.value).then(()=>showToast('Link copied','success',2000));
+}
+function revokeSuccShareLink(){
+  revokeShareLink();
+  document.getElementById('succLinkBox').style.display='none';
+  document.getElementById('succGenerateSection').style.display='block';
+  toggleSuccSharePanel();
+}
+
 function _shimmerPrices(){
   const ids=['totalValue','goldSpot','silverSpot','platinumSpot','homeGoldSpot','homeSilverSpot','homePlatSpot'];
   ids.forEach(id=>{
@@ -3939,6 +4080,11 @@ function updateSummary(){
     }
   }
   if(ptCard) ptCard.style.display = ptD>0 ? '' : 'none';
+  // Show portfolio actions strip when user has any items
+  const actionsEl=document.getElementById('portfolioActions');
+  if(actionsEl) actionsEl.style.display=items.length?'grid':'none';
+  const succCardsEl=document.getElementById('succCards');
+  if(succCardsEl) succCardsEl.style.display=items.length?'grid':'none';
   const pEl=document.getElementById('totalPnl'),pPct=document.getElementById('totalPnlPct');
   if(pD>0){const g=spD-pD,p=(g/pD)*100,s=g>=0?'+':'';pEl.textContent=s+fmtDisp(g);pEl.className='split-val pnl '+(g>=0?'pos':'neg');if(pPct)pPct.textContent=s+p.toFixed(1)+'%'}
   else{pEl.textContent='—';pEl.className='split-val pnl';if(pPct)pPct.textContent='add cost to track'}
