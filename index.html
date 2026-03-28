@@ -393,13 +393,13 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .succ-card.sc-share:hover{border-color:rgba(26,122,74,.5);box-shadow:0 6px 24px rgba(26,122,74,.12)}
 .succ-card.sc-share::before{background:linear-gradient(135deg,rgba(26,122,74,.04),transparent 60%)}
 .succ-card.sc-share:hover::before{opacity:1}
-.succ-icon{width:36px;height:36px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.succ-icon svg{width:18px;height:18px}
+.succ-icon{width:48px;height:48px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.succ-icon svg{width:24px;height:24px}
 .sc-statement .succ-icon{background:rgba(139,105,20,.08);color:var(--brand)}
 .sc-succession .succ-icon{background:rgba(155,107,196,.1);color:#9B6BC4}
 .sc-share .succ-icon{background:rgba(26,122,74,.08);color:var(--green)}
 .succ-body{flex:1;min-width:0}
-.succ-title{font-size:13px;font-weight:500;letter-spacing:.04em;margin-bottom:3px}
+.succ-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;letter-spacing:.02em;margin-bottom:4px}
 .sc-statement .succ-title{color:var(--brand)}
 .sc-succession .succ-title{color:#9B6BC4}
 .sc-share .succ-title{color:var(--green)}
@@ -2118,59 +2118,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         </div>
       </div>
 
-      <div class="profile-section">
-        <div class="profile-section-title">Account Details</div>
-        <div id="profileDetailsRows"></div>
-      </div>
-
-      <div class="profile-section">
-        <div class="profile-section-title">Security</div>
-        <div class="profile-row">
-          <div class="profile-key">Password storage</div>
-          <div class="profile-val muted" style="font-size:11px">bcrypt · cost factor 12</div>
-        </div>
-        <div class="profile-row">
-          <div class="profile-key">Holdings data</div>
-          <div class="profile-val muted" style="font-size:11px">AES-256-GCM encrypted</div>
-        </div>
-        <div class="profile-row">
-          <div class="profile-key">Data in transit</div>
-          <div class="profile-val muted" style="font-size:11px">TLS 1.2+</div>
-        </div>
-        <div class="profile-row">
-          <div class="profile-key">Infrastructure</div>
-          <div class="profile-val muted" style="font-size:11px">AWS · encrypted at rest</div>
-        </div>
-        <div class="profile-row">
-          <div class="profile-key">Data sharing</div>
-          <div class="profile-val muted" style="font-size:11px;color:var(--green)">None — ever</div>
-        </div>
-        <div class="profile-row">
-          <div class="profile-key">Two-factor auth</div>
-          <div class="profile-val muted" id="secTwoFAStatus" style="font-size:11px">—</div>
-        </div>
-        <div style="margin-top:14px;padding:14px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">
-          <div style="font-size:11px;color:var(--text-dim);line-height:1.85">
-            <p style="margin:0 0 10px"><strong style="color:var(--text)">How your data is protected</strong></p>
-            <p style="margin:0 0 8px">Your password is hashed using bcrypt (cost factor 12) and is never stored in readable form — not even we can retrieve it. Sensitive holding fields (item names, purity grades, notes, held-by names, nominee names) are encrypted at the application layer using AES-256-GCM before being written to the database. Each field uses a unique random initialisation vector, and the authentication tag prevents tampering. Even with direct database access, this data cannot be read without the encryption key, which is stored separately.</p>
-            <p style="margin:0 0 8px">All communication between your device and our servers uses TLS. Our database runs on AWS, where storage volumes are encrypted at rest by default.</p>
-            <p style="margin:0">Login endpoints are rate-limited to mitigate brute-force attempts. Session tokens (JWTs) expire after 30 days. Optional two-factor authentication via email OTP is available in Settings for users who want an additional login verification step.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- PLAN SECTION — populated by JS -->
-      <div class="profile-section" id="planSection"></div>
-
-      <!-- VAULTS SECTION — premium only -->
-      <div class="profile-section" id="vaultsSection"></div>
-
-      <!-- HEIRS SECTION — premium only -->
-      <div class="profile-section" id="heirsSection"></div>
-
       <!-- ── Succession & Sharing Actions ── -->
-      <div class="profile-section" style="padding:16px 0 0;border-bottom:none">
-        <div class="profile-section-title" style="padding:0 20px 12px">Succession &amp; Sharing</div>
+      <div class="profile-section" style="padding:20px 0 4px;border-bottom:1px solid var(--border)">
+        <div class="profile-section-title" style="padding:0 20px 14px">Succession &amp; Sharing</div>
         <div class="succ-cards" id="succCards" style="margin:0 20px 4px">
           <button class="succ-card sc-statement" onclick="generateHoldingsStatement()">
             <div class="succ-icon">
@@ -2223,6 +2173,56 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           </div>
         </div>
       </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title">Account Details</div>
+        <div id="profileDetailsRows"></div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title">Security</div>
+        <div class="profile-row">
+          <div class="profile-key">Password storage</div>
+          <div class="profile-val muted" style="font-size:11px">bcrypt · cost factor 12</div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-key">Holdings data</div>
+          <div class="profile-val muted" style="font-size:11px">AES-256-GCM encrypted</div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-key">Data in transit</div>
+          <div class="profile-val muted" style="font-size:11px">TLS 1.2+</div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-key">Infrastructure</div>
+          <div class="profile-val muted" style="font-size:11px">AWS · encrypted at rest</div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-key">Data sharing</div>
+          <div class="profile-val muted" style="font-size:11px;color:var(--green)">None — ever</div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-key">Two-factor auth</div>
+          <div class="profile-val muted" id="secTwoFAStatus" style="font-size:11px">—</div>
+        </div>
+        <div style="margin-top:14px;padding:14px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">
+          <div style="font-size:11px;color:var(--text-dim);line-height:1.85">
+            <p style="margin:0 0 10px"><strong style="color:var(--text)">How your data is protected</strong></p>
+            <p style="margin:0 0 8px">Your password is hashed using bcrypt (cost factor 12) and is never stored in readable form — not even we can retrieve it. Sensitive holding fields (item names, purity grades, notes, held-by names, nominee names) are encrypted at the application layer using AES-256-GCM before being written to the database. Each field uses a unique random initialisation vector, and the authentication tag prevents tampering. Even with direct database access, this data cannot be read without the encryption key, which is stored separately.</p>
+            <p style="margin:0 0 8px">All communication between your device and our servers uses TLS. Our database runs on AWS, where storage volumes are encrypted at rest by default.</p>
+            <p style="margin:0">Login endpoints are rate-limited to mitigate brute-force attempts. Session tokens (JWTs) expire after 30 days. Optional two-factor authentication via email OTP is available in Settings for users who want an additional login verification step.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PLAN SECTION — populated by JS -->
+      <div class="profile-section" id="planSection"></div>
+
+      <!-- VAULTS SECTION — premium only -->
+      <div class="profile-section" id="vaultsSection"></div>
+
+      <!-- HEIRS SECTION — premium only -->
+      <div class="profile-section" id="heirsSection"></div>
 
       <!-- VAULT NOTES — premium only -->
       <div class="profile-section" id="vaultNotesSection"></div>
