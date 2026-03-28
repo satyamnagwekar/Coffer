@@ -2119,8 +2119,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         </div>
       </div>
 
-      <div class="profile-section" style="padding:20px 0 4px;border-bottom:none">
-        <div class="succ-cards" id="succCards">
+      <div class="profile-section" style="padding:0;border-bottom:none">
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);margin:16px 20px 8px;padding:28px 16px 24px">
+        <div class="succ-cards" id="succCards" style="margin:0">
           <button class="succ-card sc-statement" onclick="generateHoldingsStatement()">
             <div class="succ-circle">
               <div class="succ-tooltip">Holdings, values &amp; cost basis — formatted for advisors</div>
@@ -2145,6 +2146,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
             <div class="succ-title">Share Portfolio</div>
             <div class="succ-desc">Live · revocable</div>
           </button>
+        </div>
         </div>
         <div class="succ-share-panel" id="succSharePanel" style="margin:0 20px 8px">
           <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:6px;letter-spacing:.04em;font-family:'Jost',sans-serif">Share your live portfolio</div>
