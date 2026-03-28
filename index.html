@@ -910,8 +910,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .btn-auth{padding:15px}
   .header{padding:10px 12px;gap:8px}
   .logo{font-size:26px}
-  .nav-tab{font-size:10px;padding:12px 2px}
-  .nav-tab .nav-icon svg{width:18px;height:18px}
+  .nav-tab{font-size:10px;padding:10px 2px}
+  .nav-tab .nav-icon svg{width:20px;height:20px}
+  .nav-tab .nav-label{display:none}
+  .nav-tab .nav-icon{margin-bottom:0}
+  .nav-tab.active .nav-label{display:block;font-size:9px;margin-top:3px;letter-spacing:.06em}
   .currency-bar{padding:8px 12px;gap:5px}
   .summary-card{margin:10px 10px;padding:18px 16px}
   .summary-value{font-size:40px}
@@ -1758,7 +1761,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     <button class="nav-tab active" id="navMyAurum" onclick="setNavTab('vault',this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V10l9-7 9 7v11"/><path d="M9 21v-6h6v6"/><path d="M3 10h18"/></svg></span><span class="nav-label">MyAurum</span></button>
     <button class="nav-tab" id="navChart" onclick="setNavTab('chart',this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="nav-label">Chart</span></button>
     <button class="nav-tab" id="navAlerts" onclick="setNavTab('alerts',this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span><span class="nav-label">Alerts</span></button>
-    <button class="nav-tab" id="navProfile" onclick="setNavTab('profile',this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="nav-label">Succession</span></button>
+    <button class="nav-tab" id="navSuccession" onclick="setNavTab('succession',this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span><span class="nav-label">Succession</span></button>
+    <button class="nav-tab" id="navProfile" onclick="setNavTab('profile',this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="nav-label">Profile</span></button>
   </div>
 
   <!-- ── MYAURUM PANEL ── -->
@@ -2092,8 +2096,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
   </div><!-- /panelAlerts -->
 
   <!-- ── PROFILE PANEL ── -->
-  <div class="content-panel" id="panelProfile">
-    <div class="profile-panel">
+  <!-- ── SUCCESSION PANEL ── -->
+  <div class="content-panel" id="panelSuccession">
+    <div class="profile-panel pb">
 
       <div class="profile-header" id="profileHeader">
         <!-- populated by JS -->
@@ -2119,9 +2124,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         </div>
       </div>
 
-      <!-- ── Succession & Sharing Actions ── -->
-      <div class="profile-section" style="padding:20px 0 4px;border-bottom:1px solid var(--border)">
-        <div class="profile-section-title" style="padding:0 20px 14px">Succession &amp; Sharing</div>
+      <div class="profile-section" style="padding:20px 0 4px;border-bottom:none">
         <div class="succ-cards" id="succCards" style="margin:0 20px 4px">
           <button class="succ-card sc-statement" onclick="generateHoldingsStatement()">
             <div class="succ-icon">
@@ -2154,10 +2157,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
             <div class="succ-chevron" id="succShareChevron">›</div>
           </button>
         </div>
-        <!-- Share expand panel -->
         <div class="succ-share-panel" id="succSharePanel" style="margin:0 20px 8px">
           <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:6px;letter-spacing:.04em;font-family:'Jost',sans-serif">Share your live portfolio</div>
-          <div style="font-size:11px;color:var(--text-dim);line-height:1.75;margin-bottom:14px;font-family:'Jost',sans-serif">A private link that shows your current holdings and live values — always up to date. Share it with a spouse, adult child, CA, or estate planner. No login required to view.<br><br>If something were to happen to you unexpectedly, the people who matter most will know exactly what your family holds and what it is worth.</div>
+          <div style="font-size:11px;color:var(--text-dim);line-height:1.75;margin-bottom:14px;font-family:'Jost',sans-serif">A private link showing current holdings and live values. Share with a spouse, CA, or estate planner. No login required.<br><br>If something were to happen to you unexpectedly, the people who matter most will know exactly what your family holds.</div>
           <div id="succLinkBox" style="display:none;margin-bottom:10px">
             <div style="display:flex;gap:8px;align-items:center">
               <input id="succLinkInput" type="text" readonly style="flex:1;font-size:11px;padding:8px 10px;border:1.5px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text-dim);font-family:'Jost',sans-serif">
@@ -2174,6 +2176,20 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           </div>
         </div>
       </div>
+
+      <!-- VAULTS SECTION — premium only -->
+      <div class="profile-section" id="vaultsSection"></div>
+      <!-- HEIRS SECTION — premium only -->
+      <div class="profile-section" id="heirsSection"></div>
+      <!-- VAULT NOTES — premium only -->
+      <div class="profile-section" id="vaultNotesSection"></div>
+
+    </div>
+  </div><!-- /panelSuccession -->
+
+  <!-- ── PROFILE PANEL ── -->
+  <div class="content-panel" id="panelProfile">
+    <div class="profile-panel pb">
 
       <div class="profile-section">
         <div class="profile-section-title">Account Details</div>
@@ -2206,34 +2222,16 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           <div class="profile-key">Two-factor auth</div>
           <div class="profile-val muted" id="secTwoFAStatus" style="font-size:11px">—</div>
         </div>
-        <div style="margin-top:14px;padding:14px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">
-          <div style="font-size:11px;color:var(--text-dim);line-height:1.85">
-            <p style="margin:0 0 10px"><strong style="color:var(--text)">How your data is protected</strong></p>
-            <p style="margin:0 0 8px">Your password is hashed using bcrypt (cost factor 12) and is never stored in readable form — not even we can retrieve it. Sensitive holding fields (item names, purity grades, notes, held-by names, nominee names) are encrypted at the application layer using AES-256-GCM before being written to the database. Each field uses a unique random initialisation vector, and the authentication tag prevents tampering. Even with direct database access, this data cannot be read without the encryption key, which is stored separately.</p>
-            <p style="margin:0 0 8px">All communication between your device and our servers uses TLS. Our database runs on AWS, where storage volumes are encrypted at rest by default.</p>
-            <p style="margin:0">Login endpoints are rate-limited to mitigate brute-force attempts. Session tokens (JWTs) expire after 30 days. Optional two-factor authentication via email OTP is available in Settings for users who want an additional login verification step.</p>
-          </div>
-        </div>
       </div>
 
       <!-- PLAN SECTION — populated by JS -->
       <div class="profile-section" id="planSection"></div>
-
-      <!-- VAULTS SECTION — premium only -->
-      <div class="profile-section" id="vaultsSection"></div>
-
-      <!-- HEIRS SECTION — premium only -->
-      <div class="profile-section" id="heirsSection"></div>
-
-      <!-- VAULT NOTES — premium only -->
-      <div class="profile-section" id="vaultNotesSection"></div>
 
       <div class="profile-section" style="border-bottom:none">
         <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
           <button onclick="openSettings()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text-dim);border-radius:20px;padding:11px 24px;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;min-width:160px;text-align:center">⚙ Settings</button>
           <button onclick="doLogout()" style="background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:20px;padding:11px 24px;font-size:12px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;min-width:160px;text-align:center">Sign Out</button>
         </div>
-        <!-- Legacy share panel — kept for JS compatibility -->
         <div id="sharePanel" style="display:none"></div>
         <div id="shareLinkBox" style="display:none"><input id="shareLinkInput" type="text" readonly style="opacity:0;position:absolute;pointer-events:none"></div>
         <div id="shareGenerateSection" style="display:none"></div>
@@ -3482,7 +3480,7 @@ async function loginUser(user){
   refreshProfile();
   // Restore last active tab
   const savedTab = sessionStorage.getItem('myaurum_tab') || 'vault';
-  const tabBtnMap = {vault:'navMyAurum',chart:'navChart',alerts:'navAlerts',profile:'navProfile'};
+  const tabBtnMap = {vault:'navMyAurum',chart:'navChart',alerts:'navAlerts',succession:'navSuccession',profile:'navProfile'};
   setNavTab(savedTab, document.getElementById(tabBtnMap[savedTab]||'navMyAurum'));
   fetchPrices();
   startInactivityTimer();
@@ -3903,7 +3901,7 @@ function setNavTab(tab,btn){
   const ss=document.getElementById('sortSheet');if(ss)ss.classList.remove('open');
   document.getElementById('fabWrap').style.display=tab==='vault'?'flex':'none';
   sessionStorage.setItem('myaurum_tab', tab);
-  if(tab==='profile')refreshProfile();
+  if(tab==='profile'||tab==='succession')refreshProfile();
   else { _vaultNotesRevealed=false; clearTimeout(_vaultNotesTimer); }
   if(tab==='chart'){updateChartPanel();renderHistoryChart()}
   if(tab==='alerts'){refreshAlertsPanel()}
@@ -6389,7 +6387,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 });
 
 function _navigateToTab(tab){
-  const tabBtnMap = {vault:'navMyAurum', chart:'navChart', alerts:'navAlerts', profile:'navProfile'};
+  const tabBtnMap = {vault:'navMyAurum', chart:'navChart', alerts:'navAlerts', succession:'navSuccession', profile:'navProfile'};
   const btn = document.getElementById(tabBtnMap[tab]);
   if(!btn) return;
   document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
