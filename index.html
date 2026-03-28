@@ -3477,7 +3477,6 @@ async function loginUser(user){
   }catch(e){priceAlerts=[];}
   updatePriceDisplay();
   updateAll();
-  refreshProfile();
   // Restore last active tab
   const savedTab = sessionStorage.getItem('myaurum_tab') || 'vault';
   const tabBtnMap = {vault:'navMyAurum',chart:'navChart',alerts:'navAlerts',succession:'navSuccession',profile:'navProfile'};
@@ -3759,8 +3758,12 @@ function refreshProfile(){
   // Total value: active spot + sold realised + gifted at gift value
   let portVal='—';
   const activeVal=items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0);
-  const soldVal=items.filter(i=>i.sold).reduce((s,i)=>s+(i.sellPriceUSD||0)*(rates[currency]||1),0);
-  const giftedVal=items.filter(i=>i.gifted).reduce((s,i)=>s+(i.giftValueUSD||0)*(rates[currency]||1),0);
+  const _rate=rates&&rates[currency]?rates[currency]:1;
+  // Sold: locked at recorded price — no conversion. Only sum items whose sellCurrency matches display currency.
+  // For items in other currencies, their sellPrice is added as-is (same numeric value) when currency matches.
+  const soldVal=items.filter(i=>i.sold).reduce((s,i)=>s+soldDisplayValue(i),0);
+  // Gifted: recalculate at current spot (item still exists physically, value moves with market)
+  const giftedVal=items.filter(i=>i.gifted).reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0);
   const totalPortVal=activeVal+soldVal+giftedVal;
   if(items.length>0){
     const sym=benchmark==='MCX'?'₹':(SYMBOLS[currency]||currency+' ');
@@ -4003,6 +4006,15 @@ function _shimmerPrices(){
 function toGrams(w,u){if(u==='oz')return w*31.1035;if(u==='tola')return w*11.6638;return w}
 function toOz(g){return g/31.1035}
 function toUSD(a,c){return a/rates[c]}
+function soldDisplayValue(item){
+  // Returns sold value in current display currency without converting if already in that currency
+  if(!item.sellPrice) return 0;
+  if(item.sellCurrency===currency) return parseFloat(item.sellPrice);
+  // MCX/INR special case
+  if((currency==='INR'||benchmark==='MCX')&&item.sellCurrency==='INR') return parseFloat(item.sellPrice);
+  // Cross-currency: convert via USD (unavoidable)
+  return (item.sellPriceUSD||0)*(rates[currency]||1);
+}
 function metalValueUSD(metal,grams,purity){return toOz(grams*purity)*(metal==='gold'?prices.gold:metal==='platinum'?prices.platinum:prices.silver)}
 
 // Returns INR per 10g using IBJA if available, else COMEX×factor fallback
@@ -4056,6 +4068,9 @@ function updateAll(){
   // Backfill heldBy for any existing holdings missing it
   items.forEach(i=>{ if(!i.heldBy) i.heldBy='Self'; });
   updateSummary();renderList();updateHeaderWelcome();if(groupedViewActive)renderGroupedPL();
+  // Keep succession/profile stat card in sync
+  const _activeTab=sessionStorage.getItem('myaurum_tab');
+  if(_activeTab==='succession'||_activeTab==='profile') refreshProfile();
 }
 function updateSummary(){
   let gD=0,sD=0,ptD=0,gG=0,sG=0,ptG=0,pD=0,spD=0;
@@ -4854,7 +4869,7 @@ function openDetail(idx){
   }
   let soldHTML='';
   if(item.sold){
-    const sellD=toUSD(item.sellPrice,item.sellCurrency)*(rates[currency]||1);let rRow='';
+    const sellD=soldDisplayValue(item);let rRow='';
     const cbD=costBasisDisplay(item);
     if(cbD){const g=sellD-cbD,p=(g/cbD)*100,s=g>=0?'+':'';rRow=`<div class="detail-row"><div class="detail-key">Realised G/L</div><div class="detail-val ${g>=0?'pos':'neg'}">${s}${fmtDisp(g)} (${s}${p.toFixed(1)}%)</div></div>`}
     soldHTML=`<div class="detail-section"><div class="detail-section-title">Sale Record</div>
@@ -4985,7 +5000,7 @@ function updateChartPanel(){
   // Active holdings: current spot value
   const activeTot=active.reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0);
   // Sold holdings: realised sale price converted to display currency
-  const realisedTot=sold.reduce((s,i)=>s+(i.sellPriceUSD||0)*(rates[currency]||1),0);
+  const realisedTot=sold.reduce((s,i)=>s+soldDisplayValue(i),0);
   const tot=activeTot+realisedTot;
 
   // Show/hide empty state overlay for chart
@@ -5027,7 +5042,7 @@ function drawDonut(){
     {key:'platinum',label:'Platinum',color:'#6A9AB8', activeItems:active.filter(i=>i.metal==='platinum'),soldItems:sold.filter(i=>i.metal==='platinum')},
   ].map(m=>{
     const spotVal=m.activeItems.reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0);
-    const realisedVal=m.soldItems.reduce((s,i)=>s+(i.sellPriceUSD||0)*(rates[currency]||1),0);
+    const realisedVal=m.soldItems.reduce((s,i)=>s+soldDisplayValue(i),0);
     const totalVal=spotVal+realisedVal;
     const totalGrams=m.activeItems.reduce((s,i)=>s+i.grams,0);
     const count=m.activeItems.length+m.soldItems.length;
@@ -5106,12 +5121,12 @@ function _metalColor(metal){
 function _sortItems(arr,sortKey){
   return [...arr].sort((a,b)=>{
     if(sortKey==='value-desc'||sortKey==='value-asc'){
-      const vA=a.sold?(a.sellPriceUSD||0)*(rates[currency]||1):spotDisplayValue(a.metal,a.grams,a.purity);
-      const vB=b.sold?(b.sellPriceUSD||0)*(rates[currency]||1):spotDisplayValue(b.metal,b.grams,b.purity);
+      const vA=a.sold?soldDisplayValue(a):spotDisplayValue(a.metal,a.grams,a.purity);
+      const vB=b.sold?soldDisplayValue(b):spotDisplayValue(b.metal,b.grams,b.purity);
       return sortKey==='value-desc'?vB-vA:vA-vB;
     }
     if(sortKey==='gl-desc'||sortKey==='gl-asc'){
-      const gA=()=>{const v=a.sold?(a.sellPriceUSD||0)*(rates[currency]||1):spotDisplayValue(a.metal,a.grams,a.purity);const c=costBasisDisplay(a);return c?v-c:null;};
+      const gA=()=>{const v=a.sold?soldDisplayValue(a):spotDisplayValue(a.metal,a.grams,a.purity);const c=costBasisDisplay(a);return c?v-c:null;};
       const gB=()=>{const v=b.sold?(b.sellPriceUSD||0)*(rates[currency]||1):spotDisplayValue(b.metal,b.grams,b.purity);const c=costBasisDisplay(b);return c?v-c:null;};
       const ga=gA(),gb=gB();
       if(ga===null&&gb===null)return 0;if(ga===null)return 1;if(gb===null)return -1;
