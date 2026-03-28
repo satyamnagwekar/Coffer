@@ -2115,6 +2115,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         <div class="stat-card card-portfolio">
           <div class="stat-num" id="statValue">—</div>
           <div class="stat-lbl">Portfolio</div>
+          <div style="font-size:9px;color:rgba(253,248,240,.5);letter-spacing:.06em;margin-top:2px;font-family:'Jost',sans-serif">active + sold + gifted</div>
         </div>
       </div>
 
@@ -3469,7 +3470,6 @@ async function loginUser(user){
   setTimeout(() => authEl.classList.add('hidden'), 300);
   document.getElementById('appScreen').classList.add('active');
   refreshHeader();
-  refreshProfile();
   // Load items and alerts from server
   try{
     items=await api('GET','/items');
@@ -3479,6 +3479,7 @@ async function loginUser(user){
   }catch(e){priceAlerts=[];}
   updatePriceDisplay();
   updateAll();
+  refreshProfile();
   // Restore last active tab
   const savedTab = sessionStorage.getItem('myaurum_tab') || 'vault';
   const tabBtnMap = {vault:'navMyAurum',chart:'navChart',alerts:'navAlerts',profile:'navProfile'};
@@ -3757,10 +3758,15 @@ function refreshProfile(){
   const active=items.filter(i=>!i.sold&&!i.gifted).length;
   const sold=items.filter(i=>i.sold).length;
   const gifted=items.filter(i=>i.gifted).length;
+  // Total value: active spot + sold realised + gifted at gift value
   let portVal='—';
-  if(active>0){
-    const v=items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0);
-    portVal=(benchmark==='MCX'?'₹':(SYMBOLS[currency]||currency+' '))+(v>=10000?(v/1000).toFixed(0)+'k':v.toFixed(0));
+  const activeVal=items.filter(i=>!i.sold&&!i.gifted).reduce((s,i)=>s+spotDisplayValue(i.metal,i.grams,i.purity),0);
+  const soldVal=items.filter(i=>i.sold).reduce((s,i)=>s+(i.sellPriceUSD||0)*(rates[currency]||1),0);
+  const giftedVal=items.filter(i=>i.gifted).reduce((s,i)=>s+(i.giftValueUSD||0)*(rates[currency]||1),0);
+  const totalPortVal=activeVal+soldVal+giftedVal;
+  if(items.length>0){
+    const sym=benchmark==='MCX'?'₹':(SYMBOLS[currency]||currency+' ');
+    portVal=sym+(totalPortVal>=10000?(totalPortVal/1000).toFixed(0)+'k':totalPortVal.toFixed(0));
   }
   document.getElementById('statItems').textContent=active;
   document.getElementById('statSold').textContent=sold;
