@@ -289,6 +289,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* ══════════════════════════════════════════
    DESKTOP LAYOUT (≥860px)
 ══════════════════════════════════════════ */
+#desktopPoles{display:none}
 @media (min-width:860px){
   /* Slightly darker outer background */
   body{background:var(--bg4)}
@@ -298,7 +299,6 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
     padding-left:max(24px, calc(50% - 426px));
     padding-right:max(24px, calc(50% - 426px));
   }
-  #desktopPoles{display:none}
   /* Full-height filigree columns */
   #desktopPoles{display:block;position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:9998;}
   #desktopPoles .dp{position:absolute;top:0;bottom:0;width:80px;}
