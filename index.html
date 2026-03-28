@@ -380,8 +380,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .succ-card{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0;padding:0;position:relative;width:100%;max-width:180px;transition:transform .18s}
 .succ-card:hover{transform:translateY(-4px)}
 .succ-card:active{transform:scale(.97)}
-.succ-circle{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:box-shadow .22s,border-color .22s;position:relative;margin-bottom:14px;border:1.5px solid}
-.succ-circle svg{width:38px;height:38px;position:relative;z-index:1}
+.succ-circle{width:160px;height:160px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:box-shadow .22s,border-color .22s;position:relative;margin-bottom:16px;border:1.5px solid}
+.succ-circle svg{width:50px;height:50px;position:relative;z-index:1}
 .sc-statement .succ-circle{background:rgba(139,105,20,.07);border-color:rgba(139,105,20,.25);color:var(--brand)}
 .sc-statement:hover .succ-circle{box-shadow:0 8px 28px rgba(139,105,20,.22);border-color:rgba(139,105,20,.5)}
 .sc-succession .succ-circle{background:rgba(155,107,196,.08);border-color:rgba(155,107,196,.28);color:#9B6BC4}
@@ -2123,11 +2123,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         <div class="succ-cards" id="succCards">
           <button class="succ-card sc-statement" onclick="generateHoldingsStatement()">
             <div class="succ-circle">
-              <div class="succ-tooltip">Your holdings, formatted for your CA</div>
+              <div class="succ-tooltip">Holdings, values &amp; cost basis — formatted for advisors</div>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             </div>
             <div class="succ-title">Holdings Statement</div>
-            <div class="succ-desc">For your CA</div>
+            <div class="succ-desc">For records &amp; advisors</div>
           </button>
           <button class="succ-card sc-succession" onclick="exportSuccessionPDF()">
             <div class="succ-circle">
