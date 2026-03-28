@@ -1863,59 +1863,6 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <button class="htab" onclick="setHTab('gifted',this)">Gifted</button>
     </div>
 
-    <!-- ── Succession & Sharing Actions ── -->
-    <div class="succ-cards" id="succCards" style="display:none">
-      <button class="succ-card sc-statement" onclick="generateHoldingsStatement()">
-        <div class="succ-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        </div>
-        <div class="succ-body">
-          <div class="succ-title">Holdings Statement</div>
-          <div class="succ-desc">Your holdings, formatted for your records or CA</div>
-        </div>
-        <div class="succ-chevron">›</div>
-      </button>
-      <button class="succ-card sc-succession" onclick="exportSuccessionPDF()">
-        <div class="succ-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-        </div>
-        <div class="succ-body">
-          <div class="succ-title">Succession Document</div>
-          <div class="succ-desc">A document your family can act on</div>
-        </div>
-        <div class="succ-chevron">›</div>
-      </button>
-      <button class="succ-card sc-share" onclick="toggleSuccSharePanel()">
-        <div class="succ-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-        </div>
-        <div class="succ-body">
-          <div class="succ-title">Share Portfolio</div>
-          <div class="succ-desc">A live link for your spouse, lawyer, or heir — can be revoked at any time</div>
-        </div>
-        <div class="succ-chevron" id="succShareChevron">›</div>
-      </button>
-    </div>
-    <!-- Share expand panel -->
-    <div class="succ-share-panel" id="succSharePanel">
-      <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:6px;letter-spacing:.04em;font-family:'Jost',sans-serif">Share your live portfolio</div>
-      <div style="font-size:11px;color:var(--text-dim);line-height:1.75;margin-bottom:14px;font-family:'Jost',sans-serif">A private link that shows your current holdings and live values — always up to date. Share it with a spouse, adult child, CA, or estate planner. No login required to view.<br><br>If something were to happen to you unexpectedly, the people who matter most will know exactly what your family holds and what it is worth.</div>
-      <div id="succLinkBox" style="display:none;margin-bottom:10px">
-        <div style="display:flex;gap:8px;align-items:center">
-          <input id="succLinkInput" type="text" readonly style="flex:1;font-size:11px;padding:8px 10px;border:1.5px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text-dim);font-family:'Jost',sans-serif">
-          <button onclick="copySuccShareLink()" style="padding:8px 14px;background:var(--brand);color:#FDF8F0;border:none;border-radius:6px;font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;white-space:nowrap;letter-spacing:.04em">Copy</button>
-        </div>
-        <button onclick="revokeSuccShareLink()" style="margin-top:8px;background:transparent;border:none;color:var(--red);font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;padding:0;letter-spacing:.04em">✕ Revoke link</button>
-      </div>
-      <div id="succGenerateSection">
-        <div style="background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.2);border-radius:8px;padding:14px;text-align:center">
-          <div style="font-size:13px;color:var(--brand);font-family:'Cormorant Garamond',serif;font-weight:400;letter-spacing:.04em;margin-bottom:4px">MyAurum Premium</div>
-          <div style="font-size:11px;color:var(--text-dim);line-height:1.65;margin-bottom:12px;font-family:'Jost',sans-serif">Live portfolio sharing is a premium feature. Unlimited holdings, share links, and advanced succession tools.</div>
-          <button onclick="premiumWaitlist()" style="padding:9px 20px;background:var(--brand);color:#FDF8F0;border:none;border-radius:20px;font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.06em">Upgrade to Premium →</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Held By grouped view (shown when toggled) -->
     <div id="groupedPLSection" style="display:none;margin:0 14px 14px"></div>
 
@@ -2220,6 +2167,62 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 
       <!-- HEIRS SECTION — premium only -->
       <div class="profile-section" id="heirsSection"></div>
+
+      <!-- ── Succession & Sharing Actions ── -->
+      <div class="profile-section" style="padding:16px 0 0;border-bottom:none">
+        <div class="profile-section-title" style="padding:0 20px 12px">Succession &amp; Sharing</div>
+        <div class="succ-cards" id="succCards" style="margin:0 20px 4px">
+          <button class="succ-card sc-statement" onclick="generateHoldingsStatement()">
+            <div class="succ-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div class="succ-body">
+              <div class="succ-title">Holdings Statement</div>
+              <div class="succ-desc">Your holdings, formatted for your records or CA</div>
+            </div>
+            <div class="succ-chevron">›</div>
+          </button>
+          <button class="succ-card sc-succession" onclick="exportSuccessionPDF()">
+            <div class="succ-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            </div>
+            <div class="succ-body">
+              <div class="succ-title">Succession Document</div>
+              <div class="succ-desc">A document your family can act on</div>
+            </div>
+            <div class="succ-chevron">›</div>
+          </button>
+          <button class="succ-card sc-share" onclick="toggleSuccSharePanel()">
+            <div class="succ-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            </div>
+            <div class="succ-body">
+              <div class="succ-title">Share Portfolio</div>
+              <div class="succ-desc">A live link for your spouse, lawyer, or heir — can be revoked at any time</div>
+            </div>
+            <div class="succ-chevron" id="succShareChevron">›</div>
+          </button>
+        </div>
+        <!-- Share expand panel -->
+        <div class="succ-share-panel" id="succSharePanel" style="margin:0 20px 8px">
+          <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:6px;letter-spacing:.04em;font-family:'Jost',sans-serif">Share your live portfolio</div>
+          <div style="font-size:11px;color:var(--text-dim);line-height:1.75;margin-bottom:14px;font-family:'Jost',sans-serif">A private link that shows your current holdings and live values — always up to date. Share it with a spouse, adult child, CA, or estate planner. No login required to view.<br><br>If something were to happen to you unexpectedly, the people who matter most will know exactly what your family holds and what it is worth.</div>
+          <div id="succLinkBox" style="display:none;margin-bottom:10px">
+            <div style="display:flex;gap:8px;align-items:center">
+              <input id="succLinkInput" type="text" readonly style="flex:1;font-size:11px;padding:8px 10px;border:1.5px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text-dim);font-family:'Jost',sans-serif">
+              <button onclick="copySuccShareLink()" style="padding:8px 14px;background:var(--brand);color:#FDF8F0;border:none;border-radius:6px;font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;white-space:nowrap;letter-spacing:.04em">Copy</button>
+            </div>
+            <button onclick="revokeSuccShareLink()" style="margin-top:8px;background:transparent;border:none;color:var(--red);font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;padding:0;letter-spacing:.04em">✕ Revoke link</button>
+          </div>
+          <div id="succGenerateSection">
+            <div style="background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.2);border-radius:8px;padding:14px;text-align:center">
+              <div style="font-size:13px;color:var(--brand);font-family:'Cormorant Garamond',serif;font-weight:400;letter-spacing:.04em;margin-bottom:4px">MyAurum Premium</div>
+              <div style="font-size:11px;color:var(--text-dim);line-height:1.65;margin-bottom:12px;font-family:'Jost',sans-serif">Live portfolio sharing is a premium feature. Unlimited holdings, share links, and advanced succession tools.</div>
+              <button onclick="premiumWaitlist()" style="padding:9px 20px;background:var(--brand);color:#FDF8F0;border:none;border-radius:20px;font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.06em">Upgrade to Premium →</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- VAULT NOTES — premium only -->
       <div class="profile-section" id="vaultNotesSection"></div>
@@ -4083,8 +4086,7 @@ function updateSummary(){
   // Show portfolio actions strip when user has any items
   const actionsEl=document.getElementById('portfolioActions');
   if(actionsEl) actionsEl.style.display=items.length?'grid':'none';
-  const succCardsEl=document.getElementById('succCards');
-  if(succCardsEl) succCardsEl.style.display=items.length?'grid':'none';
+
   const pEl=document.getElementById('totalPnl'),pPct=document.getElementById('totalPnlPct');
   if(pD>0){const g=spD-pD,p=(g/pD)*100,s=g>=0?'+':'';pEl.textContent=s+fmtDisp(g);pEl.className='split-val pnl '+(g>=0?'pos':'neg');if(pPct)pPct.textContent=s+p.toFixed(1)+'%'}
   else{pEl.textContent='—';pEl.className='split-val pnl';if(pPct)pPct.textContent='add cost to track'}
