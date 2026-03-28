@@ -376,12 +376,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 #portfolioActions button:hover{border-color:var(--border2) !important;box-shadow:0 2px 10px rgba(0,0,0,.08)}
 
 /* ── Succession action cards ── */
-.succ-cards{display:grid;grid-template-columns:1fr 1fr;gap:24px 16px;margin:16px 20px 8px;justify-items:center}
-.succ-card{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0;padding:0;position:relative;width:100%;max-width:140px;transition:transform .18s}
-.succ-card:hover{transform:translateY(-3px)}
+.succ-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 20px 8px;justify-items:center}
+.succ-card{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0;padding:0;position:relative;width:100%;max-width:180px;transition:transform .18s}
+.succ-card:hover{transform:translateY(-4px)}
 .succ-card:active{transform:scale(.97)}
-.succ-circle{width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:box-shadow .22s,border-color .22s;position:relative;margin-bottom:12px;border:1.5px solid}
-.succ-circle svg{width:28px;height:28px;position:relative;z-index:1}
+.succ-circle{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:box-shadow .22s,border-color .22s;position:relative;margin-bottom:14px;border:1.5px solid}
+.succ-circle svg{width:38px;height:38px;position:relative;z-index:1}
 .sc-statement .succ-circle{background:rgba(139,105,20,.07);border-color:rgba(139,105,20,.25);color:var(--brand)}
 .sc-statement:hover .succ-circle{box-shadow:0 8px 28px rgba(139,105,20,.22);border-color:rgba(139,105,20,.5)}
 .sc-succession .succ-circle{background:rgba(155,107,196,.08);border-color:rgba(155,107,196,.28);color:#9B6BC4}
@@ -396,8 +396,6 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .succ-tooltip{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:rgba(44,32,8,.92);color:#F5E6C0;font-family:'Jost',sans-serif;font-size:11px;padding:7px 12px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .18s;z-index:10;letter-spacing:.03em}
 .succ-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(44,32,8,.92)}
 .succ-card:hover .succ-tooltip{opacity:1}
-/* third circle centred spanning both columns */
-.succ-card.succ-last{grid-column:1/-1;justify-self:center}
 /* Share expand panel */
 .succ-share-panel{display:none;margin:4px 20px 8px;padding:18px;background:#fff;border:1.5px solid rgba(26,122,74,.25);border-radius:var(--radius)}
 #spotCardsGrid > div:nth-child(1):hover{background:rgba(139,105,20,.13);border-color:rgba(139,105,20,.55);box-shadow:0 8px 32px rgba(184,146,26,.45)}
@@ -921,6 +919,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .modal-title{font-size:22px}
   .chart-headline{font-size:30px}
   .alerts-title{font-size:28px}
+  
+  .succ-cards{grid-template-columns:1fr 1fr;gap:20px 12px;margin:16px 14px 8px}
+  .succ-card.succ-share-wrap{grid-column:1/-1;justify-self:center}
+  .succ-circle{width:90px;height:90px}
+  .succ-circle svg{width:28px;height:28px}
   .profile-section{padding:16px}
   .auth-about-two-col{grid-template-columns:1fr !important;gap:28px !important}
   .trust-grid{grid-template-columns:1fr 1fr !important}
@@ -2134,7 +2137,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
             <div class="succ-title">Succession Document</div>
             <div class="succ-desc">For your family</div>
           </button>
-          <button class="succ-card sc-share succ-last" onclick="toggleSuccSharePanel()">
+          <button class="succ-card sc-share succ-share-wrap" onclick="toggleSuccSharePanel()">
             <div class="succ-circle">
               <div class="succ-tooltip">Live link · revocable at any time</div>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
