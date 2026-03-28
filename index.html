@@ -376,38 +376,30 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 #portfolioActions button:hover{border-color:var(--border2) !important;box-shadow:0 2px 10px rgba(0,0,0,.08)}
 
 /* ── Succession action cards ── */
-.succ-cards{display:grid;grid-template-columns:1fr;gap:10px;margin:0 14px 14px}
-.succ-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:18px 20px;cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .15s;position:relative;overflow:hidden;display:flex;align-items:flex-start;gap:14px}
-.succ-card:active{transform:scale(.99)}
-.succ-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s}
-.succ-card:hover{transform:translateY(-2px)}
-.succ-card.sc-statement{border-left:3px solid var(--brand)}
-.succ-card.sc-statement:hover{border-color:rgba(139,105,20,.5);box-shadow:0 6px 24px rgba(139,105,20,.15)}
-.succ-card.sc-statement::before{background:linear-gradient(135deg,rgba(139,105,20,.04),transparent 60%)}
-.succ-card.sc-statement:hover::before{opacity:1}
-.succ-card.sc-succession{border-left:3px solid #9B6BC4}
-.succ-card.sc-succession:hover{border-color:rgba(155,107,196,.5);box-shadow:0 6px 24px rgba(155,107,196,.15)}
-.succ-card.sc-succession::before{background:linear-gradient(135deg,rgba(155,107,196,.04),transparent 60%)}
-.succ-card.sc-succession:hover::before{opacity:1}
-.succ-card.sc-share{border-left:3px solid var(--green)}
-.succ-card.sc-share:hover{border-color:rgba(26,122,74,.5);box-shadow:0 6px 24px rgba(26,122,74,.12)}
-.succ-card.sc-share::before{background:linear-gradient(135deg,rgba(26,122,74,.04),transparent 60%)}
-.succ-card.sc-share:hover::before{opacity:1}
-.succ-icon{width:48px;height:48px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.succ-icon svg{width:24px;height:24px}
-.sc-statement .succ-icon{background:rgba(139,105,20,.08);color:var(--brand)}
-.sc-succession .succ-icon{background:rgba(155,107,196,.1);color:#9B6BC4}
-.sc-share .succ-icon{background:rgba(26,122,74,.08);color:var(--green)}
-.succ-body{flex:1;min-width:0}
-.succ-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;letter-spacing:.02em;margin-bottom:4px}
+.succ-cards{display:grid;grid-template-columns:1fr 1fr;gap:24px 16px;margin:16px 20px 8px;justify-items:center}
+.succ-card{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0;padding:0;position:relative;width:100%;max-width:140px;transition:transform .18s}
+.succ-card:hover{transform:translateY(-3px)}
+.succ-card:active{transform:scale(.97)}
+.succ-circle{width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:box-shadow .22s,border-color .22s;position:relative;margin-bottom:12px;border:1.5px solid}
+.succ-circle svg{width:28px;height:28px;position:relative;z-index:1}
+.sc-statement .succ-circle{background:rgba(139,105,20,.07);border-color:rgba(139,105,20,.25);color:var(--brand)}
+.sc-statement:hover .succ-circle{box-shadow:0 8px 28px rgba(139,105,20,.22);border-color:rgba(139,105,20,.5)}
+.sc-succession .succ-circle{background:rgba(155,107,196,.08);border-color:rgba(155,107,196,.28);color:#9B6BC4}
+.sc-succession:hover .succ-circle{box-shadow:0 8px 28px rgba(155,107,196,.22);border-color:rgba(155,107,196,.55)}
+.sc-share .succ-circle{background:rgba(26,122,74,.07);border-color:rgba(26,122,74,.25);color:var(--green)}
+.sc-share:hover .succ-circle{box-shadow:0 8px 28px rgba(26,122,74,.18);border-color:rgba(26,122,74,.5)}
+.succ-title{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400;letter-spacing:.02em;text-align:center;line-height:1.2;margin-bottom:4px}
 .sc-statement .succ-title{color:var(--brand)}
 .sc-succession .succ-title{color:#9B6BC4}
 .sc-share .succ-title{color:var(--green)}
-.succ-desc{font-size:11px;color:var(--text-dim);line-height:1.65}
-.succ-chevron{color:var(--border2);font-size:16px;align-self:center;flex-shrink:0;transition:transform .18s}
-.succ-card:hover .succ-chevron{transform:translateX(3px)}
-/* Share expand panel inside vault */
-.succ-share-panel{display:none;margin:-4px 14px 14px;padding:18px;background:#fff;border:1.5px solid rgba(26,122,74,.25);border-top:none;border-radius:0 0 var(--radius) var(--radius)}
+.succ-desc{font-size:10px;color:var(--text-dim);text-align:center;letter-spacing:.04em}
+.succ-tooltip{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:rgba(44,32,8,.92);color:#F5E6C0;font-family:'Jost',sans-serif;font-size:11px;padding:7px 12px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .18s;z-index:10;letter-spacing:.03em}
+.succ-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(44,32,8,.92)}
+.succ-card:hover .succ-tooltip{opacity:1}
+/* third circle centred spanning both columns */
+.succ-card.succ-last{grid-column:1/-1;justify-self:center}
+/* Share expand panel */
+.succ-share-panel{display:none;margin:4px 20px 8px;padding:18px;background:#fff;border:1.5px solid rgba(26,122,74,.25);border-radius:var(--radius)}
 #spotCardsGrid > div:nth-child(1):hover{background:rgba(139,105,20,.13);border-color:rgba(139,105,20,.55);box-shadow:0 8px 32px rgba(184,146,26,.45)}
 #spotCardsGrid > div:nth-child(2):hover{background:rgba(100,130,160,.13);border-color:rgba(100,130,160,.55);box-shadow:0 8px 32px rgba(100,130,160,.40)}
 #platSpotCard:hover{background:rgba(120,120,130,.13) !important;border-color:rgba(120,120,130,.55) !important;box-shadow:0 8px 32px rgba(120,120,130,.35)}
@@ -2125,36 +2117,30 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       </div>
 
       <div class="profile-section" style="padding:20px 0 4px;border-bottom:none">
-        <div class="succ-cards" id="succCards" style="margin:0 20px 4px">
+        <div class="succ-cards" id="succCards">
           <button class="succ-card sc-statement" onclick="generateHoldingsStatement()">
-            <div class="succ-icon">
+            <div class="succ-circle">
+              <div class="succ-tooltip">Your holdings, formatted for your CA</div>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             </div>
-            <div class="succ-body">
-              <div class="succ-title">Holdings Statement</div>
-              <div class="succ-desc">Your holdings, formatted for your records or CA</div>
-            </div>
-            <div class="succ-chevron">›</div>
+            <div class="succ-title">Holdings Statement</div>
+            <div class="succ-desc">For your CA</div>
           </button>
           <button class="succ-card sc-succession" onclick="exportSuccessionPDF()">
-            <div class="succ-icon">
+            <div class="succ-circle">
+              <div class="succ-tooltip">A document your family can act on</div>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
             </div>
-            <div class="succ-body">
-              <div class="succ-title">Succession Document</div>
-              <div class="succ-desc">A document your family can act on</div>
-            </div>
-            <div class="succ-chevron">›</div>
+            <div class="succ-title">Succession Document</div>
+            <div class="succ-desc">For your family</div>
           </button>
-          <button class="succ-card sc-share" onclick="toggleSuccSharePanel()">
-            <div class="succ-icon">
+          <button class="succ-card sc-share succ-last" onclick="toggleSuccSharePanel()">
+            <div class="succ-circle">
+              <div class="succ-tooltip">Live link · revocable at any time</div>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
             </div>
-            <div class="succ-body">
-              <div class="succ-title">Share Portfolio</div>
-              <div class="succ-desc">A live link for your spouse, lawyer, or heir — can be revoked at any time</div>
-            </div>
-            <div class="succ-chevron" id="succShareChevron">›</div>
+            <div class="succ-title">Share Portfolio</div>
+            <div class="succ-desc">Live · revocable</div>
           </button>
         </div>
         <div class="succ-share-panel" id="succSharePanel" style="margin:0 20px 8px">
