@@ -919,12 +919,13 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .chart-headline{font-size:30px}
   .alerts-title{font-size:28px}
   
-  .succ-cards{grid-template-columns:1fr 1fr;gap:20px 12px;margin:16px 14px 8px}
+  .succ-cards{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:16px;margin:12px 0 4px}
   .succ-tooltip{display:none !important}
-  .succ-card{max-width:120px}
-  .succ-card.succ-share-wrap{grid-column:1/-1;justify-self:center}
-  .succ-circle{width:90px !important;height:90px !important;min-width:90px;min-height:90px;border-radius:50% !important}
-  .succ-circle svg{width:28px !important;height:28px !important}
+  .succ-card{width:auto;max-width:none;flex:0 0 auto}
+  .succ-circle{width:96px;height:96px;min-width:96px;min-height:96px;border-radius:50% !important;margin-bottom:10px}
+  .succ-circle svg{width:30px;height:30px}
+  .succ-title{font-size:14px}
+  .succ-desc{font-size:9px}
   .profile-section{padding:16px}
   .auth-about-two-col{grid-template-columns:1fr !important;gap:28px !important}
   .trust-grid{grid-template-columns:1fr 1fr !important}
