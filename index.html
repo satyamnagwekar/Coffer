@@ -921,9 +921,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   
   .succ-cards{grid-template-columns:1fr 1fr;gap:20px 12px;margin:16px 14px 8px}
   .succ-tooltip{display:none !important}
+  .succ-card{max-width:120px}
   .succ-card.succ-share-wrap{grid-column:1/-1;justify-self:center}
-  .succ-circle{width:90px;height:90px}
-  .succ-circle svg{width:28px;height:28px}
+  .succ-circle{width:90px !important;height:90px !important;min-width:90px;min-height:90px;border-radius:50% !important}
+  .succ-circle svg{width:28px !important;height:28px !important}
   .profile-section{padding:16px}
   .auth-about-two-col{grid-template-columns:1fr !important;gap:28px !important}
   .trust-grid{grid-template-columns:1fr 1fr !important}
@@ -2131,7 +2132,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           </button>
         </div>
         </div>
-        <div class="succ-share-panel" id="succSharePanel" style="margin:0 20px 8px">
+        <div class="succ-share-panel" id="succSharePanel" style="display:none;margin:0 20px 8px">
           <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:6px;letter-spacing:.04em;font-family:'Jost',sans-serif">Share your live portfolio</div>
           <div style="font-size:11px;color:var(--text-dim);line-height:1.75;margin-bottom:14px;font-family:'Jost',sans-serif">A private link showing current holdings and live values. Share with a spouse, CA, or estate planner. No login required.<br><br>If something were to happen to you unexpectedly, the people who matter most will know exactly what your family holds.</div>
           <div id="succLinkBox" style="display:none;margin-bottom:10px">
