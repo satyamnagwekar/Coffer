@@ -1597,6 +1597,16 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 
 <div id="toastContainer"></div>
 
+<!-- Mobile action confirmation sheet -->
+<div id="mobileConfirmSheet" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(44,36,16,.45);backdrop-filter:blur(4px)" onclick="hideMobileConfirm()">
+  <div id="mobileConfirmBox" style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 40px;border-top:2px solid var(--brand)" onclick="event.stopPropagation()">
+    <div id="mobileConfirmTitle" style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;color:var(--text);margin-bottom:8px;text-align:center"></div>
+    <div id="mobileConfirmDesc" style="font-size:12px;color:var(--text-dim);line-height:1.7;text-align:center;margin-bottom:24px"></div>
+    <button id="mobileConfirmBtn" style="width:100%;padding:14px;background:var(--brand);color:#FDF8F0;border:none;border-radius:12px;font-family:'Jost',sans-serif;font-size:13px;letter-spacing:.08em;cursor:pointer;margin-bottom:10px"></button>
+    <button onclick="hideMobileConfirm()" style="width:100%;padding:12px;background:none;border:1.5px solid var(--border);border-radius:12px;font-family:'Jost',sans-serif;font-size:12px;color:var(--text-dim);cursor:pointer;letter-spacing:.06em">Cancel</button>
+  </div>
+</div>
+
 <!-- Exit overlay — shown when user hits back at root -->
 <div id="exitOverlay" style="display:none;position:fixed;inset:0;background:rgba(44,36,16,.6);backdrop-filter:blur(8px);z-index:2000;align-items:center;justify-content:center;padding:24px">
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px 24px;max-width:320px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.2)">
@@ -2114,7 +2124,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <div class="profile-section" style="padding:0;border-bottom:none">
         <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);margin:16px 20px 8px;padding:28px 16px 24px">
         <div class="succ-cards" id="succCards">
-          <div class="succ-card sc-statement" role="button" tabindex="0" onclick="generateHoldingsStatement()">
+          <div class="succ-card sc-statement" role="button" tabindex="0" onclick="showMobileConfirm('Holdings Statement','Your holdings, current values and cost basis — formatted as a document.','Generate Statement',generateHoldingsStatement)">
             <div class="succ-circle">
               <div class="succ-tooltip">Holdings, values &amp; cost basis — formatted for advisors</div>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -2122,7 +2132,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
             <div class="succ-title">Holdings Statement</div>
             <div class="succ-desc">For records &amp; advisors</div>
           </div>
-          <div class="succ-card sc-succession" role="button" tabindex="0" onclick="exportSuccessionPDF()">
+          <div class="succ-card sc-succession" role="button" tabindex="0" onclick="showMobileConfirm('Succession Document','A record your family can act on — nominees, holdings, and values at today\'s prices.','Generate Document',exportSuccessionPDF)">
             <div class="succ-circle">
               <div class="succ-tooltip">A document your family can act on</div>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
@@ -3969,6 +3979,20 @@ function revokeSuccShareLink(){
   document.getElementById('succLinkBox').style.display='none';
   document.getElementById('succGenerateSection').style.display='block';
   toggleSuccSharePanel();
+}
+
+function showMobileConfirm(title, desc, confirmLabel, onConfirm){
+  if(window.innerWidth > 600){ onConfirm(); return; }
+  document.getElementById('mobileConfirmTitle').textContent = title;
+  document.getElementById('mobileConfirmDesc').textContent = desc;
+  const btn = document.getElementById('mobileConfirmBtn');
+  btn.textContent = confirmLabel;
+  btn.onclick = () => { hideMobileConfirm(); onConfirm(); };
+  const sheet = document.getElementById('mobileConfirmSheet');
+  sheet.style.display = 'block';
+}
+function hideMobileConfirm(){
+  document.getElementById('mobileConfirmSheet').style.display = 'none';
 }
 
 function _shimmerPrices(){
