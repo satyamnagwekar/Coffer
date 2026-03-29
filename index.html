@@ -921,12 +921,17 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   
   .succ-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0 4px}
   .succ-tooltip{display:none !important}
-  .succ-card{width:100%;max-width:none}
-  .succ-circle{width:100%;height:120px;border-radius:16px !important;aspect-ratio:unset !important;margin-bottom:8px}
-  .succ-circle svg{width:32px !important;height:32px !important}
-  .succ-title{font-size:13px}
-  .succ-desc{font-size:10px}
-  .succ-card.succ-share-wrap{grid-column:1/-1;width:50%;justify-self:center}
+  .succ-card{width:100%;max-width:none;background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:16px 12px;align-items:flex-start}
+  .sc-statement.succ-card{border-left:3px solid var(--brand)}
+  .sc-succession.succ-card{border-left:3px solid #9B6BC4}
+  .sc-share.succ-card{border-left:3px solid var(--green)}
+  .succ-circle{width:36px;height:36px;border-radius:8px !important;aspect-ratio:unset !important;margin-bottom:10px;border-width:1px}
+  .succ-circle svg{width:20px !important;height:20px !important}
+  .succ-title{font-size:14px;text-align:left}
+  .succ-desc{font-size:10px;text-align:left}
+  .succ-card.succ-share-wrap{grid-column:1/-1;width:50%;justify-self:center;align-items:center}
+  .succ-card.succ-share-wrap .succ-title{text-align:center}
+  .succ-card.succ-share-wrap .succ-desc{text-align:center}
   .profile-section{padding:16px}
   .auth-about-two-col{grid-template-columns:1fr !important;gap:28px !important}
   .trust-grid{grid-template-columns:1fr 1fr !important}
@@ -2107,7 +2112,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 
       <div class="profile-section" style="padding:0;border-bottom:none">
         <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);margin:16px 20px 8px;padding:28px 16px 24px">
-        <div class="succ-cards" id="succCards" style="margin:0">
+        <div class="succ-cards" id="succCards">
           <div class="succ-card sc-statement" role="button" tabindex="0" onclick="generateHoldingsStatement()">
             <div class="succ-circle">
               <div class="succ-tooltip">Holdings, values &amp; cost basis — formatted for advisors</div>
