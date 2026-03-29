@@ -2161,11 +2161,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
             <button onclick="revokeSuccShareLink()" style="margin-top:8px;background:transparent;border:none;color:var(--red);font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;padding:0;letter-spacing:.04em">✕ Revoke link</button>
           </div>
           <div id="succGenerateSection">
-            <div style="background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.2);border-radius:8px;padding:14px;text-align:center">
-              <div style="font-size:13px;color:var(--brand);font-family:'Cormorant Garamond',serif;font-weight:400;letter-spacing:.04em;margin-bottom:4px">MyAurum Premium</div>
-              <div style="font-size:11px;color:var(--text-dim);line-height:1.65;margin-bottom:12px;font-family:'Jost',sans-serif">Live portfolio sharing is a premium feature. Unlimited holdings, share links, and advanced succession tools.</div>
-              <button onclick="premiumWaitlist()" style="padding:9px 20px;background:var(--brand);color:#FDF8F0;border:none;border-radius:20px;font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.06em">Upgrade to Premium →</button>
-            </div>
+            <button id="generateShareBtn" onclick="generateShareLink()" style="width:100%;padding:12px;background:var(--brand);color:#FDF8F0;border:none;border-radius:10px;font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.06em">Generate share link</button>
           </div>
         </div>
       </div>
@@ -3154,9 +3150,9 @@ async function generateShareLink(){
   btn.textContent = 'Generating…'; btn.disabled = true;
   try {
     const data = await api('POST', '/share/generate', {});
-    document.getElementById('shareLinkInput').value = data.url;
-    document.getElementById('shareLinkBox').style.display = 'block';
-    document.getElementById('generateShareBtn').style.display = 'none';
+    document.getElementById('succLinkInput').value = data.url;
+    document.getElementById('succLinkBox').style.display = 'block';
+    document.getElementById('succGenerateSection').style.display = 'none';
   } catch(e) {
     showToast('Could not generate link — try again', 'error');
     btn.textContent = 'Generate share link'; btn.disabled = false;
@@ -3957,16 +3953,17 @@ function toggleSuccSharePanel(){
   panel.style.display=open?'none':'block';
   if(chevron)chevron.textContent=open?'›':'∨';
   if(!open){
-    // Sync state from legacy share elements
-    const srcLink=document.getElementById('shareLinkInput');
-    const srcLinkBox=document.getElementById('shareLinkBox');
-    const srcGenSection=document.getElementById('shareGenerateSection');
-    const dstLink=document.getElementById('succLinkInput');
+    // Check if a share link was already generated this session
+    const existingLink=document.getElementById('succLinkInput').value;
     const dstLinkBox=document.getElementById('succLinkBox');
     const dstGenSection=document.getElementById('succGenerateSection');
-    if(srcLink&&dstLink) dstLink.value=srcLink.value;
-    if(dstLinkBox&&srcLinkBox) dstLinkBox.style.display=srcLink&&srcLink.value?'block':'none';
-    if(dstGenSection&&srcGenSection) dstGenSection.style.display=srcLink&&srcLink.value?'none':'block';
+    if(existingLink){
+      if(dstLinkBox) dstLinkBox.style.display='block';
+      if(dstGenSection) dstGenSection.style.display='none';
+    } else {
+      if(dstLinkBox) dstLinkBox.style.display='none';
+      if(dstGenSection) dstGenSection.style.display='block';
+    }
   }
 }
 function copySuccShareLink(){
