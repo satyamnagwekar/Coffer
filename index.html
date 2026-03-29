@@ -919,13 +919,14 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .chart-headline{font-size:30px}
   .alerts-title{font-size:28px}
   
-  .succ-cards{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:16px;margin:12px 0 4px}
+  .succ-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0 4px}
   .succ-tooltip{display:none !important}
-  .succ-card{width:auto;max-width:none;flex:0 0 auto}
-  .succ-circle{width:96px !important;height:96px !important;aspect-ratio:1 !important;min-width:96px;min-height:96px;border-radius:50% !important;margin-bottom:10px;flex-shrink:0}
-  .succ-circle svg{width:30px !important;height:30px !important;flex-shrink:0}
-  .succ-title{font-size:14px}
-  .succ-desc{font-size:9px}
+  .succ-card{width:100%;max-width:none}
+  .succ-circle{width:100%;height:120px;border-radius:16px !important;aspect-ratio:unset !important;margin-bottom:8px}
+  .succ-circle svg{width:32px !important;height:32px !important}
+  .succ-title{font-size:13px}
+  .succ-desc{font-size:10px}
+  .succ-card.succ-share-wrap{grid-column:1/-1;width:50%;justify-self:center}
   .profile-section{padding:16px}
   .auth-about-two-col{grid-template-columns:1fr !important;gap:28px !important}
   .trust-grid{grid-template-columns:1fr 1fr !important}
@@ -2107,30 +2108,30 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <div class="profile-section" style="padding:0;border-bottom:none">
         <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);margin:16px 20px 8px;padding:28px 16px 24px">
         <div class="succ-cards" id="succCards" style="margin:0">
-          <button class="succ-card sc-statement" onclick="generateHoldingsStatement()">
+          <div class="succ-card sc-statement" role="button" tabindex="0" onclick="generateHoldingsStatement()">
             <div class="succ-circle">
               <div class="succ-tooltip">Holdings, values &amp; cost basis — formatted for advisors</div>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             </div>
             <div class="succ-title">Holdings Statement</div>
             <div class="succ-desc">For records &amp; advisors</div>
-          </button>
-          <button class="succ-card sc-succession" onclick="exportSuccessionPDF()">
+          </div>
+          <div class="succ-card sc-succession" role="button" tabindex="0" onclick="exportSuccessionPDF()">
             <div class="succ-circle">
               <div class="succ-tooltip">A document your family can act on</div>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
             </div>
             <div class="succ-title">Succession Document</div>
             <div class="succ-desc">For your family</div>
-          </button>
-          <button class="succ-card sc-share succ-share-wrap" onclick="toggleSuccSharePanel()">
+          </div>
+          <div class="succ-card sc-share succ-share-wrap" role="button" tabindex="0" onclick="toggleSuccSharePanel()">
             <div class="succ-circle">
               <div class="succ-tooltip">Live link · revocable at any time</div>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
             </div>
             <div class="succ-title">Share Portfolio</div>
             <div class="succ-desc">Live · revocable</div>
-          </button>
+          </div>
         </div>
         </div>
         <div class="succ-share-panel" id="succSharePanel" style="display:none;margin:0 20px 8px">
