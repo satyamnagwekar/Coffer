@@ -1472,9 +1472,8 @@ async function sendWeeklyDigests() {
         const spotUSD = m === 'gold' ? priceCache.gold : m === 'platinum' ? (priceCache.platinum||980) : priceCache.silver;
         let val;
         if (isMCX && m !== 'platinum') {
-          val = oz * priceCache.gold * (m === 'gold' ? 1 : 0) * INDIA_FACTOR_WEEKLY * 31.1035 / 10;
-          // Redo properly
-          val = (item.grams * item.purity / 10) * (m === 'gold' ? priceCache.gold : priceCache.silver) * priceCache.usd_inr * 1.15 * 1.03;
+          // Match app formula: oz * spotUSD * INR * 1.054
+          val = oz * (m === 'gold' ? priceCache.gold : priceCache.silver) * priceCache.usd_inr * 1.054;
         } else {
           val = oz * spotUSD * (rates[currency] || 1);
         }
@@ -1497,7 +1496,7 @@ async function sendWeeklyDigests() {
           const lastSpot = m === 'gold' ? lastWeekPrices.gold : lastWeekPrices.silver;
           let lastVal;
           if (isMCX && m !== 'platinum') {
-            lastVal = (item.grams * item.purity / 10) * lastSpot * priceCache.usd_inr * 1.15 * 1.03;
+            lastVal = oz * lastSpot * priceCache.usd_inr * 1.054;
           } else {
             lastVal = oz * lastSpot * (rates[currency] || 1);
           }
@@ -1518,10 +1517,10 @@ async function sendWeeklyDigests() {
 
       // Spot strings
       const goldSpotStr = isMCX
-        ? `₹${Math.round(priceCache.gold * priceCache.usd_inr * INDIA_FACTOR_WEEKLY).toLocaleString('en-IN')}/10g (MCX)`
+        ? `₹${Math.round(priceCache.gold / 31.1035 * 10 * priceCache.usd_inr * 1.054).toLocaleString('en-IN')}/10g (MCX)`
         : `$${priceCache.gold.toFixed(2)}/oz (COMEX)`;
       const silverSpotStr = isMCX
-        ? `₹${Math.round(priceCache.silver * priceCache.usd_inr * INDIA_FACTOR_WEEKLY).toLocaleString('en-IN')}/10g (MCX)`
+        ? `₹${Math.round(priceCache.silver / 31.1035 * 10 * priceCache.usd_inr * 1.054).toLocaleString('en-IN')}/10g (MCX)`
         : `$${priceCache.silver.toFixed(2)}/oz (COMEX)`;
 
       // Timestamp
@@ -2012,7 +2011,8 @@ app.get('/share/:token', async (req, res) => {
     function spotVal(metal, grams, purity) {
       const oz = grams * purity / 31.1035;
       if (isMCX && metal !== 'platinum') {
-        return (grams * purity / 10) * (metal === 'gold' ? gold : silver) * usdInr * 1.15 * 1.03;
+        // Match app formula: oz * spotUSD * INR * 1.054
+        return oz * (metal === 'gold' ? gold : silver) * usdInr * 1.054;
       }
       return oz * (metal === 'gold' ? gold : metal === 'silver' ? silver : (priceCache.platinum||980));
     }
