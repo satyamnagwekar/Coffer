@@ -1752,7 +1752,7 @@ app.get('/terms', (req, res) => {
 });
 
 // ─────────────────────────────────────────
-//  VAULT NOTES (ENCRYPTED)
+//  ESTATE NOTES (CLIENT-ENCRYPTED)
 // ─────────────────────────────────────────
 
 app.get('/api/vault-notes', requireAuth, async (req, res) => {
@@ -1784,6 +1784,11 @@ app.post('/api/vault-notes', requireAuth, async (req, res) => {
   for (const n of notes) {
     if (!n.label || typeof n.label !== 'string' || !n.value || typeof n.value !== 'string') {
       return res.status(400).json({ error: 'Each note must have a label and value' });
+    }
+    if (n.label.length > 60) return res.status(400).json({ error: 'Label must be 60 characters or fewer' });
+    // Value may be client-side encrypted (vlt:v1: prefix) — only limit plaintext values
+    if (!n.value.startsWith('vlt:v1:') && n.value.length > 300) {
+      return res.status(400).json({ error: 'Value must be 300 characters or fewer' });
     }
   }
   try {
