@@ -211,6 +211,31 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .vault-notes-wrap{position:relative}
 .vault-notes-textarea{width:100%;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Jost',sans-serif;font-size:12px;color:var(--text);resize:vertical;min-height:90px;box-sizing:border-box}
 .notes-hint{font-size:10px;color:var(--text-dim);margin-top:5px;line-height:1.5}
+/* Vault Notes redesign */
+.vn-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.vn-title{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-mid);font-family:'Jost',sans-serif;font-weight:500}
+.vn-count{font-size:10px;color:var(--text-dim);font-family:'Jost',sans-serif}
+.vn-desc{font-size:11px;color:var(--text-dim);line-height:1.65;margin-bottom:16px;font-family:'Jost',sans-serif}
+.vn-category-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.vn-cat-btn{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:border-color .18s,background .18s;font-family:'Jost',sans-serif}
+.vn-cat-btn:hover{border-color:var(--border-gold);background:rgba(139,105,20,.04)}
+.vn-cat-btn.selected{border-color:var(--brand);background:rgba(139,105,20,.07)}
+.vn-cat-icon{font-size:20px;line-height:1}
+.vn-cat-label{font-size:9px;letter-spacing:.04em;color:var(--text-dim);text-align:center;line-height:1.3}
+.vn-add-form{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;display:none}
+.vn-add-form.open{display:block}
+.vn-add-form input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'Jost',sans-serif;background:var(--bg3);color:var(--text);box-sizing:border-box;margin-bottom:8px}
+.vn-add-form input:focus{outline:none;border-color:var(--brand)}
+.vn-add-btns{display:flex;gap:8px}
+.vn-cards{display:flex;flex-direction:column;gap:8px}
+.vn-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;position:relative}
+.vn-card-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px;font-family:'Jost',sans-serif;display:flex;align-items:center;gap:6px}
+.vn-card-value{font-size:14px;color:var(--text);font-family:'Jost',sans-serif;word-break:break-word;line-height:1.5}
+.vn-card-value.masked{letter-spacing:.15em;color:var(--text-dim);user-select:none;font-size:16px}
+.vn-card-actions{position:absolute;top:10px;right:10px;display:flex;gap:4px}
+.vn-card-btn{background:none;border:none;cursor:pointer;font-size:13px;color:var(--text-dim);padding:3px 6px;border-radius:4px;font-family:'Jost',sans-serif;transition:color .15s}
+.vn-card-btn:hover{color:var(--text)}
+.vn-reveal-hint{font-size:10px;color:var(--text-dim);text-align:center;margin-top:12px;font-family:'Jost',sans-serif;line-height:1.6}
 /* Upgrade modal */
 .upgrade-modal{max-width:360px}
 .upgrade-modal .modal-title{text-align:center;font-size:20px;margin-bottom:4px}
@@ -3076,6 +3101,7 @@ async function doLogin(){
       return;
     }
     setToken(data.token);
+    await deriveVaultKey(pw, data.user.id);
     loginUser(data.user);
   }catch(e){
     btn.disabled=false;btn.textContent='Open MyAurum →';
@@ -3184,97 +3210,229 @@ async function revokeShareLink(){
 }
 
 // ══════════════════════════════════════════
-// VAULT NOTES
+// VAULT NOTES — CLIENT-SIDE ENCRYPTION
 // ══════════════════════════════════════════
 let vaultNotes = [];
+let _vaultCryptoKey = null; // AES-GCM key, lives only in RAM for session duration
+
+// Derive AES-GCM key from password + userId using PBKDF2
+async function deriveVaultKey(password, userId) {
+  try {
+    const enc = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']
+    );
+    _vaultCryptoKey = await crypto.subtle.deriveKey(
+      { name:'PBKDF2', salt:enc.encode('myaurum-vault-v1-'+userId), iterations:100000, hash:'SHA-256' },
+      keyMaterial,
+      { name:'AES-GCM', length:256 },
+      false,
+      ['encrypt','decrypt']
+    );
+  } catch(e) {
+    console.error('[vault-crypto] Key derivation failed:', e);
+    _vaultCryptoKey = null;
+  }
+}
+
+async function vaultEncrypt(plaintext) {
+  if (!_vaultCryptoKey) throw new Error('No vault key — please log in again');
+  const enc = new TextEncoder();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ciphertext = await crypto.subtle.encrypt(
+    { name:'AES-GCM', iv },
+    _vaultCryptoKey,
+    enc.encode(plaintext)
+  );
+  // Prepend iv to ciphertext, encode as base64
+  const combined = new Uint8Array(iv.byteLength + ciphertext.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(ciphertext), iv.byteLength);
+  return 'vlt:v1:' + btoa(String.fromCharCode(...combined));
+}
+
+async function vaultDecrypt(encoded) {
+  if (!encoded) return encoded;
+  if (!encoded.startsWith('vlt:v1:')) return encoded; // legacy plaintext passthrough
+  if (!_vaultCryptoKey) throw new Error('No vault key');
+  try {
+    const combined = Uint8Array.from(atob(encoded.slice(7)), c => c.charCodeAt(0));
+    const iv = combined.slice(0, 12);
+    const ciphertext = combined.slice(12);
+    const dec = new TextDecoder();
+    const plain = await crypto.subtle.decrypt({ name:'AES-GCM', iv }, _vaultCryptoKey, ciphertext);
+    return dec.decode(plain);
+  } catch(e) {
+    console.error('[vault-crypto] Decryption failed:', e);
+    return '⚠ Could not decrypt';
+  }
+}
+
+function clearVaultKey() {
+  _vaultCryptoKey = null;
+  vaultNotes = [];
+}
 
 async function loadVaultNotes(){
   const sec = document.getElementById('vaultNotesSection');
   if(!sec) return;
   try {
     const data = await api('GET', '/vault-notes');
-    vaultNotes = data.notes || [];
+    const raw = data.notes || [];
+    // Decrypt each note value client-side
+    const decrypted = await Promise.all(raw.map(async n => ({
+      ...n,
+      category: n.category || 'other',
+      value: await vaultDecrypt(n.value),
+      _revealed: false,
+    })));
+    vaultNotes = decrypted;
   } catch(e) {
     vaultNotes = [];
   }
+  _vnSelectedCat = null;
   renderVaultNotes();
 }
 
-let _vaultNotesRevealed = false;
-let _vaultNotesTimer = null;
-
-function revealVaultNotes(){
-  _vaultNotesRevealed = true;
-  renderVaultNotes();
-  clearTimeout(_vaultNotesTimer);
-  _vaultNotesTimer = setTimeout(() => {
-    _vaultNotesRevealed = false;
-    renderVaultNotes();
-  }, 60000);
+function hideAllVaultNotes(){
+  vaultNotes.forEach(n => n._revealed = false);
+  _vnSelectedCat = null;
 }
+
+const VN_CATEGORIES = [
+  {id:'bank',    icon:'🏦', label:'Bank Locker'},
+  {id:'safe',    icon:'🔐', label:'Safe'},
+  {id:'lawyer',  icon:'⚖️',  label:'Lawyer'},
+  {id:'will',    icon:'📋', label:'Will'},
+  {id:'insurance',icon:'🛡️', label:'Insurance'},
+  {id:'emergency',icon:'🆘', label:'Emergency'},
+  {id:'ca',      icon:'🧾', label:'CA / Tax'},
+  {id:'other',   icon:'📁', label:'Other'},
+];
+let _vnSelectedCat = null;
 
 function renderVaultNotes(){
   const sec = document.getElementById('vaultNotesSection');
   if(!sec) return;
+  const FREE_LIMIT = 4;
+  const atLimit = vaultNotes.length >= FREE_LIMIT;
+  // Warn if no crypto key available
+  if (!_vaultCryptoKey && vaultNotes.length === 0) {
+    sec.innerHTML = `<div style="padding:0 20px 20px"><div class="vn-header"><span class="vn-title">Vault Notes</span></div><div class="vn-desc" style="margin-top:8px">Session key unavailable — please sign out and sign back in to use vault notes.</div></div>`;
+    return;
+  }
 
-  const rows = vaultNotes.map((n, i) => {
-    const displayVal = _vaultNotesRevealed
-      ? `<span style="word-break:break-word;max-width:180px;display:inline-block">${n.value.replace(/</g,'&lt;')}</span>`
-      : `<span style="letter-spacing:.1em;color:var(--text-dim);user-select:none">••••••••</span>`;
+  // Category grid
+  const catGrid = VN_CATEGORIES.map(c => `
+    <button class="vn-cat-btn${_vnSelectedCat===c.id?' selected':''}" onclick="vnSelectCat('${c.id}')" ${atLimit?'disabled title="Free plan limit reached"':''}>
+      <span class="vn-cat-icon">${c.icon}</span>
+      <span class="vn-cat-label">${c.label}</span>
+    </button>`).join('');
+
+  // Add form
+  const isOther = _vnSelectedCat === 'other';
+  const selCat = VN_CATEGORIES.find(c=>c.id===_vnSelectedCat);
+  const addForm = _vnSelectedCat ? `
+    <div class="vn-add-form open" id="vnAddForm">
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;font-family:'Jost',sans-serif">${selCat?.icon} ${selCat?.label}${isOther?' — describe it below':''}</div>
+      ${isOther?`<input id="vnCustomLabel" type="text" placeholder="Label (e.g. Property deed, Key location…)" autocomplete="off">`:''}
+      <input id="vnNoteValue" type="text" placeholder="${getVnPlaceholder(_vnSelectedCat)}" autocomplete="off">
+      <div class="vn-add-btns">
+        <button onclick="addVaultNote()" style="flex:1;padding:9px;background:var(--brand);color:#FDF8F0;border:none;border-radius:8px;font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.04em">Save note</button>
+        <button onclick="vnSelectCat(null)" style="padding:9px 14px;background:none;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'Jost',sans-serif;color:var(--text-dim);cursor:pointer">Cancel</button>
+      </div>
+    </div>` : '';
+
+  // Note cards
+  const cards = vaultNotes.map((n, i) => {
+    const cat = VN_CATEGORIES.find(c=>c.id===n.category) || VN_CATEGORIES[7];
+    const revealed = n._revealed;
+    const displayVal = revealed
+      ? `<span class="vn-card-value">${n.value.replace(/</g,'&lt;')}</span>`
+      : `<span class="vn-card-value masked">•••••••••••</span>`;
     return `
-      <div class="profile-row" style="align-items:flex-start">
-        <div class="profile-key" style="font-size:11px;padding-top:2px">${n.label.replace(/</g,'&lt;')}</div>
-        <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
-          <div class="profile-val" style="text-align:right">${displayVal}</div>
-          <button onclick="deleteVaultNote(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:14px;padding:0;line-height:1;flex-shrink:0">×</button>
+      <div class="vn-card">
+        <div class="vn-card-label">${cat.icon} ${n.label||cat.label}</div>
+        ${displayVal}
+        <div class="vn-card-actions">
+          <button class="vn-card-btn" onclick="vnToggleReveal(${i})" title="${revealed?'Hide':'Reveal'}">${revealed?'🙈':'👁'}</button>
+          <button class="vn-card-btn" onclick="deleteVaultNote(${i})" title="Delete" style="color:var(--text-dim)">×</button>
         </div>
       </div>`;
   }).join('');
 
-  const revealBtn = vaultNotes.length > 0
-    ? _vaultNotesRevealed
-      ? `<div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;font-family:'Jost',sans-serif">Visible for 60 seconds · <button onclick="_vaultNotesRevealed=false;clearTimeout(_vaultNotesTimer);renderVaultNotes()" style="background:none;border:none;color:var(--text-dim);font-size:10px;font-family:'Jost',sans-serif;cursor:pointer;padding:0;text-decoration:underline">Hide now</button></div>`
-      : `<button onclick="revealVaultNotes()" style="margin-bottom:10px;padding:7px 16px;background:transparent;border:1px solid var(--border);border-radius:20px;font-size:11px;font-family:'Jost',sans-serif;color:var(--text-dim);cursor:pointer;letter-spacing:.04em">👁 Reveal notes</button><br>`
-    : '';
-
   sec.innerHTML = `
-    <div class="profile-section-title" style="display:flex;justify-content:space-between;align-items:center">
-      <span>Vault Notes</span>
-      <span style="font-size:10px;color:var(--text-dim);font-weight:400;letter-spacing:.04em;text-transform:none">${vaultNotes.length}/10 · encrypted</span>
-    </div>
-    <div style="font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:12px">Store locker numbers, bank details, lawyer contacts. Encrypted before leaving your device.</div>
-    ${revealBtn}
-    ${rows}
-    ${vaultNotes.length < 10 ? `
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
-      <input id="vaultNoteLabel" type="text" placeholder="Label (e.g. Bank locker)" style="flex:1;min-width:100px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg3);color:var(--text);font-family:'Jost',sans-serif">
-      <input id="vaultNoteValue" type="text" placeholder="Value (e.g. HDFC Bandra, #247)" style="flex:2;min-width:140px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg3);color:var(--text);font-family:'Jost',sans-serif">
-      <button onclick="addVaultNote()" style="padding:8px 18px;background:var(--brand);color:#FDF8F0;border:none;border-radius:6px;font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0">Add</button>
-    </div>` : `<div style="font-size:11px;color:var(--text-dim);margin-top:8px">Maximum 10 notes reached.</div>`}`;
+    <div style="padding:0 20px 20px">
+      <div class="vn-header">
+        <span class="vn-title">Vault Notes</span>
+        <span class="vn-count">${vaultNotes.length}/${FREE_LIMIT} · free plan · encrypted</span>
+      </div>
+      <div class="vn-desc">Private records for your family — locker numbers, contacts, document locations. Encrypted on your device before storage.</div>
+      ${atLimit?`<div style="font-size:11px;color:var(--brand);background:rgba(139,105,20,.06);border:1px solid rgba(139,105,20,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-family:'Jost',sans-serif">Free plan includes 4 notes. Premium unlocks unlimited.</div>`:''}
+      ${!atLimit&&vaultNotes.length===0?`<div style="background:rgba(139,105,20,.06);border:1px solid rgba(139,105,20,.2);border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:11px;color:var(--text-mid);line-height:1.7;font-family:'Jost',sans-serif"><strong style="display:block;margin-bottom:3px;color:var(--brand)">🔐 Encrypted on your device</strong>Vault notes are encrypted using your password before leaving your browser. If you forget your password, these notes cannot be recovered — not even by MyAurum. Keep your password somewhere safe.</div>`:''}
+      ${!atLimit?`<div class="vn-category-grid">${catGrid}</div>`:''}
+      ${addForm}
+      <div class="vn-cards">${cards}</div>
+      ${vaultNotes.length>0?`<div class="vn-reveal-hint">Tap 👁 on any note to reveal · hides when you leave this tab</div>`:''}
+    </div>`;
+}
+
+function getVnPlaceholder(cat){
+  const map={bank:'e.g. HDFC Bandra, Locker #247',safe:'e.g. Left-right-left: 14-27-3',lawyer:'e.g. Rajesh Mehta, +91 98200 00000',will:'e.g. Original at HDFC locker, copy with Rajesh',insurance:'e.g. LIC policy #123456, agent: Sunil 98200 00001',emergency:'e.g. Name, relationship, phone number',ca:'e.g. Priya Shah CPA, priya@taxfirm.in',other:'Describe the detail…'};
+  return map[cat]||'Enter value…';
+}
+
+function vnSelectCat(id){
+  _vnSelectedCat = id;
+  renderVaultNotes();
+  if(id) setTimeout(()=>{ const el=document.getElementById('vnNoteValue'); if(el)el.focus(); },50);
+}
+
+function vnToggleReveal(i){
+  vaultNotes[i]._revealed = !vaultNotes[i]._revealed;
+  renderVaultNotes();
 }
 
 async function addVaultNote(){
-  const label = document.getElementById('vaultNoteLabel')?.value.trim();
-  const value = document.getElementById('vaultNoteValue')?.value.trim();
-  if(!label || !value){ showToast('Please enter both a label and a value.', 'error'); return; }
-  vaultNotes.push({ label, value });
+  const cat = VN_CATEGORIES.find(c=>c.id===_vnSelectedCat);
+  if(!cat) return;
+  const isOther = _vnSelectedCat==='other';
+  const customLabel = isOther ? document.getElementById('vnCustomLabel')?.value.trim() : null;
+  const value = document.getElementById('vnNoteValue')?.value.trim();
+  const label = isOther ? (customLabel||'Other') : cat.label;
+  if(!value){ showToast('Please enter a value.','error'); return; }
+  if(isOther && !customLabel){ showToast('Please enter a label.','error'); return; }
+  const note = { category:_vnSelectedCat, label, value };
+  vaultNotes.push(note);
   try {
-    await api('POST', '/vault-notes', { notes: vaultNotes });
+    // Encrypt each note value client-side before sending to server
+    const toSave = await Promise.all(vaultNotes.map(async n => ({
+      category: n.category, label: n.label,
+      value: await vaultEncrypt(n.value),
+    })));
+    await api('POST', '/vault-notes', { notes: toSave });
+    _vnSelectedCat = null;
     renderVaultNotes();
+    showToast('Note saved to vault','success',2000);
   } catch(e) {
     vaultNotes.pop();
-    showToast('Could not save note — try again.', 'error');
+    showToast('Could not save note — try again.','error');
   }
 }
 
 async function deleteVaultNote(i){
+  if(!confirm('Remove this note from your vault?')) return;
   const removed = vaultNotes.splice(i, 1);
   try {
-    await api('POST', '/vault-notes', { notes: vaultNotes });
+    const toSave = await Promise.all(vaultNotes.map(async n => ({
+      category: n.category, label: n.label,
+      value: await vaultEncrypt(n.value),
+    })));
+    await api('POST', '/vault-notes', { notes: toSave });
     renderVaultNotes();
   } catch(e) {
     vaultNotes.splice(i, 0, removed[0]);
-    showToast('Could not delete note — try again.', 'error');
+    showToast('Could not delete note — try again.','error');
   }
 }
 
@@ -3493,6 +3651,7 @@ async function doLogout(){
   if(window._priceInterval) clearInterval(window._priceInterval);
   setToken(null);
   currentUser=null;items=[];priceAlerts=[];
+  clearVaultKey();
   stopInactivityTimer();
   document.getElementById('appScreen').classList.remove('active');
   const authEl = document.getElementById('authScreen');
@@ -3600,6 +3759,7 @@ function toggleLockPw(){
 }
 
 function doLogoutFromLock(){
+  clearVaultKey();
   document.getElementById('lockOverlay').style.display='none';
   setToken(null);
   currentUser=null; items=[]; priceAlerts=[];
@@ -3894,7 +4054,7 @@ function setNavTab(tab,btn){
   document.getElementById('fabWrap').style.display=tab==='vault'?'flex':'none';
   sessionStorage.setItem('myaurum_tab', tab);
   if(tab==='profile'||tab==='succession')refreshProfile();
-  else { _vaultNotesRevealed=false; clearTimeout(_vaultNotesTimer); }
+  else { hideAllVaultNotes(); }
   if(tab==='chart'){updateChartPanel();renderHistoryChart()}
   if(tab==='alerts'){refreshAlertsPanel()}
   // Push tab state to browser history
