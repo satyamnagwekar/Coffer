@@ -1522,6 +1522,9 @@ async function sendWeeklyDigests() {
       const silverSpotStr = isMCX
         ? `₹${Math.round(priceCache.silver / 31.1035 * 10 * priceCache.usd_inr * 1.054).toLocaleString('en-IN')}/10g (MCX)`
         : `$${priceCache.silver.toFixed(2)}/oz (COMEX)`;
+      const platinumSpotStr = isMCX
+        ? `₹${Math.round((priceCache.platinum||980) / 31.1035 * 10 * priceCache.usd_inr).toLocaleString('en-IN')}/10g (COMEX)`
+        : `$${(priceCache.platinum||980).toFixed(2)}/oz (COMEX)`;
 
       // Timestamp
       const now = new Date();
@@ -1530,11 +1533,7 @@ async function sendWeeklyDigests() {
       const asOf = `${dateStr}, ${timeStr} IST`;
 
       // Subject
-      let subject = 'Your vault this week';
-      if (changePct !== null) {
-        const sign = changePct >= 0 ? 'up' : 'down';
-        subject = `Your vault this week — ${sign} ${Math.abs(changePct).toFixed(1)}%`;
-      }
+      const subject = 'Your vault this week';
 
       // Unsubscribe token
       const unsubToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '90d' });
@@ -1552,7 +1551,7 @@ async function sendWeeklyDigests() {
         const d = metalData[m];
         const valStr = formatVal(d.valueDisp, isMCX, sym);
         const gramsStr = d.grams.toFixed(2) + 'g';
-        const spotStr = m === 'gold' ? goldSpotStr : m === 'silver' ? silverSpotStr : '';
+        const spotStr = m === 'gold' ? goldSpotStr : m === 'silver' ? silverSpotStr : platinumSpotStr;
         const wkChange = metalSpotChange[m];
         const wkStr = wkChange !== undefined
           ? `<span style="color:${wkChange >= 0 ? '#2ECC8A' : '#E05C5C'}">${wkChange >= 0 ? '+' : ''}${wkChange.toFixed(1)}% this week</span>`
@@ -1569,14 +1568,7 @@ async function sendWeeklyDigests() {
         `;
       }).join('');
 
-      const changeHTML = changePct !== null ? `
-        <tr><td colspan="2" style="padding:4px 0 2px">
-          <span style="font-size:13px;color:${changeVal >= 0 ? '#2ECC8A' : '#E05C5C'};font-family:Arial,sans-serif">
-            ${changeVal >= 0 ? '+' : ''}${formatVal(Math.abs(changeVal), isMCX, sym)} &nbsp;
-            (${changeVal >= 0 ? '+' : '−'}${Math.abs(changePct).toFixed(1)}% this week)
-          </span>
-        </td></tr>
-      ` : `<tr><td colspan="2" style="padding:4px 0 2px;font-size:11px;color:#999;font-family:Arial,sans-serif">First snapshot — change data from next week</td></tr>`;
+      const changeHTML = "";
 
       const html = `<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -1623,15 +1615,13 @@ async function sendWeeklyDigests() {
 </body></html>`;
 
       // Plain text
-      const changeText = changePct !== null
-        ? `Change: ${changeVal >= 0 ? '+' : ''}${formatVal(Math.abs(changeVal), isMCX, sym)} (${changeVal >= 0 ? '+' : '-'}${Math.abs(changePct).toFixed(1)}%)`
-        : 'First snapshot — change data from next week';
+
 
       const metalText = metalOrder.map(m => {
         const d = metalData[m];
         const wkChange = metalSpotChange[m];
         const wkStr = wkChange !== undefined ? ` · spot ${wkChange >= 0 ? '+' : ''}${wkChange.toFixed(1)}% this week` : '';
-        const spotStr = m === 'gold' ? goldSpotStr : m === 'silver' ? silverSpotStr : '';
+        const spotStr = m === 'gold' ? goldSpotStr : m === 'silver' ? silverSpotStr : platinumSpotStr;
         return `${(metalLabels[m]||m).toUpperCase()}: ${formatVal(d.valueDisp, isMCX, sym)} · ${d.grams.toFixed(2)}g${spotStr ? '\nSpot: ' + spotStr + wkStr : ''}`;
       }).join('\n\n');
 
@@ -1641,7 +1631,6 @@ async function sendWeeklyDigests() {
         `Your MyAurum vault · ${asOf}`,
         '',
         `PORTFOLIO TOTAL: ${formatVal(totalValue, isMCX, sym)}`,
-        changeText,
         '',
         metalText,
         '',
