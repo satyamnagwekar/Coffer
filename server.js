@@ -2006,7 +2006,7 @@ app.get('/share/:token', async (req, res) => {
     const usdInr = priceCache.usd_inr || 83;
     const INDIA_FACTOR = (10/31.1035)*1.15*1.03;
 
-    const isMCX = (u.country||'').toLowerCase() === 'india';
+    const isMCX = !u.country || (u.country||'').toLowerCase() === 'india';
     const sym = isMCX ? '₹' : '$';
 
     function spotVal(metal, grams, purity) {
