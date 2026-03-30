@@ -3496,11 +3496,11 @@ async function dmsSyncDecrypted() {
 async function loadDMS() {
   try {
     const [noms, settings] = await Promise.all([
-      api('GET', '/nominees'),
+      api('GET', '/custodians'),
       api('GET', '/deadmans-switch'),
     ]);
-    _dmsCustodians = noms || [];
-    _dmsSettings = settings || { enabled: false, periodDays: 90 };
+    _dmsCustodians = Array.isArray(noms) ? noms : [];
+    _dmsSettings = (settings && typeof settings === 'object') ? settings : { enabled: false, periodDays: 90 };
   } catch(e) {
     _dmsCustodians = [];
     _dmsSettings = { enabled: false, periodDays: 90 };
@@ -3575,7 +3575,7 @@ async function dmsAddCustodian() {
   if (!name || !email || !email.includes('@')) { showToast('Please enter a name and valid email.', 'error'); return; }
   if (_dmsCustodians.find(n => n.email === email)) { showToast('This custodian is already added.', 'error'); return; }
   try {
-    const n = await api('POST', '/nominees', { name, email });
+    const n = await api('POST', '/custodians', { name, email });
     _dmsCustodians.push(n);
     renderDMS();
     showToast(`${name} added as custodian`, 'success', 2000);
@@ -3585,7 +3585,7 @@ async function dmsAddCustodian() {
 async function dmsRemoveCustodian(id) {
   if (!confirm('Remove this custodian?')) return;
   try {
-    await api('DELETE', `/nominees/${id}`);
+    await api('DELETE', `/custodians/${id}`);
     _dmsCustodians = _dmsCustodians.filter(n => n.id !== id);
     renderDMS();
   } catch(e) { showToast('Could not remove nominee', 'error'); }
