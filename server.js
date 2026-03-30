@@ -2318,11 +2318,7 @@ app.post(`/api/${ADMIN_SLUG}/reactivation-email`, requireAdmin, async (req, res)
 
 // ─────────────────────────────────────────
 // Serve a minimal gold coin SVG as favicon
-const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <circle cx="32" cy="32" r="30" fill="#B8860B"/>
-  <circle cx="32" cy="32" r="24" fill="#D4A017"/>
-  <text x="32" y="42" text-anchor="middle" font-family="Georgia,serif" font-size="28" font-weight="300" fill="#1A1508" letter-spacing="1">M</text>
-</svg>`;
+const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="40" fill="#F5F0E8"/><circle cx="76" cy="96" r="36" fill="none" stroke="#8B6914" stroke-width="12"/><circle cx="116" cy="96" r="36" fill="none" stroke="#8B6914" stroke-width="12"/></svg>`;
 
 app.get('/favicon.ico', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
