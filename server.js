@@ -1760,8 +1760,14 @@ app.get('/api/vault-notes', requireAuth, async (req, res) => {
     const r = await q('SELECT vault_notes FROM users WHERE id=$1', [req.user.userId]);
     const raw = r.rows[0]?.vault_notes;
     if (!raw) return res.json({ notes: [] });
-    const decrypted = decryptField(raw);
-    const notes = JSON.parse(decrypted);
+    // Notes are client-side encrypted — serve without server-side decryption
+    let notes;
+    try {
+      notes = JSON.parse(raw); // new format: plain JSON array of client-encrypted notes
+    } catch(e) {
+      try { notes = JSON.parse(decryptField(raw)); } // legacy: server-side encrypted
+      catch(e2) { notes = []; }
+    }
     res.json({ notes });
   } catch(e) {
     console.error('[vault-notes] GET error:', e.message);
@@ -1781,8 +1787,8 @@ app.post('/api/vault-notes', requireAuth, async (req, res) => {
     }
   }
   try {
-    const encrypted = encryptField(JSON.stringify(notes));
-    await q('UPDATE users SET vault_notes=$1 WHERE id=$2', [encrypted, req.user.userId]);
+    // Store as plain JSON — values are already client-side encrypted
+    await q('UPDATE users SET vault_notes=$1 WHERE id=$2', [JSON.stringify(notes), req.user.userId]);
     res.json({ ok: true });
   } catch(e) {
     console.error('[vault-notes] POST error:', e.message);
