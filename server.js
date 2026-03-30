@@ -2046,6 +2046,7 @@ app.get('/share/:token', async (req, res) => {
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${u.first_name}'s Portfolio — MyAurum</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23F5F0E8'/><circle cx='76' cy='96' r='36' fill='none' stroke='%238B6914' stroke-width='12'/><circle cx='116' cy='96' r='36' fill='none' stroke='%238B6914' stroke-width='12'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -2322,19 +2323,19 @@ const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 19
 
 app.get('/favicon.ico', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
-  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.send(FAVICON_SVG);
 });
 
 app.get('/favicon.png', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
-  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.send(FAVICON_SVG);
 });
 
 app.get('/apple-touch-icon.png', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
-  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.send(FAVICON_SVG);
 });
 
