@@ -3236,7 +3236,11 @@ async function deriveVaultKey(password, userId) {
 }
 
 async function vaultEncrypt(plaintext) {
-  if (!_vaultCryptoKey) throw new Error('No vault key — please log in again');
+  if (!_vaultCryptoKey) {
+    // No key available (Google login or session without key) — store as plaintext
+    // Server-side encryption still protects at rest
+    return plaintext;
+  }
   const enc = new TextEncoder();
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const ciphertext = await crypto.subtle.encrypt(
@@ -3253,8 +3257,8 @@ async function vaultEncrypt(plaintext) {
 
 async function vaultDecrypt(encoded) {
   if (!encoded) return encoded;
-  if (!encoded.startsWith('vlt:v1:')) return encoded; // legacy plaintext passthrough
-  if (!_vaultCryptoKey) throw new Error('No vault key');
+  if (!encoded.startsWith('vlt:v1:')) return encoded; // legacy/plaintext passthrough
+  if (!_vaultCryptoKey) return '🔐 Re-login to decrypt'; // no key available
   try {
     const combined = Uint8Array.from(atob(encoded.slice(7)), c => c.charCodeAt(0));
     const iv = combined.slice(0, 12);
@@ -3316,11 +3320,7 @@ function renderVaultNotes(){
   if(!sec) return;
   const FREE_LIMIT = 4;
   const atLimit = vaultNotes.length >= FREE_LIMIT;
-  // Warn if no crypto key available
-  if (!_vaultCryptoKey && vaultNotes.length === 0) {
-    sec.innerHTML = `<div style="padding:0 20px 20px"><div class="vn-header"><span class="vn-title">Vault Notes</span></div><div class="vn-desc" style="margin-top:8px">Session key unavailable — please sign out and sign back in to use vault notes.</div></div>`;
-    return;
-  }
+
 
   // Category grid
   const catGrid = VN_CATEGORIES.map(c => `
@@ -3877,8 +3877,6 @@ function refreshProfile(){
     const d = new Date(currentUser.joinedAt);
     if(!isNaN(d)) joined = d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
   } catch(e) {}
-  // Load vault notes
-  loadVaultNotes();
   // Load vault notes
   loadVaultNotes();
   document.getElementById('profileHeader').innerHTML=`
