@@ -211,17 +211,17 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .vault-notes-wrap{position:relative}
 .vault-notes-textarea{width:100%;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Jost',sans-serif;font-size:12px;color:var(--text);resize:vertical;min-height:90px;box-sizing:border-box}
 .notes-hint{font-size:10px;color:var(--text-dim);margin-top:5px;line-height:1.5}
-/* Vault Notes redesign */
+/* Estate Notes */
 .vn-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.vn-title{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-mid);font-family:'Jost',sans-serif;font-weight:500}
-.vn-count{font-size:10px;color:var(--text-dim);font-family:'Jost',sans-serif}
-.vn-desc{font-size:11px;color:var(--text-dim);line-height:1.65;margin-bottom:16px;font-family:'Jost',sans-serif}
+.vn-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;color:var(--text);letter-spacing:.02em}
+.vn-count{font-size:10px;color:var(--text-dim);font-family:'Jost',sans-serif;align-self:flex-end;padding-bottom:4px}
+.vn-desc{font-size:13px;color:var(--text-mid);line-height:1.75;margin-bottom:18px;font-family:'Jost',sans-serif}
 .vn-category-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
-.vn-cat-btn{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:border-color .18s,background .18s;font-family:'Jost',sans-serif}
+.vn-cat-btn{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:14px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border-color .18s,background .18s;font-family:'Jost',sans-serif}
 .vn-cat-btn:hover{border-color:var(--border-gold);background:rgba(139,105,20,.04)}
 .vn-cat-btn.selected{border-color:var(--brand);background:rgba(139,105,20,.07)}
-.vn-cat-icon{font-size:20px;line-height:1}
-.vn-cat-label{font-size:9px;letter-spacing:.04em;color:var(--text-dim);text-align:center;line-height:1.3}
+.vn-cat-icon{font-size:28px;line-height:1}
+.vn-cat-label{font-size:11px;letter-spacing:.02em;color:var(--text-mid);text-align:center;line-height:1.3;font-weight:500}
 .vn-add-form{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;display:none}
 .vn-add-form.open{display:block}
 .vn-add-form input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'Jost',sans-serif;background:var(--bg3);color:var(--text);box-sizing:border-box;margin-bottom:8px}
@@ -229,8 +229,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .vn-add-btns{display:flex;gap:8px}
 .vn-cards{display:flex;flex-direction:column;gap:8px}
 .vn-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;position:relative}
-.vn-card-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px;font-family:'Jost',sans-serif;display:flex;align-items:center;gap:6px}
-.vn-card-value{font-size:14px;color:var(--text);font-family:'Jost',sans-serif;word-break:break-word;line-height:1.5}
+.vn-card-label{font-size:12px;letter-spacing:.02em;color:var(--text-mid);margin-bottom:6px;font-family:'Jost',sans-serif;font-weight:500;display:flex;align-items:center;gap:6px}
+.vn-card-value{font-size:16px;color:var(--text);font-family:'Jost',sans-serif;word-break:break-word;line-height:1.5}
 .vn-card-value.masked{letter-spacing:.15em;color:var(--text-dim);user-select:none;font-size:16px}
 .vn-card-actions{position:absolute;top:10px;right:10px;display:flex;gap:4px}
 .vn-card-btn{background:none;border:none;cursor:pointer;font-size:13px;color:var(--text-dim);padding:3px 6px;border-radius:4px;font-family:'Jost',sans-serif;transition:color .15s}
@@ -2195,7 +2195,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <div class="profile-section" id="vaultsSection"></div>
       <!-- HEIRS SECTION — premium only -->
       <div class="profile-section" id="heirsSection"></div>
-      <!-- VAULT NOTES — premium only -->
+      <!-- ESTATE NOTES -->
       <div class="profile-section" id="vaultNotesSection"></div>
 
     </div>
@@ -3210,7 +3210,7 @@ async function revokeShareLink(){
 }
 
 // ══════════════════════════════════════════
-// VAULT NOTES — CLIENT-SIDE ENCRYPTION
+// ESTATE NOTES — CLIENT-SIDE ENCRYPTION
 // ══════════════════════════════════════════
 let vaultNotes = [];
 let _vaultCryptoKey = null; // AES-GCM key, lives only in RAM for session duration
@@ -3286,7 +3286,7 @@ async function loadVaultNotes(){
     // Decrypt each note value client-side
     const decrypted = await Promise.all(raw.map(async n => ({
       ...n,
-      category: n.category || 'other',
+      category: n.category || inferVaultCategory(n.label||''),
       value: await vaultDecrypt(n.value),
       _revealed: false,
     })));
@@ -3301,6 +3301,18 @@ async function loadVaultNotes(){
 function hideAllVaultNotes(){
   vaultNotes.forEach(n => n._revealed = false);
   _vnSelectedCat = null;
+}
+
+function inferVaultCategory(label){
+  const l = label.toLowerCase();
+  if(l.includes('bank')||l.includes('locker')||l.includes('safe deposit')) return 'bank';
+  if(l.includes('safe')||l.includes('combination')) return 'safe';
+  if(l.includes('lawyer')||l.includes('advocate')||l.includes('solicitor')||l.includes('legal')) return 'lawyer';
+  if(l.includes('will')||l.includes('testament')) return 'will';
+  if(l.includes('insurance')||l.includes('policy')||l.includes('lic')) return 'insurance';
+  if(l.includes('emergency')||l.includes('contact')||l.includes('doctor')||l.includes('hospital')) return 'emergency';
+  if(l.includes('ca ')||l.includes('tax')||l.includes('accountant')||l.includes('chartered')) return 'ca';
+  return 'other';
 }
 
 const VN_CATEGORIES = [
@@ -3335,8 +3347,8 @@ function renderVaultNotes(){
   const addForm = _vnSelectedCat ? `
     <div class="vn-add-form open" id="vnAddForm">
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;font-family:'Jost',sans-serif">${selCat?.icon} ${selCat?.label}${isOther?' — describe it below':''}</div>
-      ${isOther?`<input id="vnCustomLabel" type="text" placeholder="Label (e.g. Property deed, Key location…)" autocomplete="off">`:''}
-      <input id="vnNoteValue" type="text" placeholder="${getVnPlaceholder(_vnSelectedCat)}" autocomplete="off">
+      ${isOther?`<input id="vnCustomLabel" type="text" placeholder="Label (e.g. Property deed, Key location…)" autocomplete="off" maxlength="60">`:''}
+      <input id="vnNoteValue" type="text" placeholder="${getVnPlaceholder(_vnSelectedCat)}" autocomplete="off" maxlength="300">
       <div class="vn-add-btns">
         <button onclick="addVaultNote()" style="flex:1;padding:9px;background:var(--brand);color:#FDF8F0;border:none;border-radius:8px;font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.04em">Save note</button>
         <button onclick="vnSelectCat(null)" style="padding:9px 14px;background:none;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'Jost',sans-serif;color:var(--text-dim);cursor:pointer">Cancel</button>
@@ -3364,16 +3376,16 @@ function renderVaultNotes(){
   sec.innerHTML = `
     <div style="padding:0 20px 20px">
       <div class="vn-header">
-        <span class="vn-title">Vault Notes</span>
+        <span class="vn-title">Estate Notes</span>
         <span class="vn-count">${vaultNotes.length}/${FREE_LIMIT} · free plan · encrypted</span>
       </div>
-      <div class="vn-desc">Private records for your family — locker numbers, contacts, document locations. Encrypted on your device before storage.</div>
+      <div class="vn-desc">The document your estate executor will need. Bank lockers, lawyer contacts, insurance policies, safe combinations — recorded here, encrypted on your device, readable only by you.</div>
       ${atLimit?`<div style="font-size:11px;color:var(--brand);background:rgba(139,105,20,.06);border:1px solid rgba(139,105,20,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-family:'Jost',sans-serif">Free plan includes 4 notes. Premium unlocks unlimited.</div>`:''}
-      ${!atLimit&&vaultNotes.length===0?`<div style="background:rgba(139,105,20,.06);border:1px solid rgba(139,105,20,.2);border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:11px;color:var(--text-mid);line-height:1.7;font-family:'Jost',sans-serif"><strong style="display:block;margin-bottom:3px;color:var(--brand)">🔐 Encrypted on your device</strong>Vault notes are encrypted using your password before leaving your browser. If you forget your password, these notes cannot be recovered — not even by MyAurum. Keep your password somewhere safe.</div>`:''}
+      ${!atLimit&&vaultNotes.length===0?`<div style="background:rgba(139,105,20,.06);border:1px solid rgba(139,105,20,.2);border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:11px;color:var(--text-mid);line-height:1.7;font-family:'Jost',sans-serif"><strong style="display:block;margin-bottom:5px;color:var(--brand);font-size:12px">🔐 Encrypted on your device — unreadable even to us</strong>Vault notes are encrypted in your browser using your password before anything reaches our servers. MyAurum cannot read them. If you forget your password, these notes cannot be recovered by anyone. Keep your password safe.</div>`:''}
       ${!atLimit?`<div class="vn-category-grid">${catGrid}</div>`:''}
       ${addForm}
       <div class="vn-cards">${cards}</div>
-      ${vaultNotes.length>0?`<div class="vn-reveal-hint">Tap 👁 on any note to reveal · hides when you leave this tab</div>`:''}
+      ${vaultNotes.length>0?`<div class="vn-reveal-hint">Tap 👁 on any note to reveal · hidden when you leave this tab</div>`:''}
     </div>`;
 }
 
@@ -3401,7 +3413,9 @@ async function addVaultNote(){
   const value = document.getElementById('vnNoteValue')?.value.trim();
   const label = isOther ? (customLabel||'Other') : cat.label;
   if(!value){ showToast('Please enter a value.','error'); return; }
+  if(value.length > 300){ showToast('Value must be 300 characters or fewer.','error'); return; }
   if(isOther && !customLabel){ showToast('Please enter a label.','error'); return; }
+  if(isOther && customLabel.length > 60){ showToast('Label must be 60 characters or fewer.','error'); return; }
   const note = { category:_vnSelectedCat, label, value };
   vaultNotes.push(note);
   try {
@@ -3877,7 +3891,7 @@ function refreshProfile(){
     const d = new Date(currentUser.joinedAt);
     if(!isNaN(d)) joined = d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
   } catch(e) {}
-  // Load vault notes
+  // Load estate notes
   loadVaultNotes();
   document.getElementById('profileHeader').innerHTML=`
     <div style="display:flex;align-items:center;gap:16px;position:relative;z-index:1">
