@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="MyAurum">
 <meta name="application-name" content="MyAurum">
 <meta name="theme-color" content="#F5F0E8">
-<meta name="description" content="A private ledger for your physical gold and silver. Weights, values, nominees, purchase history. Your family's gold, recorded for posterity.">
+<meta name="description" content="A private ledger for your physical gold and silver. Weights, values, holdings, purchase history. Your family's gold, recorded for posterity.">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -17,7 +17,7 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://myaurum.app">
 <meta property="og:title" content="MyAurum — Your family's gold, recorded for posterity">
-<meta property="og:description" content="A private ledger for your physical gold and silver. Weights, values, nominees, purchase history. Your family's gold, recorded for posterity.">
+<meta property="og:description" content="A private ledger for your physical gold and silver. Weights, values, holdings, purchase history. Your family's gold, recorded for posterity.">
 <meta property="og:image" content="https://myaurum.app/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -26,7 +26,7 @@
 <!-- Twitter / WhatsApp -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="MyAurum — Your family's gold, recorded for posterity">
-<meta name="twitter:description" content="A private ledger for your physical gold and silver. Weights, values, nominees, purchase history. Your family's gold, recorded for posterity.">
+<meta name="twitter:description" content="A private ledger for your physical gold and silver. Weights, values, holdings, purchase history. Your family's gold, recorded for posterity.">
 <meta name="twitter:image" content="https://myaurum.app/og-image.png">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23F5F0E8'/><circle cx='76' cy='96' r='36' fill='none' stroke='%238B6914' stroke-width='12'/><circle cx='116' cy='96' r='36' fill='none' stroke='%238B6914' stroke-width='12'/></svg>">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
@@ -212,6 +212,31 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .vault-notes-textarea{width:100%;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Jost',sans-serif;font-size:12px;color:var(--text);resize:vertical;min-height:90px;box-sizing:border-box}
 .notes-hint{font-size:10px;color:var(--text-dim);margin-top:5px;line-height:1.5}
 /* Estate Notes */
+/* Dead man's switch */
+.dms-wrap{margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+.dms-header{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--text);margin-bottom:6px}
+.dms-desc{font-size:12px;color:var(--text-dim);line-height:1.7;font-family:'Jost',sans-serif;margin-bottom:16px}
+.dms-toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.dms-toggle-label{font-size:13px;color:var(--text);font-family:'Jost',sans-serif;font-weight:500}
+.dms-toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.dms-toggle input{opacity:0;width:0;height:0}
+.dms-toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:24px;cursor:pointer;transition:.2s}
+.dms-toggle-slider:before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.dms-toggle input:checked + .dms-toggle-slider{background:var(--brand)}
+.dms-toggle input:checked + .dms-toggle-slider:before{transform:translateX(20px)}
+.dms-period-row{display:flex;gap:8px;margin-bottom:16px}
+.dms-period-btn{flex:1;padding:9px 4px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:12px;font-family:'Jost',sans-serif;color:var(--text-dim);cursor:pointer;transition:border-color .15s,color .15s}
+.dms-period-btn.active{border-color:var(--brand);color:var(--brand);font-weight:600}
+.custodian-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.custodian-card{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between}
+.custodian-info{display:flex;flex-direction:column;gap:2px}
+.custodian-name{font-size:13px;color:var(--text);font-family:'Jost',sans-serif;font-weight:500}
+.custodian-email{font-size:11px;color:var(--text-dim);font-family:'Jost',sans-serif}
+.custodian-add-row{display:flex;gap:8px;flex-wrap:wrap}
+.custodian-add-row input{flex:1;min-width:120px;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'Jost',sans-serif;background:var(--bg3);color:var(--text);box-sizing:border-box}
+.custodian-add-row input:focus{outline:none;border-color:var(--brand)}
+.dms-save-btn{width:100%;padding:12px;background:var(--brand);color:#FDF8F0;border:none;border-radius:8px;font-size:12px;font-family:'Jost',sans-serif;font-weight:500;letter-spacing:.06em;cursor:pointer;margin-top:6px}
+.dms-status{font-size:11px;color:var(--text-dim);font-family:'Jost',sans-serif;line-height:1.7;background:rgba(139,105,20,.05);border:1px solid rgba(139,105,20,.15);border-radius:8px;padding:10px 12px;margin-top:12px}
 .vn-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
 .vn-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;color:var(--text);letter-spacing:.02em}
 .vn-count{font-size:10px;color:var(--text-dim);font-family:'Jost',sans-serif;align-self:flex-end;padding-bottom:4px}
@@ -2157,7 +2182,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
             <div class="succ-title">Holdings Statement</div>
             <div class="succ-desc">For records &amp; advisors</div>
           </div>
-          <div class="succ-card sc-succession" role="button" tabindex="0" onclick="showMobileConfirm('Succession Document','A record your family can act on — nominees, holdings, and values at today\'s prices.','Generate Document',exportSuccessionPDF)">
+          <div class="succ-card sc-succession" role="button" tabindex="0" onclick="showMobileConfirm('Succession Document','A record your family can act on — holdings and values at today\'s prices.','Generate Document',exportSuccessionPDF)">
             <div class="succ-circle">
               <div class="succ-tooltip">A document your family can act on</div>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
@@ -2197,6 +2222,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <div class="profile-section" id="heirsSection"></div>
       <!-- ESTATE NOTES -->
       <div class="profile-section" id="vaultNotesSection"></div>
+      <div class="profile-section" id="dmsSection"></div>
 
     </div>
   </div><!-- /panelSuccession -->
@@ -2338,7 +2364,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
             <span style="color:var(--brand);font-size:16px">✓</span> Live portfolio share link
           </div>
           <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)">
-            <span style="color:var(--brand);font-size:16px">✓</span> Succession PDF with nominees
+            <span style="color:var(--brand);font-size:16px">✓</span> Succession PDF with holdings
           </div>
           <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)">
             <span style="color:var(--brand);font-size:16px">✓</span> Holdings Statement
@@ -3428,6 +3454,8 @@ async function addVaultNote(){
     _vnSelectedCat = null;
     renderVaultNotes();
     showToast('Note saved to vault','success',2000);
+    // Re-sync decrypted copy for custodian delivery if switch is active
+    if (_dmsSettings.enabled) dmsSyncDecrypted().catch(()=>{});
   } catch(e) {
     vaultNotes.pop();
     showToast('Could not save note — try again.','error');
@@ -3450,6 +3478,142 @@ async function deleteVaultNote(i){
   }
 }
 
+
+// ══════════════════════════════════════════
+// DEAD MAN'S SWITCH
+// ══════════════════════════════════════════
+let _dmsCustodians = [];
+let _dmsSettings = { enabled: false, periodDays: 90 };
+let _dmsSaving = false;
+
+async function dmsSyncDecrypted() {
+  if (!_dmsSettings.enabled || vaultNotes.length === 0) return;
+  await api('POST', '/estate-notes/store-decrypted', {
+    notes: vaultNotes.map(n => ({ category: n.category, label: n.label, value: n.value }))
+  });
+}
+
+async function loadDMS() {
+  try {
+    const [noms, settings] = await Promise.all([
+      api('GET', '/nominees'),
+      api('GET', '/deadmans-switch'),
+    ]);
+    _dmsCustodians = noms || [];
+    _dmsSettings = settings || { enabled: false, periodDays: 90 };
+  } catch(e) {
+    _dmsCustodians = [];
+    _dmsSettings = { enabled: false, periodDays: 90 };
+  }
+  renderDMS();
+}
+
+function renderDMS() {
+  const wrap = document.getElementById('dmsSection');
+  if (!wrap) return;
+  const { enabled, periodDays, firedAt } = _dmsSettings;
+  const periods = [60, 90, 180, 360];
+  const periodBtns = periods.map(p => `
+    <button class="dms-period-btn${periodDays===p?' active':''}" onclick="dmsSetPeriod(${p})">${p} days</button>
+  `).join('');
+  const custodianCards = _dmsCustodians.map(n => `
+    <div class="custodian-card">
+      <div class="custodian-info">
+        <span class="custodian-name">${n.name.replace(/</g,'&lt;')}</span>
+        <span class="custodian-email">${n.email.replace(/</g,'&lt;')}</span>
+      </div>
+      <button onclick="dmsRemoveCustodian(${n.id})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;padding:0 4px;line-height:1">×</button>
+    </div>`).join('');
+  const firedNotice = firedAt ? `<div class="dms-status">⚠️ This switch has already fired on ${new Date(firedAt).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}. Your custodians have been notified. Log in regularly to prevent future triggers.</div>` : '';
+  const statusText = enabled && _dmsCustodians.length > 0
+    ? `Active · ${_dmsCustodians.length} custodian${_dmsCustodians.length>1?'s':''} · notified after ${periodDays} days of inactivity`
+    : enabled && _dmsCustodians.length === 0
+    ? 'Switch is on but no custodians added — add at least one below.'
+    : '';
+
+  wrap.innerHTML = `
+    <div class="dms-wrap">
+      <div class="dms-header">Access Switch</div>
+      <div class="dms-desc">If you don't log in for a set period, your nominees automatically receive your Estate Notes by email. Just logging in resets the clock.</div>
+      <div class="dms-toggle-row">
+        <span class="dms-toggle-label">Enable Access Switch</span>
+        <label class="dms-toggle">
+          <input type="checkbox" ${enabled?'checked':''} onchange="dmsToggle(this.checked)">
+          <span class="dms-toggle-slider"></span>
+        </label>
+      </div>
+      ${enabled ? `
+      <div style="font-size:11px;color:var(--text-dim);font-family:'Jost',sans-serif;margin-bottom:8px;letter-spacing:.04em;text-transform:uppercase">Notify after</div>
+      <div class="dms-period-row">${periodBtns}</div>
+      <div style="font-size:11px;color:var(--text-dim);font-family:'Jost',sans-serif;margin-bottom:10px;letter-spacing:.04em;text-transform:uppercase">Custodians</div>
+      <div class="custodian-list">${custodianCards||'<div style="font-size:12px;color:var(--text-dim);font-family:'Jost',sans-serif;padding:4px 0">No custodians added yet.</div>'}</div>
+      <div class="custodian-add-row">
+        <input id="nomName" type="text" placeholder="Full name" maxlength="80">
+        <input id="nomEmail" type="email" placeholder="Email address" maxlength="120">
+        <button onclick="dmsAddCustodian()" style="padding:9px 16px;background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'Jost',sans-serif;color:var(--text);cursor:pointer;white-space:nowrap">Add</button>
+      </div>
+      <button class="dms-save-btn" onclick="dmsSave()">Save settings</button>
+      ${statusText?`<div class="dms-status">${statusText}</div>`:''}
+      ` : ''}
+      ${firedNotice}
+    </div>`;
+}
+
+function dmsToggle(val) {
+  _dmsSettings.enabled = val;
+  renderDMS();
+}
+
+function dmsSetPeriod(p) {
+  _dmsSettings.periodDays = p;
+  renderDMS();
+}
+
+async function dmsAddCustodian() {
+  const name = document.getElementById('nomName')?.value.trim();
+  const email = document.getElementById('nomEmail')?.value.trim().toLowerCase();
+  if (!name || !email || !email.includes('@')) { showToast('Please enter a name and valid email.', 'error'); return; }
+  if (_dmsCustodians.find(n => n.email === email)) { showToast('This custodian is already added.', 'error'); return; }
+  try {
+    const n = await api('POST', '/nominees', { name, email });
+    _dmsCustodians.push(n);
+    renderDMS();
+    showToast(`${name} added as custodian`, 'success', 2000);
+  } catch(e) { showToast(e.message || 'Could not add nominee', 'error'); }
+}
+
+async function dmsRemoveCustodian(id) {
+  if (!confirm('Remove this custodian?')) return;
+  try {
+    await api('DELETE', `/nominees/${id}`);
+    _dmsCustodians = _dmsCustodians.filter(n => n.id !== id);
+    renderDMS();
+  } catch(e) { showToast('Could not remove nominee', 'error'); }
+}
+
+async function dmsSave() {
+  if (_dmsSaving) return;
+  _dmsSaving = true;
+  try {
+    await api('POST', '/deadmans-switch', {
+      enabled: _dmsSettings.enabled,
+      periodDays: _dmsSettings.periodDays,
+    });
+    // If enabling and we have notes — store decrypted copy for nominee delivery
+    if (_dmsSettings.enabled && vaultNotes.length > 0) {
+      await api('POST', '/estate-notes/store-decrypted', {
+        notes: vaultNotes.map(n => ({ category: n.category, label: n.label, value: n.value }))
+      });
+    }
+    _dmsSettings = { ..._dmsSettings };
+    showToast('Access Switch saved', 'success', 2500);
+    renderDMS();
+  } catch(e) {
+    showToast(e.message || 'Could not save settings', 'error');
+  } finally {
+    _dmsSaving = false;
+  }
+}
 
 // ══════════════════════════════════════════
 // PREMIUM / PAYMENTS
@@ -3891,8 +4055,9 @@ function refreshProfile(){
     const d = new Date(currentUser.joinedAt);
     if(!isNaN(d)) joined = d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
   } catch(e) {}
-  // Load estate notes
+  // Load estate notes + dead man's switch
   loadVaultNotes();
+  loadDMS();
   document.getElementById('profileHeader').innerHTML=`
     <div style="display:flex;align-items:center;gap:16px;position:relative;z-index:1">
       <div class="profile-avatar">${currentUser.firstName[0].toUpperCase()}</div>
