@@ -3485,6 +3485,7 @@ async function deleteVaultNote(i){
 let _dmsCustodians = [];
 let _dmsSettings = { enabled: false, periodDays: 90 };
 let _dmsSaving = false;
+let _dmsLoaded = false;
 
 async function dmsSyncDecrypted() {
   if (!_dmsSettings.enabled || vaultNotes.length === 0) return;
@@ -3494,6 +3495,8 @@ async function dmsSyncDecrypted() {
 }
 
 async function loadDMS() {
+  // Only fetch from server once per session — re-renders use cached state
+  if (_dmsLoaded) { renderDMS(); return; }
   try {
     const [noms, settings] = await Promise.all([
       api('GET', '/custodians'),
@@ -3501,6 +3504,7 @@ async function loadDMS() {
     ]);
     _dmsCustodians = Array.isArray(noms) ? noms : [];
     _dmsSettings = (settings && typeof settings === 'object') ? settings : { enabled: false, periodDays: 90 };
+    _dmsLoaded = true;
   } catch(e) {
     _dmsCustodians = [];
     _dmsSettings = { enabled: false, periodDays: 90 };
@@ -3553,6 +3557,13 @@ function renderDMS() {
         <button onclick="dmsAddCustodian()" style="padding:9px 16px;background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'Jost',sans-serif;color:var(--text);cursor:pointer;white-space:nowrap">Add</button>
       </div>
       <button class="dms-save-btn" onclick="dmsSave()">Save settings</button>
+      <div style="margin-top:14px;padding:10px 14px;background:rgba(139,105,20,.04);border:1px dashed rgba(139,105,20,.25);border-radius:8px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:16px">🔒</span>
+        <div>
+          <div style="font-size:11px;font-family:'Jost',sans-serif;color:var(--brand);font-weight:600;letter-spacing:.04em">Customised access — coming soon</div>
+          <div style="font-size:11px;font-family:'Jost',sans-serif;color:var(--text-dim);line-height:1.6;margin-top:2px">Assign specific notes to specific custodians. Your lawyer sees the will location. Your spouse sees everything.</div>
+        </div>
+      </div>
       ${statusText?`<div class="dms-status">${statusText}</div>`:''}
       ` : ''}
       ${firedNotice}
@@ -3830,6 +3841,7 @@ async function doLogout(){
   setToken(null);
   currentUser=null;items=[];priceAlerts=[];
   clearVaultKey();
+  _dmsLoaded = false;
   stopInactivityTimer();
   document.getElementById('appScreen').classList.remove('active');
   const authEl = document.getElementById('authScreen');
