@@ -168,6 +168,30 @@ async function initDB() {
   await q(`ALTER TABLE price_cache ADD COLUMN IF NOT EXISTS ibja_fetched_at TIMESTAMPTZ`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE`);
 
+  // Dead man's switch
+  await q(`
+    CREATE TABLE IF NOT EXISTS nominees (
+      id         SERIAL PRIMARY KEY,
+      user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      name       TEXT NOT NULL,
+      email      TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(user_id, email)
+    )
+  `);
+  await q(`
+    CREATE TABLE IF NOT EXISTS deadmans_switch (
+      user_id        INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      enabled        BOOLEAN DEFAULT FALSE,
+      period_days    INTEGER DEFAULT 90,
+      last_warned_at TIMESTAMPTZ,
+      fired_at       TIMESTAMPTZ,
+      created_at     TIMESTAMPTZ DEFAULT NOW(),
+      updated_at     TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS estate_notes_decrypted TEXT`);
+
   // Items table — columns added after initial schema
   await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS held_by TEXT`);
   await q(`ALTER TABLE items ADD COLUMN IF NOT EXISTS nominee TEXT`);
@@ -1802,6 +1826,122 @@ app.post('/api/vault-notes', requireAuth, async (req, res) => {
 });
 
 // ─────────────────────────────────────────
+//  NOMINEES
+// ─────────────────────────────────────────
+app.get('/api/custodians', requireAuth, async (req, res) => {
+  try {
+    const r = await q('SELECT * FROM nominees WHERE user_id=$1 ORDER BY created_at ASC', [req.user.userId]);
+    res.json(r.rows.map(n => ({ id: n.id, name: n.name, email: n.email, createdAt: n.created_at })));
+  } catch(e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.post('/api/custodians', requireAuth, async (req, res) => {
+  const { name, email } = req.body;
+  if (!name || !email || !email.includes('@')) return res.status(400).json({ error: 'Name and valid email required' });
+  try {
+    const r = await q(
+      'INSERT INTO nominees (user_id, name, email) VALUES ($1,$2,$3) ON CONFLICT (user_id, email) DO UPDATE SET name=$2 RETURNING *',
+      [req.user.userId, name.trim(), email.toLowerCase().trim()]
+    );
+    res.status(201).json({ id: r.rows[0].id, name: r.rows[0].name, email: r.rows[0].email });
+  } catch(e) { console.error(e); res.status(500).json({ error: 'Server error' }); }
+});
+
+app.delete('/api/custodians/:id', requireAuth, async (req, res) => {
+  try {
+    const r = await q('DELETE FROM nominees WHERE id=$1 AND user_id=$2', [req.params.id, req.user.userId]);
+    if (r.rowCount === 0) return res.status(404).json({ error: 'Nominee not found' });
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+// ─────────────────────────────────────────
+//  DEAD MAN'S SWITCH
+// ─────────────────────────────────────────
+app.get('/api/deadmans-switch', requireAuth, async (req, res) => {
+  try {
+    const r = await q('SELECT * FROM deadmans_switch WHERE user_id=$1', [req.user.userId]);
+    const row = r.rows[0];
+    if (!row) return res.json({ enabled: false, periodDays: 90, lastWarnedAt: null, firedAt: null });
+    res.json({ enabled: row.enabled, periodDays: row.period_days, lastWarnedAt: row.last_warned_at, firedAt: row.fired_at });
+  } catch(e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.post('/api/deadmans-switch', requireAuth, async (req, res) => {
+  const { enabled, periodDays } = req.body;
+  const valid = [60, 90, 180, 360];
+  if (!valid.includes(periodDays)) return res.status(400).json({ error: 'Period must be 60, 90, 180, or 360 days' });
+  try {
+    await q(`
+      INSERT INTO deadmans_switch (user_id, enabled, period_days, updated_at)
+      VALUES ($1,$2,$3,NOW())
+      ON CONFLICT (user_id) DO UPDATE SET enabled=$2, period_days=$3, updated_at=NOW()
+    `, [req.user.userId, !!enabled, periodDays]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+// Called from index.html when user saves decrypted notes for nominee delivery
+app.post('/api/estate-notes/store-decrypted', requireAuth, async (req, res) => {
+  const { notes } = req.body;
+  if (!Array.isArray(notes)) return res.status(400).json({ error: 'Invalid notes' });
+  try {
+    // Server-side encrypt the decrypted copy for storage
+    const encrypted = encryptField(JSON.stringify(notes));
+    await q('UPDATE users SET estate_notes_decrypted=$1 WHERE id=$2', [encrypted, req.user.userId]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+// Nominee access view — one-time token
+app.get('/nominee/:token', async (req, res) => {
+  try {
+    const payload = jwt.verify(req.params.token, JWT_SECRET);
+    if (payload.type !== 'nominee_access') return res.status(403).send('Invalid link');
+    const ur = await q('SELECT * FROM users WHERE id=$1', [payload.userId]);
+    const u = ur.rows[0];
+    if (!u) return res.status(404).send('Not found');
+    const nominees = await q('SELECT * FROM nominees WHERE user_id=$1', [u.id]);
+    const nominee = nominees.rows.find(n => n.id === payload.nomineeId);
+    if (!nominee) return res.status(403).send('Access revoked');
+    // Decrypt stored plaintext copy
+    let notes = [];
+    if (u.estate_notes_decrypted) {
+      try { notes = JSON.parse(decryptField(u.estate_notes_decrypted)); } catch(e) { notes = []; }
+    }
+    const CAT_ICONS = { bank:'🏦', safe:'🔐', lawyer:'⚖️', will:'📋', insurance:'🛡️', emergency:'🆘', ca:'🧾', other:'📁' };
+    const CAT_LABELS = { bank:'Bank Locker', safe:'Safe', lawyer:'Lawyer', will:'Will', insurance:'Insurance', emergency:'Emergency', ca:'CA / Tax', other:'Other' };
+    const noteRows = notes.length ? notes.map(n => `
+      <div style="background:#fff;border:1.5px solid #E8E0D0;border-radius:12px;padding:18px 20px;margin-bottom:10px">
+        <div style="font-size:11px;color:#8B6914;font-family:Arial,sans-serif;margin-bottom:6px;font-weight:500">
+          ${CAT_ICONS[n.category]||'📁'} ${n.label||CAT_LABELS[n.category]||n.category}
+        </div>
+        <div style="font-size:15px;color:#2C2410;font-family:Georgia,serif;line-height:1.6;word-break:break-word">${(n.value||'').replace(/</g,'&lt;')}</div>
+      </div>`).join('') : `<p style="color:#999;font-size:13px;font-family:Arial,sans-serif">No estate notes have been recorded.</p>`;
+    const now = new Date();
+    const asOf = now.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+    res.type('html').send(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${u.first_name} ${u.last_name}'s Estate Notes — MyAurum</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23F5F0E8'/><circle cx='76' cy='96' r='36' fill='none' stroke='%238B6914' stroke-width='12'/><circle cx='116' cy='96' r='36' fill='none' stroke='%238B6914' stroke-width='12'/></svg>">
+</head><body style="margin:0;padding:0;background:#F5F0E8;font-family:Georgia,serif">
+<div style="max-width:560px;margin:0 auto;padding:40px 20px">
+  <div style="font-family:Georgia,serif;font-size:13px;font-weight:300;letter-spacing:.2em;color:#B8860B;margin-bottom:32px">MYAURUM</div>
+  <h1 style="font-family:Georgia,serif;font-size:32px;font-weight:300;color:#2C2410;margin:0 0 6px">${u.first_name} ${u.last_name}'s Estate Notes</h1>
+  <p style="font-size:12px;color:#999;font-family:Arial,sans-serif;margin:0 0 32px">Shared with ${nominee.name} · ${asOf}</p>
+  <div style="background:#FDF5E0;border:1px solid #E8D8A0;border-radius:10px;padding:14px 18px;margin-bottom:28px;font-size:12px;color:#8B6914;font-family:Arial,sans-serif;line-height:1.7">
+    This is a private document. Please handle it with care and share it only with those who need it.
+  </div>
+  ${noteRows}
+  <p style="font-size:10px;color:#CCC;font-family:Arial,sans-serif;margin-top:32px;line-height:1.7">Generated by MyAurum · myaurum.app<br>This link was shared by ${u.first_name} ${u.last_name}.</p>
+</div></body></html>`);
+  } catch(e) {
+    if (e.name === 'JsonWebTokenError' || e.name === 'TokenExpiredError') return res.status(403).send('This link has expired or is invalid.');
+    console.error('[nominee-view]', e.message);
+    res.status(500).send('Something went wrong.');
+  }
+});
+
+// ─────────────────────────────────────────
 //  RAZORPAY PAYMENTS
 // ─────────────────────────────────────────
 
@@ -2413,6 +2553,117 @@ app.get('*', (req, res) => {
 
 app.get('/health', (req, res) => res.json({ ok:true, uptime:process.uptime() }));
 
+// ─────────────────────────────────────────
+//  DEAD MAN'S SWITCH — EMAIL BUILDERS
+// ─────────────────────────────────────────
+async function sendDMSWarningEmail(user, daysLeft, periodDays) {
+  const subject = `MyAurum — your custodians will be notified in ${daysLeft} day${daysLeft===1?'':'s'}`;
+  const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F0E8;font-family:Arial,sans-serif">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0E8;padding:40px 16px">
+<tr><td align="center"><table role="presentation" width="100%" style="max-width:520px">
+<tr><td style="background:#1A1508;padding:24px 32px;text-align:center;border-radius:16px 16px 0 0">
+  <p style="margin:0;font-family:Georgia,serif;font-size:28px;font-weight:300;letter-spacing:.24em;color:#F0B429">MYAURUM</p>
+</td></tr>
+<tr><td style="background:#FDFAF5;padding:28px 32px;border:1px solid #DDD5C0">
+  <p style="font-size:14px;color:#2C2410;line-height:1.8">Hi ${user.first_name},</p>
+  <p style="font-size:13px;color:#555;line-height:1.8">You set up a dead man's switch on MyAurum with a ${periodDays}-day inactivity period. You haven't logged in for a while — your custodians will be notified in <strong>${daysLeft} day${daysLeft===1?'':'s'}</strong> if you don't log in before then.</p>
+  <p style="font-size:13px;color:#555;line-height:1.8">If everything is fine, just open MyAurum. That resets the clock automatically.</p>
+  <div style="text-align:center;margin:28px 0">
+    <a href="${APP_URL}" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#D4A017);color:#0c0a06;text-decoration:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:15px 32px;border-radius:8px;font-weight:600">Open MyAurum — I'm here →</a>
+  </div>
+  <p style="font-size:11px;color:#AAA;line-height:1.7">If you'd like to disable or change this setting, you can do so in the Succession tab under Estate Notes.</p>
+</td></tr>
+<tr><td style="background:#F0EBE0;padding:16px 32px;border:1px solid #DDD5C0;border-top:none;border-radius:0 0 16px 16px">
+  <p style="margin:0;font-size:10px;color:#BBB">© 2026 MyAurum · <a href="${APP_URL}" style="color:#B8860B;text-decoration:none">myaurum.app</a></p>
+</td></tr>
+</table></td></tr></table></body></html>`;
+  return sendEmail({ to: user.email, subject, html, text: `Hi ${user.first_name},\n\nYour MyAurum dead man's switch will notify your custodians in ${daysLeft} day${daysLeft===1?'':'s'}.\n\nJust open MyAurum to reset the clock: ${APP_URL}` });
+}
+
+async function sendDMSFiredEmail(nominee, user, accessToken) {
+  const accessUrl = `${APP_URL}/nominee/${accessToken}`;
+  const subject = `${user.first_name} ${user.last_name} has shared their Estate Notes with you`;
+  const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F0E8;font-family:Arial,sans-serif">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0E8;padding:40px 16px">
+<tr><td align="center"><table role="presentation" width="100%" style="max-width:520px">
+<tr><td style="background:#1A1508;padding:24px 32px;text-align:center;border-radius:16px 16px 0 0">
+  <p style="margin:0;font-family:Georgia,serif;font-size:28px;font-weight:300;letter-spacing:.24em;color:#F0B429">MYAURUM</p>
+  <p style="margin:6px 0 0;font-size:10px;color:#907030;letter-spacing:.2em;text-transform:uppercase">Estate Notes</p>
+</td></tr>
+<tr><td style="background:#FDFAF5;padding:28px 32px;border:1px solid #DDD5C0">
+  <p style="font-size:14px;color:#2C2410;line-height:1.8">Hi ${nominee.name},</p>
+  <p style="font-size:13px;color:#555;line-height:1.8">${user.first_name} ${user.last_name} set up an automatic notification on MyAurum and hasn't logged in for ${user._periodDays} days. They have designated you as a nominee and shared their Estate Notes with you.</p>
+  <p style="font-size:13px;color:#555;line-height:1.8">This may mean nothing — they may simply have forgotten to log in. Please reach out to them directly before acting on anything in this document.</p>
+  <div style="text-align:center;margin:28px 0">
+    <a href="${accessUrl}" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#D4A017);color:#0c0a06;text-decoration:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:15px 32px;border-radius:8px;font-weight:600">View Estate Notes →</a>
+  </div>
+  <p style="font-size:11px;color:#AAA;line-height:1.7">This link does not expire. Handle this document with care.</p>
+</td></tr>
+<tr><td style="background:#F0EBE0;padding:16px 32px;border:1px solid #DDD5C0;border-top:none;border-radius:0 0 16px 16px">
+  <p style="margin:0;font-size:10px;color:#BBB">© 2026 MyAurum · <a href="${APP_URL}" style="color:#B8860B;text-decoration:none">myaurum.app</a></p>
+</td></tr>
+</table></td></tr></table></body></html>`;
+  return sendEmail({ to: nominee.email, subject, html, text: `Hi ${nominee.name},\n\n${user.first_name} ${user.last_name} has shared their Estate Notes with you via MyAurum.\n\nView here: ${accessUrl}\n\nPlease reach out to them directly before acting on anything.` });
+}
+
+async function checkDeadmansSwitch() {
+  console.log('[dms] Running dead man\'s switch check');
+  try {
+    const switches = await q(`
+      SELECT d.*, u.email, u.first_name, u.last_name, u.last_seen, u.estate_notes_decrypted
+      FROM deadmans_switch d
+      JOIN users u ON u.id = d.user_id
+      WHERE d.enabled = TRUE AND d.fired_at IS NULL
+    `);
+    for (const row of switches.rows) {
+      const lastSeen = row.last_seen ? new Date(row.last_seen) : new Date(row.created_at);
+      const daysSince = Math.floor((Date.now() - lastSeen.getTime()) / (1000 * 60 * 60 * 24));
+      const periodDays = row.period_days;
+      const warnAt = Math.floor(periodDays * 0.8); // warn at 80%
+      const user = { id: row.user_id, email: row.email, first_name: row.first_name, last_name: row.last_name, _periodDays: periodDays };
+
+      if (daysSince >= periodDays) {
+        // FIRE — notify all nominees
+        console.log(`[dms] Firing for user ${row.user_id} — ${daysSince} days inactive`);
+        const nominees = await q('SELECT * FROM nominees WHERE user_id=$1', [row.user_id]);
+        for (const nominee of nominees.rows) {
+          const token = jwt.sign(
+            { type: 'nominee_access', userId: row.user_id, nomineeId: nominee.id },
+            JWT_SECRET
+            // No expiry — permanent access once switch fires
+          );
+          try {
+            await sendDMSFiredEmail(nominee, user, token);
+            console.log(`[dms] Fired email to custodian ${nominee.email}`);
+          } catch(e) { console.error(`[dms] Failed to email custodian ${nominee.email}:`, e.message); }
+        }
+        await q('UPDATE deadmans_switch SET fired_at=NOW(), updated_at=NOW() WHERE user_id=$1', [row.user_id]);
+        // Notify the primary user too
+        try {
+          await sendEmail({
+            to: row.email,
+            subject: 'MyAurum — your Estate Notes have been shared with your nominees',
+            html: `<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#F5F0E8;border-radius:12px"><p style="font-family:Georgia,serif;font-size:24px;font-weight:300;color:#B8860B;letter-spacing:.2em">MYAURUM</p><p style="color:#2C2410;font-size:14px;line-height:1.8">Hi ${row.first_name},</p><p style="color:#555;font-size:13px;line-height:1.8">Your dead man's switch has fired. Your custodians have been sent access to your Estate Notes. If this was a mistake, please log in and contact us.</p><a href="${APP_URL}" style="display:inline-block;background:#B8860B;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-size:12px;margin-top:16px">Open MyAurum →</a></div>`,
+            text: `Hi ${row.first_name},\n\nYour dead man's switch has fired and your nominees have been notified.\n\nIf this was a mistake, please log in immediately: ${APP_URL}`
+          });
+        } catch(e) { console.error('[dms] Failed to notify primary user:', e.message); }
+
+      } else if (daysSince >= warnAt) {
+        // WARN — but only once per period
+        const alreadyWarned = row.last_warned_at && new Date(row.last_warned_at) > lastSeen;
+        if (!alreadyWarned) {
+          const daysLeft = periodDays - daysSince;
+          console.log(`[dms] Warning user ${row.user_id} — ${daysLeft} days left`);
+          try {
+            await sendDMSWarningEmail(user, daysLeft, periodDays);
+            await q('UPDATE deadmans_switch SET last_warned_at=NOW(), updated_at=NOW() WHERE user_id=$1', [row.user_id]);
+          } catch(e) { console.error(`[dms] Warning email failed for user ${row.user_id}:`, e.message); }
+        }
+      }
+    }
+  } catch(e) { console.error('[dms] Check failed:', e.message); }
+}
+
 // START
 initDB()
   .then(() => q('SELECT * FROM price_cache WHERE id=1'))
@@ -2438,6 +2689,12 @@ initDB()
     cron.schedule('30 2 * * 1', async () => {
       try { await sendWeeklyDigests(); }
       catch(e) { console.error('[weekly] Cron error:', e.message); }
+    });
+
+    // Dead man's switch — daily at 9:00am IST (03:30 UTC)
+    cron.schedule('30 3 * * *', async () => {
+      try { await checkDeadmansSwitch(); }
+      catch(e) { console.error('[dms] Cron error:', e.message); }
     });
 
     // Daily cleanup — expired tokens
