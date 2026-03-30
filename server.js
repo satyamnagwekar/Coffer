@@ -2014,7 +2014,9 @@ app.get('/share/:token', async (req, res) => {
         // Match app formula: oz * spotUSD * INR * 1.054
         return oz * (metal === 'gold' ? gold : silver) * usdInr * 1.054;
       }
-      return oz * (metal === 'gold' ? gold : metal === 'silver' ? silver : (priceCache.platinum||980));
+      // Platinum and non-MCX: convert to INR if isMCX, else keep in USD
+      const spotUSD = metal === 'gold' ? gold : metal === 'silver' ? silver : (priceCache.platinum||980);
+      return isMCX ? oz * spotUSD * usdInr : oz * spotUSD;
     }
 
     function fmtVal(v) {
