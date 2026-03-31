@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Security — MyAurum</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23F5F0E8'/><circle cx='76' cy='96' r='36' fill='none' stroke='%238B6914' stroke-width='12'/><circle cx='116' cy='96' r='36' fill='none' stroke='%238B6914' stroke-width='12'/></svg>">
 <meta name="description" content="How MyAurum protects your data. A plain-English explanation of every security measure in place.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
@@ -195,6 +196,12 @@
   </div>
 
   <div class="section">
+    <div class="section-title">Your estate notes are encrypted on your device — unreadable even to us</div>
+    <p>Estate notes go further than any other data in MyAurum. When you save a note — a locker number, a lawyer's contact, a safe combination — it is encrypted in your browser using a key derived from your password before it leaves your device. The encrypted bytes are what travel to our servers and what sits in our database. We receive ciphertext we cannot read.</p>
+    <p>This means that even a full breach of our infrastructure would not expose your estate notes. The decryption key exists only in your browser for the duration of your session and is never stored or transmitted. If you forget your password, these notes cannot be recovered by anyone — including us. This is a deliberate design choice, not a limitation.</p>
+  </div>
+
+  <div class="section">
     <div class="section-title">Everything travels over an encrypted connection</div>
     <p>All communication between your device and MyAurum's servers uses TLS — Transport Layer Security — which ensures that your data cannot be intercepted or read in transit. This is the same protocol that protects online banking and financial transactions.</p>
   </div>
@@ -221,6 +228,16 @@
   </div>
 
   <div class="section">
+    <div class="section-title">The app locks itself when you step away</div>
+    <p>MyAurum locks automatically after 30 minutes of inactivity. When the lock fires, your vault is closed and your estate notes key is cleared from memory. Re-opening requires your password. This protects your data if you leave a device unattended — a browser tab left open at a shared computer, for example, cannot be accessed without authentication.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">You can designate custodians for your estate</div>
+    <p>MyAurum includes an Access Switch — a dead man's switch for your estate notes. You can name custodians and set an inactivity period of 60, 90, 180, or 360 days. If you do not log in within that period, your custodians are automatically sent your estate notes by email. Just logging in resets the clock. This feature is designed for families and diaspora users who want to ensure critical information reaches the right people if something happens.</p>
+  </div>
+
+  <div class="section">
     <div class="section-title">You are always in control</div>
     <p>You can delete your account and every piece of data associated with it at any time from Profile → Settings → Danger Zone. Deletion is immediate and permanent. We retain no copies, no backups specific to your account, and no residual records.</p>
     <p>MyAurum requires no identity documents, no PAN, no Aadhaar, and no government-issued identification of any kind. We have no visibility into your financial accounts and no ability to initiate transactions on your behalf. What you share with us is only what you choose to enter.</p>
@@ -235,10 +252,13 @@
     <span class="pill">Rate-limited logins</span>
     <span class="pill">No ads · No data sharing</span>
     <span class="pill">No KYC</span>
+    <span class="pill">Device-side estate note encryption</span>
+    <span class="pill">Inactivity auto-lock</span>
+    <span class="pill">Access Switch for custodians</span>
   </div>
 
   <div class="cta-section">
-    <p>Questions about your data or how we handle security? Reply to any email from us or write directly to <a href="mailto:privacy@myaurum.app" style="color:#F0B429;text-decoration:none">privacy@myaurum.app</a>. We will respond within 5 business days.</p>
+    <p>Questions about your data or how we handle security? Reply to any email from us or write directly to <a href="/cdn-cgi/l/email-protection#d4a4a6bda2b5b7ad94b9adb5a1a6a1b9fab5a4a4" style="color:#F0B429;text-decoration:none"><span class="__cf_email__" data-cfemail="1262607b6473716b527f6b736760677f3c736262">[email&#160;protected]</span></a>. We will respond within 5 business days.</p>
     <a href="/" class="cta-btn">Open MyAurum →</a>
   </div>
 
@@ -246,8 +266,7 @@
 
 <div class="footer">
   <p>© 2026 MyAurum. All rights reserved. · <a href="/privacy">Privacy Policy</a> · <a href="/terms">Terms of Use</a></p>
-  <p style="margin-top:4px;opacity:.6">MyAurum is a personal record tool, not a financial product. Registered in India.</p>
+  <p style="margin-top:4px;opacity:.6">MyAurum is a personal record tool, not a financial product. Values shown are indicative only and do not constitute a valuation for insurance, legal, or tax purposes. Registered in India.</p>
 </div>
-
 </body>
 </html>
