@@ -794,7 +794,7 @@ async function sendWelcomeEmail(email, firstName) {
   <tr><td style="background:#F0EBE0;padding:16px 40px;border:1px solid #DDD5C0;border-top:none;border-radius:0 0 16px 16px">
     <p style="margin:0 0 6px;font-size:10px;color:#AAA;line-height:1.85;font-family:Arial,sans-serif">MyAurum is free up to 25 holdings. No credit card, no catch. &nbsp;·&nbsp; <a href="${APP_URL}" style="color:#B8860B;text-decoration:none">myaurum.app</a></p>
     <p style="margin:0;font-size:10px;color:#CCC;line-height:1.7;font-family:Arial,sans-serif">&copy; 2026 MyAurum. All rights reserved. &nbsp;·&nbsp; Registered in India &nbsp;·&nbsp; <a href="${APP_URL}/privacy" style="color:#B8860B;text-decoration:none">Privacy Policy</a></p>
-    <p style="margin:6px 0 0;font-size:10px;color:#CCC;line-height:1.7;font-family:Arial,sans-serif">MyAurum is a personal record tool, not a financial product. Values shown are indicative estimates based on live spot prices and do not constitute financial advice.</p>
+    <p style="margin:6px 0 0;font-size:10px;color:#CCC;line-height:1.7;font-family:Arial,sans-serif">MyAurum is a personal record tool, not a financial product. Values shown are indicative estimates based on live spot prices and do not constitute financial advice, or a valuation for insurance, legal, or tax purposes.</p>
   </td></tr>
 </table>
 </td></tr>
@@ -929,7 +929,7 @@ async function sendMilestone20Email(email, firstName, verifyUrl) {
     <p style="margin:0 0 6px;font-size:13px;color:#2C2410;font-weight:600;font-family:Arial,sans-serif">Satyam</p>
     <p style="margin:0 0 10px;font-size:12px;color:#8B6914;font-family:Arial,sans-serif">Founder, MyAurum</p>
     <p style="margin:0 0 4px;font-size:10px;color:#AAA;line-height:1.7;font-family:Arial,sans-serif">&copy; 2026 MyAurum. All rights reserved. &nbsp;&middot;&nbsp; Registered in India &nbsp;&middot;&nbsp; <a href="${APP_URL}/privacy" style="color:#B8860B;text-decoration:none">Privacy Policy</a></p>
-    <p style="margin:0;font-size:10px;color:#CCC;line-height:1.7;font-family:Arial,sans-serif">MyAurum is a personal record tool, not a financial product. Values shown are indicative estimates based on live spot prices and do not constitute financial advice.</p>
+    <p style="margin:0;font-size:10px;color:#CCC;line-height:1.7;font-family:Arial,sans-serif">MyAurum is a personal record tool, not a financial product. Values shown are indicative estimates based on live spot prices and do not constitute financial advice, or a valuation for insurance, legal, or tax purposes.</p>
   </td></tr>
 </table>
 </td></tr>
@@ -1032,7 +1032,7 @@ function buildAlertEmail(alert, spotUSD) {
   <tr><td style="background:#F0EBE0;padding:18px 32px;border:1px solid #DDD5C0;border-top:none;border-radius:0 0 16px 16px;text-align:center">
     <p style="margin:0;font-size:10px;color:#BBB;line-height:1.85">
       This alert is now marked as fired and will not trigger again.<br>
-      Prices are indicative spot rates — actual buyback values vary by dealer.<br>
+      Prices are indicative spot rates — actual buyback values vary by dealer. Values do not constitute a valuation for insurance, legal, or tax purposes.<br>
       <a href="${APP_URL}" style="color:#B8860B;text-decoration:none">Manage alerts in MyAurum</a>
     </p>
   </td></tr>
@@ -1624,7 +1624,7 @@ async function sendWeeklyDigests() {
   </td></tr>
   <tr><td style="background:#F0EBE0;padding:18px 32px;border:1px solid #DDD5C0;border-top:none;border-radius:0 0 16px 16px">
     <p style="margin:0 0 6px;font-size:10px;color:#BBB;line-height:1.85;font-family:Arial,sans-serif">
-      Prices are indicative spot rates. MyAurum is a personal record tool, not a financial advisor. Values will differ from jeweller buyback prices. Portfolio change is calculated against last Monday's spot prices.
+      Prices are indicative spot rates. MyAurum is a personal record tool, not a financial advisor. Values do not constitute a valuation for insurance, legal, or tax purposes. Values will differ from jeweller buyback prices and do not constitute a valuation for insurance, legal, or tax purposes.
     </p>
     <p style="margin:0 0 6px;font-size:10px;color:#CCC;line-height:1.7;font-family:Arial,sans-serif">&copy; 2026 MyAurum. All rights reserved. &nbsp;&middot;&nbsp; Registered in India &nbsp;&middot;&nbsp; <a href="${APP_URL}/privacy" style="color:#B8860B;text-decoration:none">Privacy Policy</a></p>
     <p style="margin:0;font-size:10px;font-family:Arial,sans-serif">
@@ -2249,7 +2249,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #DDD5
     <tbody>${tableRows}</tbody>
   </table>
   <div style="margin-top:14px;font-size:11px;color:#B8A070;line-height:1.7;text-align:center">
-    Values are indicative estimates at live spot prices. Not financial advice.
+    Values are indicative estimates at live spot prices. Not financial advice. Does not constitute a valuation for insurance, legal, or tax purposes.
   </div>
 </div>
 <div class="footer">
