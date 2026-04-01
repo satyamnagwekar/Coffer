@@ -553,6 +553,7 @@ function decryptRow(r) {
     nominee:    decryptField(r.nominee),
     grade_name: decryptField(r.grade_name),
     sell_notes: decryptField(r.sell_notes),
+    gift_notes: decryptField(r.gift_notes),
   };
 }
 
