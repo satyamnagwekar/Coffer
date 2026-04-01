@@ -5282,7 +5282,7 @@ function openDetail(idx){
       return `<div class="detail-section"><div class="detail-section-title">Gift Record</div>
         <div class="detail-row"><div class="detail-key">Date Gifted</div><div class="detail-val">${item.giftDate||'—'}</div></div>
         ${item.giftTo?`<div class="detail-row"><div class="detail-key">Gifted To</div><div class="detail-val">${escHtml(item.giftTo)}</div></div>`:''}
-        ${item.giftNotes?`<div class="detail-row"><div class="detail-key">Occasion</div><div class="detail-val">${escHtml(item.giftNotes)}</div></div>`:''}
+        ${item.giftNotes&&!item.giftNotes.startsWith('enc:v1:')?`<div class="detail-row"><div class="detail-key">Occasion</div><div class="detail-val">${escHtml(item.giftNotes)}</div></div>`:''}
         <div class="detail-row"><div class="detail-key">Value at Gift</div><div class="detail-val">${item.giftValueUSD?fmtDisp(item.giftValueUSD*(benchmark==='MCX'&&item.metal!=='platinum'?rates.INR*1.054:rates[currency]||1)):'—'}</div></div>
         ${gRow}
         <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
