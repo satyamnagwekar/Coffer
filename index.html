@@ -2669,7 +2669,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-header">
-      <div><div class="modal-title" id="detailTitle">Detail</div><div class="modal-subtitle">Tap receipt image to enlarge</div></div>
+      <div><div class="modal-title" id="detailTitle">Detail</div><div class="modal-subtitle" id="detailSubtitle"></div></div>
       <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
     </div>
     <div id="detailBody" class="modal-body" style="padding-top:0"></div>
@@ -5208,6 +5208,8 @@ function openDetail(idx){
   const isMCX=benchmark==='MCX';
   const tL={jewellery:'Jewellery',coin_bar:'Coin / Bar',raw:'Pieces'};
   document.getElementById('detailTitle').textContent=item.name;
+  const hasPhotos=!!(item.photos&&item.photos.length||item.receipt);
+  document.getElementById('detailSubtitle').textContent=hasPhotos?'Tap image to enlarge':'';
   const acqRows=[
     ['Metal',item.metal==='gold'?'🥇 Gold':'🥈 Silver'],
     ['Category',tL[item.type]],['Purity',item.gradeName],
