@@ -1799,7 +1799,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
             <div class="price" id="silverSpot"><span class="loading-dot"></span></div>
           </div>
           <div class="spot-item" style="opacity:.8">
-            <div class="metal" id="platinumSpotLabel">PLAT /10g</div>
+            <div class="metal" id="platinumSpotLabel">PLAT /oz</div>
             <div class="price" id="platinumSpot"><span class="loading-dot"></span></div>
           </div>
         </div>
@@ -5211,7 +5211,7 @@ function openDetail(idx){
   const hasPhotos=!!(item.photos&&item.photos.length||item.receipt);
   document.getElementById('detailSubtitle').textContent=hasPhotos?'Tap image to enlarge':'';
   const acqRows=[
-    ['Metal',item.metal==='gold'?'🥇 Gold':'🥈 Silver'],
+    ['Metal',item.metal==='gold'?'🥇 Gold':item.metal==='platinum'?'💎 Platinum':'🥈 Silver'],
     ['Category',tL[item.type]],['Purity',item.gradeName],
     ['Weight',item.grams.toFixed(3)+'g · '+toOz(item.grams).toFixed(4)+' oz'],
     ['Pure Content',(item.grams*item.purity).toFixed(3)+'g'],
@@ -5221,10 +5221,14 @@ function openDetail(idx){
   if(item.heldBy)acqRows.push(['Held By',escHtml(item.heldBy)]);
   if(item.source)acqRows.push(['Source',escHtml(item.source)]);
   if(item.nominee)acqRows.push(['Nominee',`<span style="color:#c084fc">${escHtml(item.nominee)}</span>`]);
-  const spotLabel = isMCX&&item.metal!=='platinum' ? 'Spot (INR /10g)' : `Spot (${bLabel} /oz)`;
-  const spotDisp = isMCX&&item.metal!=='platinum'
-    ? '₹'+Math.round((item.metal==='gold'?prices.gold:prices.silver)*rates.INR*(10/31.1035)*1.054).toLocaleString('en-IN')
-    : (SYMBOLS[currency]||'$')+((item.metal==='gold'?prices.gold:item.metal==='platinum'?prices.platinum:prices.silver)*(rates[currency]||1)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  const spotLabel = item.metal==='platinum'
+    ? 'Spot (INR /oz · COMEX)'
+    : isMCX ? 'Spot (INR /10g)' : `Spot (${bLabel} /oz)`;
+  const spotDisp = item.metal==='platinum'
+    ? '₹'+Math.round(prices.platinum*rates.INR).toLocaleString('en-IN')
+    : isMCX
+      ? '₹'+Math.round((item.metal==='gold'?prices.gold:prices.silver)*rates.INR*(10/31.1035)*1.054).toLocaleString('en-IN')
+      : (SYMBOLS[currency]||'$')+((item.metal==='gold'?prices.gold:prices.silver)*(rates[currency]||1)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
   const valRows=[
     [spotLabel, spotDisp],
     ['Current Value',fmtDisp(sD)],
@@ -6337,10 +6341,10 @@ function _coreUpdatePriceDisplay(){
   if(isMCX){
     const goldINR10g   = inrPer10g('gold');
     const silverINR10g = inrPer10g('silver');
-    const platINR10g   = prices.platinum * rates.INR * (10/31.1035);
+    const platINR10g   = prices.platinum * rates.INR; // platinum: ₹/oz, no 10g conversion
     document.getElementById('goldSpotLabel').textContent   = 'GOLD /10g (Indian Bullion)';
     document.getElementById('silverSpotLabel').textContent = 'SILVER /10g (Indian Bullion)';
-    document.getElementById('platinumSpotLabel').textContent = 'PLAT /10g';
+    document.getElementById('platinumSpotLabel').textContent = 'PLAT /oz';
     document.getElementById('goldSpot').textContent   = '₹' + Math.round(goldINR10g).toLocaleString('en-IN');
     document.getElementById('silverSpot').textContent = '₹' + Math.round(silverINR10g).toLocaleString('en-IN');
     document.getElementById('platinumSpot').textContent = '₹' + Math.round(platINR10g).toLocaleString('en-IN');
@@ -6350,7 +6354,7 @@ function _coreUpdatePriceDisplay(){
     if(hgEl){hgEl.textContent='₹'+Math.round(goldINR10g).toLocaleString('en-IN');if(hgU)hgU.textContent='per 10g · INR est.';}
     if(hsEl){hsEl.textContent='₹'+Math.round(silverINR10g).toLocaleString('en-IN');if(hsU)hsU.textContent='per 10g · INR est.';}
     const hpEl=document.getElementById('homePlatSpot'),hpU=document.getElementById('homePlatUnit');
-    if(hpEl){hpEl.textContent='₹'+Math.round(platINR10g).toLocaleString('en-IN');if(hpU)hpU.textContent='per 10g · INR est.';}
+    if(hpEl){hpEl.textContent='₹'+Math.round(platINR10g).toLocaleString('en-IN');if(hpU)hpU.textContent='per oz · INR est.';}
   } else {
     const goldDisp = prices.gold   * rate;
     const silverDisp = prices.silver * rate;
