@@ -4562,7 +4562,7 @@ function renderList(){
       if(cbD!==null){
         const g=sD-cbD;
         const s=g>=0?'+':'';
-        const pctStr=cbD===0?'gifted':`${s}${((g/cbD)*100).toFixed(1)}%`;
+        const pctStr=cbD===0?'received':`${s}${((g/cbD)*100).toFixed(1)}%`;
         pnlH=`<div class="item-pnl ${g>=0?'pos':'neg'}">${g>=0?'▲':'▼'} ${s}${fmtDisp(g)} (${pctStr})</div>`;
       }
     }
