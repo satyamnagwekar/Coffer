@@ -2831,6 +2831,12 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         <div class="field-label-row"><label>Item Name</label></div>
         <input type="text" id="editItemName" placeholder="e.g. 22K gold bangle">
       </div>
+      <div class="field">
+        <div class="field-label-row"><label>Karat / Purity</label></div>
+        <select id="editGrade">
+          <option value="">— select —</option>
+        </select>
+      </div>
       <div class="field-row">
         <div class="field">
           <div class="field-label-row"><label>Weight</label></div>
@@ -4994,6 +5000,10 @@ function openEditModal(idx){
   const msgEl=document.getElementById('editItemMsg');
   if(msgEl){msgEl.textContent='';msgEl.className='msg';}
   document.getElementById('editItemName').value=item.name;
+  // Populate grade selector based on metal
+  const gradeList=item.metal==='gold'?GOLD_GRADES:item.metal==='platinum'?PLATINUM_GRADES:SILVER_GRADES;
+  const gradeEl=document.getElementById('editGrade');
+  gradeEl.innerHTML=gradeList.map(g=>`<option value="${g.name}" ${g.name===item.gradeName?'selected':''}>${g.name}</option>`).join('');
   document.getElementById('editWeight').value=item.grams.toFixed(3);
   document.getElementById('editWeightUnit').value='g';
   document.getElementById('editPurchaseDate').value=item.purchaseDate||'';
@@ -5023,15 +5033,21 @@ async function saveEditItem(){
   const source=document.getElementById('editSource').value.trim();
   const heldBy=(document.getElementById('editHeldBy').value.trim())||'Self';
   const nominee=document.getElementById('editNominee').value.trim();
+  const gradeName=document.getElementById('editGrade').value;
   if(!name){showMsg('editItemMsg','Please enter a name.','error');return}
   if(!weight||weight<=0||weight>100000){showMsg('editItemMsg','Please enter a valid weight greater than zero.','error');return}
+  if(!gradeName){showMsg('editItemMsg','Please select a karat/purity.','error');return}
   const grams=toGrams(weight,unit);
   const item=items[viewingItem];
+  const gradeList=item.metal==='gold'?GOLD_GRADES:item.metal==='platinum'?PLATINUM_GRADES:SILVER_GRADES;
+  const selectedGradeObj=gradeList.find(g=>g.name===gradeName)||gradeList[0];
   const mcAmt=parseFloat(document.getElementById('editMakingCharge').value)||0;
   const hasMC=document.getElementById('editHasMakingCharge').checked&&mcAmt>0;
   const payload={
     ...item,
     name,grams,notes,purchaseDate,
+    gradeName:selectedGradeObj.name,
+    purity:selectedGradeObj.purity,
     pricePaid:paidRaw||null,pricePaidCurrency:paidCurr,
     pricePaidUSD:paidRaw?toUSD(paidRaw,paidCurr):null,
     makingCharge:hasMC?mcAmt:null,
@@ -5238,11 +5254,12 @@ function openDetail(idx){
   } else if(item.gifted){
     actionBtn=`<div class="detail-action-btn gifted-tag">📤 Gifted ${item.giftDate?'· '+item.giftDate:''}${item.giftTo?' to '+escHtml(item.giftTo):''}</div>`;
   } else {
-    actionBtn=`<button class="detail-action-btn sell" onclick="openSellModal(${idx})">Record Sale →</button>
-      <button class="detail-action-btn gift" onclick="openGiftModal(${idx})">📤 Gift →</button>`;
+    actionBtn=`<button class="detail-action-btn sell" onclick="openSellModal(${idx})">Record Sale</button>
+      <button class="detail-action-btn gift" onclick="openGiftModal(${idx})">Record Gift</button>`;
   }
-  const editBtn=`<button class="detail-action-btn" onclick="openEditModal(${idx})" style="border-color:rgba(74,159,224,.3);color:var(--blue);background:rgba(74,159,224,.06)">✏ Edit</button>`;
+  const editBtn=(!item.sold&&!item.gifted)?`<button class="detail-action-btn" onclick="openEditModal(${idx})" style="border-color:rgba(74,159,224,.3);color:var(--blue);background:rgba(74,159,224,.06)">Make Edits</button>`:'';
   document.getElementById('detailBody').innerHTML=`
+    <div class="detail-actions" style="margin:0 0 16px;padding-bottom:14px;border-bottom:1px solid var(--border)">${editBtn}${actionBtn}</div>
     <div class="detail-section"><div class="detail-section-title">Item Details</div>${acqRows.map(([k,v])=>`<div class="detail-row"><div class="detail-key">${k}</div><div class="detail-val">${v}</div></div>`).join('')}</div>
     <div class="detail-receipt"><div class="detail-section-title" style="margin-bottom:10px">Photos</div>${(()=>{
   const imgs=item.photos&&item.photos.length?item.photos:(item.receipt?[item.receipt]:[]);
@@ -5267,7 +5284,7 @@ function openDetail(idx){
           <button onclick="reattributeItem(${idx})" style="width:100%;padding:10px;background:transparent;border:1px solid var(--border-gold);border-radius:var(--radius-xs);color:var(--brand);font-family:'Jost',sans-serif;font-size:12px;letter-spacing:.06em;cursor:pointer">↩ Re-attribute to another holder</button>
         </div></div>`;
     })()}
-    <div class="detail-actions">${editBtn}${actionBtn}</div>
+
     <button class="btn-danger" onclick="deleteItem(${idx})">Remove from MyAurum</button>`;
   openModalWithHistory('detailModal');
 }
