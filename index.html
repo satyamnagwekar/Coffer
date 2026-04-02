@@ -5274,9 +5274,9 @@ function openDetail(idx){
     actionBtn=`<div class="detail-action-btn sold-tag">✓ Sold ${item.sellDate||''}</div>`;
   } else if(item.gifted){
     actionBtn=`<div class="detail-action-btn gifted-tag">📤 Gifted ${item.giftDate?'· '+item.giftDate:''}${item.giftTo?' to '+escHtml(item.giftTo):''}</div>
-      <div style="display:flex;flex-direction:column;gap:5px;align-items:stretch">
-        <button class="detail-action-btn" onclick="reattributeItem(${idx})" style="border-color:rgba(192,132,252,.35);color:#c084fc;background:rgba(192,132,252,.09);letter-spacing:.04em">↩ Re-attribute</button>
-        <div style="font-size:10px;color:var(--text-dim);line-height:1.5;text-align:center;padding:0 4px">Stays in the family? Add it as a fresh holding under a new holder.</div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <button class="detail-action-btn" onclick="reattributeItem(${idx})" style="border-color:var(--border-gold);color:#c084fc;background:rgba(192,132,252,.09);letter-spacing:.04em">↩ Re-attribute</button>
+        <div style="font-size:10px;color:var(--text-dim);line-height:1.5;text-align:center;padding:0 2px">Stays in the family? Add as a fresh holding under a new holder.</div>
       </div>`;
   } else {
     actionBtn=`<button class="detail-action-btn sell" onclick="openSellModal(${idx})">Record Sale</button>
