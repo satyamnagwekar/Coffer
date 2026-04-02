@@ -1121,7 +1121,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 #pushPermNote span{color:var(--blue);cursor:pointer;text-decoration:underline}
 
 </style>
-  <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleSignIn()"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <!-- Google Analytics GA4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-W24NXQEY95"></script>
   <script>
@@ -1514,7 +1514,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
   <div style="background:#F5F0E8;border-top:1px solid #DDD5C0;padding:36px 28px">
     <div style="max-width:860px;margin:0 auto">
       <div style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'Jost',sans-serif;margin-bottom:8px;text-align:center">Why people trust MyAurum</div>
-      <div style="text-align:center;margin-bottom:28px;font-size:11px;color:#888070">Questions? Write to us at <a href="/cdn-cgi/l/email-protection#355d5059595a75584c54404740581b544545" style="color:#B8860B;text-decoration:none"><span class="__cf_email__" data-cfemail="5b333e3737341b36223a2e292e36753a2b2b">[email&#160;protected]</span></a></div>
+      <div style="text-align:center;margin-bottom:28px;font-size:11px;color:#888070">Questions? Write to us at <a href="mailto:hello&#64;myaurum&#46;app" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a></div>
       <div class="trust-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
 
         <div style="text-align:center;padding:24px 16px;border:1px solid rgba(184,134,11,.18);border-radius:12px;background:#fff">
@@ -1631,7 +1631,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       </div>
 
       <div style="margin-top:28px;padding-top:24px;border-top:1px solid #DDD5C0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-        <div style="font-size:11px;color:#999;line-height:1.7">© 2026 MyAurum · Built by <a href="https://www.linkedin.com/in/satyamnagwekar/" target="_blank" style="color:#999;text-decoration:none">Aurum Fintech</a> · Mumbai, India · UDYAM-MH-19-0421851 · <a href="/cdn-cgi/l/email-protection#620a070e0e0d220f1b031710170f4c031212" style="color:#B8860B;text-decoration:none"><span class="__cf_email__" data-cfemail="224a474e4e4d624f5b435750574f0c435252">[email&#160;protected]</span></a></div>
+        <div style="font-size:11px;color:#999;line-height:1.7">© 2026 MyAurum · Built by <a href="https://www.linkedin.com/in/satyamnagwekar/" target="_blank" style="color:#999;text-decoration:none">Aurum Fintech</a> · Mumbai, India · UDYAM-MH-19-0421851 · <a href="mailto:hello&#64;myaurum&#46;app" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a></div>
         <div style="font-size:11px;color:#999;line-height:1.7;display:flex;gap:16px;flex-wrap:wrap">
           <span>Values shown are indicative only — not financial advice, and do not constitute a valuation for insurance, legal, or tax purposes.</span>
           <a href="/privacy" target="_blank" style="color:#B8860B;text-decoration:none;white-space:nowrap">Privacy Policy</a>
@@ -2514,7 +2514,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
             <div class="field">
               <div class="field-label-row"><label>Currency</label></div>
               <select id="pricePaidCurrency" onchange="updatePreview()">
-                <option value="USD">USD $</option><option value="INR">INR ₹</option><option value="AED">AED</option><option value="EUR">EUR €</option><option value="GBP">GBP £</option>
+                <option value="USD">USD $</option><option value="INR">INR ₹</option><option value="AED">AED د.إ</option><option value="EUR">EUR €</option><option value="GBP">GBP £</option>
               </select>
             </div>
           </div>
@@ -2622,7 +2622,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         <div class="field"><div class="field-label-row"><label>Price Received</label></div><input type="number" id="sellPrice" placeholder="0.00" step="0.01" oninput="updateSellPreview()"></div>
         <div class="field"><div class="field-label-row"><label>Currency</label></div>
           <select id="sellCurrency" onchange="updateSellPreview()">
-            <option value="USD">USD $</option><option value="INR">INR ₹</option><option value="AED">AED</option><option value="EUR">EUR €</option><option value="GBP">GBP £</option>
+            <option value="USD">USD $</option><option value="INR">INR ₹</option><option value="AED">AED د.إ</option><option value="EUR">EUR €</option><option value="GBP">GBP £</option>
           </select>
         </div>
       </div>
@@ -2863,7 +2863,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         <div class="field">
           <div class="field-label-row"><label>Currency</label></div>
           <select id="editPricePaidCurrency">
-            <option value="USD">USD $</option><option value="INR">INR ₹</option><option value="AED">AED</option><option value="EUR">EUR €</option><option value="GBP">GBP £</option>
+            <option value="USD">USD $</option><option value="INR">INR ₹</option><option value="AED">AED د.إ</option><option value="EUR">EUR €</option><option value="GBP">GBP £</option>
           </select>
         </div>
       </div>
@@ -2907,7 +2907,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
   <div class="lightbox-close" onclick="closeLightbox()">Close ✕</div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ══════════════════════════════════════════
 // CONSTANTS & GLOBALS
 // ══════════════════════════════════════════
@@ -3911,6 +3911,8 @@ function resetInactivityTimer(){
 function showInactivityWarning(){
   const w = document.getElementById('inactivityWarning');
   if(!w || !currentUser) return;
+  // Clear any existing countdown before starting fresh
+  if(_countdownInterval){ clearInterval(_countdownInterval); _countdownInterval = null; }
   w.style.display='block';
   let secs = 60;
   document.getElementById('lockCountdown').textContent = secs;
@@ -6717,11 +6719,8 @@ async function initWebPush(){
     // Check if VAPID key is configured on server
     const { key } = await api('GET','/push/vapid-public-key');
     if(!key)return;
-    // Register a minimal inline service worker
-    const swCode=`self.addEventListener('push',e=>{const d=e.data?e.data.json():{};e.waitUntil(self.registration.showNotification(d.title||'MyAurum Alert',{body:d.body||'',icon:'/favicon.ico',badge:'/favicon.ico',tag:'myaurum-alert',data:{url:d.url||'/'}}))});self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(clients.openWindow(e.notification.data.url||'/'))});`;
-    const swBlob=new Blob([swCode],{type:'application/javascript'});
-    const swUrl=URL.createObjectURL(swBlob);
-    const reg=await navigator.serviceWorker.register(swUrl);
+    // Register ServiceWorker from server endpoint (blob URLs not supported for SW)
+    const reg=await navigator.serviceWorker.register('/sw.js',{scope:'/'});
     await navigator.serviceWorker.ready;
     const existing=await reg.pushManager.getSubscription();
     if(existing){ _pushSubscription=existing; return; }
@@ -6884,7 +6883,7 @@ window.onerror = (msg, src, line, col, err) => {
       If we make material changes to this policy, we will notify users by email and update the date below. We will not retroactively reduce the privacy protections described here without explicit consent.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">11. Contact</strong><br>
-      For privacy-related questions or data requests, write to us at <a href="/cdn-cgi/l/email-protection#e189848d8d8ea18c98809493948ccf809191" style="color:#B8860B;text-decoration:none"><span class="__cf_email__" data-cfemail="f29a979e9e9db29f8b938780879fdc938282">[email&#160;protected]</span></a>. We will respond within 5 business days.</p>
+      For privacy-related questions or data requests, write to us at <a href="mailto:hello&#64;myaurum&#46;app" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a>. We will respond within 5 business days.</p>
 
       <p style="color:#999;font-size:10px;border-top:1px solid #EEE;padding-top:12px;margin-top:4px">Last updated: March 2026 · MyAurum · Aurum Fintech, Mumbai, India · Registered under UDYAM</p>
     </div>
@@ -6920,7 +6919,7 @@ window.onerror = (msg, src, line, col, err) => {
       You retain ownership of all holdings data you enter. By using the service, you grant Aurum Fintech a limited, non-exclusive licence to store, process, and display your data solely for the purpose of providing the service to you. We do not claim ownership of your data, and we do not use it for any purpose other than operating the service. See our Privacy Policy for full details.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">7. Account security</strong><br>
-      You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. You must notify us immediately at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="771f121b1b18371a0e160205021a59160707">[email&#160;protected]</a> if you suspect any unauthorised use. MyAurum is not liable for loss resulting from unauthorised access caused by your failure to secure your credentials.</p>
+      You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. You must notify us immediately at <a href="mailto:hello&#64;myaurum&#46;app" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a> if you suspect any unauthorised use. MyAurum is not liable for loss resulting from unauthorised access caused by your failure to secure your credentials.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">8. Subscriptions and payments</strong><br>
       Premium subscriptions are processed via Razorpay. Subscription fees are charged in advance on an annual basis. Cancellations take effect at the end of the current billing period — access continues until expiry and no partial refunds are issued. MyAurum reserves the right to change subscription pricing with 30 days' notice to existing subscribers.</p>
@@ -6935,4 +6934,10 @@ window.onerror = (msg, src, line, col, err) => {
       We may update these Terms from time to time. Material changes will be communicated by email to registered users. Continued use of the service after changes are posted constitutes acceptance of the revised Terms.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">12. Contact</strong><br>
-      For questions regarding these Terms, contact us at <a href="/cdn-cgi/l/email-protection#6e060b0202012e03170f1b1c1b03400f1e1e" style="color:#B8860B;text-dec
+      For questions regarding these Terms, contact us at <a href="mailto:hello&#64;myaurum&#46;app" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a>.</p>
+
+    </div>
+  </div>
+</div>
+
+</body></html>`
