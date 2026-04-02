@@ -1463,7 +1463,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           </div>
           <div>
             <div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:#2C2410;margin-bottom:6px">② See live value</div>
-            <div style="font-size:13px;color:#666;line-height:1.7">Prices update every 5 minutes from global spot markets. MCX-aligned estimates for India. Your total in rupees, dollars, dirhams, or pounds — right now.</div>
+            <div style="font-size:13px;color:#666;line-height:1.7">Prices update every 5 minutes from global spot markets. India Bullion pricing for India. Your total in rupees, dollars, dirhams, or pounds — right now.</div>
           </div>
           <div>
             <div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:#2C2410;margin-bottom:6px">③ Record for posterity</div>
@@ -1543,8 +1543,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 
         <div style="text-align:center;padding:24px 16px;border:1px solid rgba(184,134,11,.18);border-radius:12px;background:#fff">
           <div style="font-size:26px;margin-bottom:10px">📊</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#2C2410;font-weight:300;margin-bottom:8px">Live MCX-aligned prices.</div>
-          <div style="font-size:11px;color:#888070;line-height:1.8">Prices sourced from global spot markets, updated every 5 minutes, MCX-aligned estimates for Indian users.</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#2C2410;font-weight:300;margin-bottom:8px">Live India Bullion prices.</div>
+          <div style="font-size:11px;color:#888070;line-height:1.8">Prices sourced from global spot markets, updated every 5 minutes, India Bullion rates for Indian users.</div>
         </div>
 
         <div style="text-align:center;padding:24px 16px;border:1px solid rgba(184,134,11,.18);border-radius:12px;background:#fff">
@@ -1577,7 +1577,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">The cruellest part: the only reliable way to find out what your gold was worth was to sell it. Accept a jeweller's price, and only then discover the number — by giving up the very thing you wanted to hold.</div>
           <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">Meanwhile, anyone who moved their gold into ETFs for the sake of a clean P&amp;L found themselves holding a digital promise instead of the real thing, bought at today's prices, not the prices their physical gold was acquired at over decades.</div>
           <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">And when it comes to succession, the problem compounds. Gold passed down through families often exists without documentation, without valuation, and without a clear record for probate or a will. Heirs are left guessing what was held, where, and what it was worth.</div>
-          <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">MyAurum was built for all three problems. It's a private digital ledger for anyone who owns physical gold or silver — jewellery, coins, bars, raw metal — and wants to know what their holdings are worth right now, in their currency, with a full gain and loss picture. A record that exists, is current, and can travel with a will. Prices update every five minutes from global spot markets, with MCX-aligned rates for India. Supports rupees, dollars, dirhams, and pounds.</div>
+          <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">MyAurum was built for all three problems. It's a private digital ledger for anyone who owns physical gold or silver — jewellery, coins, bars, raw metal — and wants to know what their holdings are worth right now, in their currency, with a full gain and loss picture. A record that exists, is current, and can travel with a will. Prices update every five minutes from global spot markets, with India Bullion rates for India. Supports rupees, dollars, dirhams, and pounds.</div>
           <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">Your data is stored on encrypted servers and never shared with anyone.</div>
           <div style="font-size:11px;color:#AAA;line-height:1.7">*<a href="https://www.gold.org/goldhub/research/gold-investment-market-and-financialisation-india-gold-market-series" target="_blank" style="color:#AAA;text-decoration:underline">World Gold Council estimate</a></div>
         </div>
@@ -1820,7 +1820,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         <button id="headerStripBtn" onclick="openAddModal()" style="padding:10px 22px;background:var(--brand);color:#FDF8F0;border:none;border-radius:7px;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;letter-spacing:.06em;cursor:pointer;white-space:nowrap;flex-shrink:0">+ Add Holding</button>
       </div>
     </div>
-    <div id="inrDutyNote" style="display:none;font-size:10px;color:var(--text-dim);text-align:right;padding-top:3px;letter-spacing:.04em;opacity:0.7">MCX-aligned estimate</div>
+    <div id="inrDutyNote" style="display:none;font-size:10px;color:var(--text-dim);text-align:right;padding-top:3px;letter-spacing:.04em;opacity:0.7">India Bullion estimate</div>
   </div>
 
   <!-- Nav -->
@@ -2085,7 +2085,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           <div class="sq-price" id="alertSilverPrice">—</div>
         </div>
       </div>
-      <div id="alertDutyNote" style="display:none;font-size:11px;color:var(--text-dim);text-align:center;padding:2px 0 6px;letter-spacing:.04em;opacity:0.7">MCX-aligned estimate</div>
+      <div id="alertDutyNote" style="display:none;font-size:11px;color:var(--text-dim);text-align:center;padding:2px 0 6px;letter-spacing:.04em;opacity:0.7">India Bullion estimate</div>
       <div class="alert-form-card">
         <div class="alert-form-title">New Alert</div>
         <div class="field-row" style="margin-bottom:10px">
@@ -2922,6 +2922,9 @@ let currency='INR';
 let benchmark='MCX';
 const BENCHMARK_LABELS={MCX:'IND Bullion',COMEX:'COMEX',LBMA:'LBMA',DGCX:'DGCX'};
 const CURRENCY_DEFAULT_BENCHMARK={INR:'MCX',USD:'COMEX',GBP:'LBMA',EUR:'LBMA',AED:'DGCX'};
+async function saveCurrencyPreference(c){
+  try{ await api('PATCH','/auth/profile',{preferred_currency:c}); }catch(e){}
+}
 function setBenchmark(b){
   benchmark=b;
   document.querySelectorAll('.benchmark-btn').forEach(el=>el.classList.toggle('active',el.dataset.b===b));
@@ -2932,9 +2935,11 @@ function setCurrency(c,btn){
   benchmark=CURRENCY_DEFAULT_BENCHMARK[c]||'COMEX';
   document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  _coreUpdatePriceDisplay();
   updateSummary();renderList();
   if(groupedViewActive)renderGroupedPL();
   if(document.getElementById('panelChart').classList.contains('active')){updateChartPanel();renderHistoryChart();}
+  if(currentUser) saveCurrencyPreference(c);
 }
 let items=[];
 let activeHTab='all',activeFilter='all';
@@ -3820,12 +3825,22 @@ async function loginUser(user){
   try{
     priceAlerts=await api('GET','/alerts');
   }catch(e){priceAlerts=[];}
+  // Apply preferred currency from DB before rendering
+  if(user.preferred_currency && user.preferred_currency !== currency){
+    const prefC = user.preferred_currency;
+    currency = prefC;
+    benchmark = CURRENCY_DEFAULT_BENCHMARK[prefC] || 'COMEX';
+    document.querySelectorAll('.currency-btn').forEach(b=>{
+      const match = b.getAttribute('onclick')||'';
+      b.classList.toggle('active', match.includes(`'${prefC}'`));
+    });
+  }
   updatePriceDisplay();
   updateAll();
-  // Restore last active tab
-  const savedTab = sessionStorage.getItem('myaurum_tab') || 'vault';
-  const tabBtnMap = {vault:'navMyAurum',chart:'navChart',alerts:'navAlerts',succession:'navSuccession',profile:'navProfile'};
-  setNavTab(savedTab, document.getElementById(tabBtnMap[savedTab]||'navMyAurum'));
+  // Always land on MyAurum tab on login, scroll to top
+  sessionStorage.removeItem('myaurum_tab');
+  setNavTab('vault', document.getElementById('navMyAurum'));
+  window.scrollTo(0,0);
   fetchPrices();
   startInactivityTimer();
   // Auto-refresh prices every 5 minutes while session is active
@@ -6800,7 +6815,12 @@ function showExitOverlay(){
 }
 
 function openModalWithHistory(id){
-  document.getElementById(id).classList.add('open');
+  const el = document.getElementById(id);
+  el.classList.add('open');
+  // Reset scroll to top so modal always opens from the beginning
+  const body = el.querySelector('.modal-body, .modal-scroll, .bottom-sheet-body, .modal-inner');
+  if(body) body.scrollTop = 0;
+  el.scrollTop = 0;
   // Only push history if no other modal is currently open (avoid nested modal history conflicts)
   const anyOpen = [...document.querySelectorAll('.modal-overlay')].some(m => m.classList.contains('open') && m.id !== id);
   if(!anyOpen){
@@ -6889,7 +6909,7 @@ window.onerror = (msg, src, line, col, err) => {
       All valuations are estimates based on declared weight, purity, and global spot prices at the time of calculation. They may not reflect the price you would receive upon sale. Actual resale values depend on independent purity verification, local market conditions, buyer premiums, making charges, taxes, and other factors outside our control. You should not rely on MyAurum valuations for financial decisions, insurance, estate valuation, or legal purposes without independent professional assessment.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">4. Intellectual property</strong><br>
-      MyAurum, and all content, features, functionality, design, source code, user interface, and proprietary methodologies within it — including but not limited to the MCX-aligned pricing model, succession-oriented ledger structure, encrypted personal holdings system, and gifting provenance framework — are the exclusive intellectual property of Aurum Fintech (Proprietor: Satyam Nagwekar), registered in India. The name "MyAurum" is a registered trademark. All rights are reserved.<br><br>
+      MyAurum, and all content, features, functionality, design, source code, user interface, and proprietary methodologies within it — including but not limited to the India Bullion pricing model, succession-oriented ledger structure, encrypted personal holdings system, and gifting provenance framework — are the exclusive intellectual property of Aurum Fintech (Proprietor: Satyam Nagwekar), registered in India. The name "MyAurum" is a registered trademark. All rights are reserved.<br><br>
       You may not copy, reproduce, modify, reverse engineer, decompile, disassemble, scrape, frame, republish, distribute, or create derivative works from any part of this platform without prior written consent. Unauthorised use of any intellectual property of MyAurum may give rise to civil and criminal liability under applicable Indian and international law.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">5. Prohibited uses</strong><br>
