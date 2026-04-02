@@ -5273,7 +5273,7 @@ function openDetail(idx){
   if(item.sold){
     actionBtn=`<div class="detail-action-btn sold-tag">✓ Sold ${item.sellDate||''}</div>`;
   } else if(item.gifted){
-    actionBtn=`<div class="detail-action-btn gifted-tag" style="flex:0 0 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:42%">📤 ${item.giftTo?escHtml(item.giftTo):'Gifted'}${item.giftDate?' · '+item.giftDate:''}</div>
+    actionBtn=`<div class="detail-action-btn gifted-tag" style="flex:0 0 auto;white-space:normal;text-align:center;line-height:1.6">📤 ${item.giftTo?escHtml(item.giftTo):'Gifted'}${item.giftDate?`<br><span style="font-size:10px;opacity:.75">${item.giftDate}</span>`:''}</div>
       <button class="detail-action-btn" onclick="reattributeItem(${idx})" style="flex:1;border-color:var(--border-gold);color:#c084fc;background:rgba(192,132,252,.09);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:10px 12px;height:auto">
         <span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase">↩ Re-attribute</span>
         <span style="font-size:10.5px;color:var(--text-dim);letter-spacing:.01em;text-transform:none;font-weight:400;line-height:1.4;white-space:normal;text-align:center">Stays in the family? Re-add under a new holder.</span>
