@@ -163,6 +163,7 @@ async function initDB() {
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS razorpay_subscription_id TEXT`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS razorpay_customer_id TEXT`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS vault_notes TEXT`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS preferred_currency TEXT`);
   await q(`ALTER TABLE price_cache ADD COLUMN IF NOT EXISTS ibja_gold_inr REAL`);
   await q(`ALTER TABLE price_cache ADD COLUMN IF NOT EXISTS ibja_silver_inr REAL`);
   await q(`ALTER TABLE price_cache ADD COLUMN IF NOT EXISTS ibja_fetched_at TIMESTAMPTZ`);
@@ -583,7 +584,7 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     const u = r.rows[0];
     const token = jwt.sign({ userId:u.id, email:u.email }, JWT_SECRET, { expiresIn:'30d' });
     // Respond immediately
-    res.json({ token, user:{ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:true } });
+    res.json({ token, user:{ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, preferred_currency:u.preferred_currency||null, joinedAt:u.created_at, emailVerified:true } });
     // Send welcome email in background
     setImmediate(async () => {
       try {
@@ -635,7 +636,7 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
     }
     await q('UPDATE users SET last_seen=NOW(), auth_method=$2 WHERE id=$1', [u.id, 'email']);
     const token = jwt.sign({ userId:u.id, email:u.email }, JWT_SECRET, { expiresIn:'30d' });
-    res.json({ token, user:{ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:true } });
+    res.json({ token, user:{ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, preferred_currency:u.preferred_currency||null, joinedAt:u.created_at, emailVerified:true } });
   } catch(e) { console.error(e); res.status(500).json({ error:'Server error' }); }
 });
 
@@ -656,7 +657,7 @@ app.post('/api/auth/verify-otp', authLimiter, async (req, res) => {
     if (!u) return res.status(404).json({ error: 'User not found' });
     await q('UPDATE users SET last_seen=NOW() WHERE id=$1', [u.id]);
     const token = jwt.sign({ userId: u.id, email: u.email }, JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:true } });
+    res.json({ token, user: { id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, preferred_currency:u.preferred_currency||null, joinedAt:u.created_at, emailVerified:true } });
   } catch(e) { console.error(e); res.status(500).json({ error: 'Server error' }); }
 });
 
@@ -689,16 +690,25 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
     if (!u) return res.status(404).json({ error:'User not found' });
     await q('UPDATE users SET last_seen=NOW() WHERE id=$1', [u.id]);
     const isPremium = !!u.is_premium && (!u.premium_expires_at || new Date(u.premium_expires_at) > new Date());
-    res.json({ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, joinedAt:u.created_at, emailVerified:!!u.email_verified, twoFactorEnabled:!!u.two_factor_enabled, isPremium, premiumExpiresAt:u.premium_expires_at||null, razorpaySubscriptionId:u.razorpay_subscription_id||null });
+    res.json({ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, preferred_currency:u.preferred_currency||null, joinedAt:u.created_at, emailVerified:!!u.email_verified, twoFactorEnabled:!!u.two_factor_enabled, isPremium, premiumExpiresAt:u.premium_expires_at||null, razorpaySubscriptionId:u.razorpay_subscription_id||null });
   } catch(e) { res.status(500).json({ error:'Server error' }); }
 });
 
 app.patch('/api/auth/profile', requireAuth, async (req, res) => {
-  const { firstName, lastName, age, country, email, password } = req.body;
+  const { firstName, lastName, age, country, email, password, preferred_currency } = req.body;
   try {
     const r = await q('SELECT * FROM users WHERE id=$1', [req.user.userId]);
     const u = r.rows[0];
     if (!u) return res.status(404).json({ error:'User not found' });
+
+    // Lightweight currency-only update (from setCurrency in app)
+    if (preferred_currency && Object.keys(req.body).length === 1) {
+      const valid = ['INR','USD','GBP','EUR','AED'];
+      if (!valid.includes(preferred_currency)) return res.status(400).json({ error:'Invalid currency' });
+      await q('UPDATE users SET preferred_currency=$1 WHERE id=$2', [preferred_currency, u.id]);
+      return res.json({ ok: true });
+    }
+
     const newEmail = email ? email.toLowerCase().trim() : u.email;
     if (newEmail !== u.email) {
       const conflict = await q('SELECT id FROM users WHERE LOWER(email)=LOWER($1) AND id!=$2', [newEmail, u.id]);
@@ -706,11 +716,11 @@ app.patch('/api/auth/profile', requireAuth, async (req, res) => {
     }
     let newHash = u.password;
     if (password && password.length >= 6) newHash = await bcrypt.hash(password, 12);
-    const updated = await q(`UPDATE users SET email=$1,password=$2,first_name=$3,last_name=$4,age=$5,country=$6,updated_at=NOW() WHERE id=$7 RETURNING *`,
-      [newEmail, newHash, firstName||u.first_name, lastName||u.last_name, age||u.age, country||u.country, u.id]);
+    const updated = await q(`UPDATE users SET email=$1,password=$2,first_name=$3,last_name=$4,age=$5,country=$6,preferred_currency=COALESCE($7,preferred_currency),updated_at=NOW() WHERE id=$8 RETURNING *`,
+      [newEmail, newHash, firstName||u.first_name, lastName||u.last_name, age||u.age, country||u.country, preferred_currency||null, u.id]);
     const uu = updated.rows[0];
     const token = jwt.sign({ userId:uu.id, email:uu.email }, JWT_SECRET, { expiresIn:'30d' });
-    res.json({ token, user:{ id:uu.id, email:uu.email, firstName:uu.first_name, lastName:uu.last_name, age:uu.age, country:uu.country, joinedAt:uu.created_at } });
+    res.json({ token, user:{ id:uu.id, email:uu.email, firstName:uu.first_name, lastName:uu.last_name, age:uu.age, country:uu.country, preferred_currency:uu.preferred_currency, joinedAt:uu.created_at } });
   } catch(e) { console.error(e); res.status(500).json({ error:'Server error' }); }
 });
 
@@ -1399,7 +1409,7 @@ app.post('/api/auth/google', authLimiter, async (req, res) => {
 
     const token = jwt.sign({ userId: u.id, email: u.email }, JWT_SECRET, { expiresIn: '30d' });
     await q('UPDATE users SET last_seen=NOW(), auth_method=$2 WHERE id=$1', [u.id, 'google']);
-    res.json({ token, isNewUser, user: { id: u.id, email: u.email, firstName: u.first_name, lastName: u.last_name, age: u.age, country: u.country, joinedAt: u.created_at, emailVerified: true } });
+    res.json({ token, isNewUser, user: { id: u.id, email: u.email, firstName: u.first_name, lastName: u.last_name, age: u.age, country: u.country, preferred_currency: u.preferred_currency||null, joinedAt: u.created_at, emailVerified: true } });
   } catch(e) {
     console.error('[google] Auth error:', e.message);
     res.status(401).json({ error: 'Google sign-in failed: ' + e.message });
@@ -1485,7 +1495,7 @@ async function sendWeeklyDigests() {
       const isMCX = isIndia;
       const currency = isIndia ? 'INR' : 'USD';
       const sym = isIndia ? '₹' : '$';
-      const bLabel = isIndia ? 'MCX' : 'COMEX';
+      const bLabel = isIndia ? 'India Bullion' : 'COMEX';
       const rates = { INR: priceCache.usd_inr, AED: priceCache.usd_aed, EUR: priceCache.usd_eur, GBP: priceCache.usd_gbp, USD: 1 };
 
       // Compute per-metal values
@@ -1542,10 +1552,10 @@ async function sendWeeklyDigests() {
 
       // Spot strings
       const goldSpotStr = isMCX
-        ? `₹${Math.round(priceCache.gold / 31.1035 * 10 * priceCache.usd_inr * 1.054).toLocaleString('en-IN')}/10g (MCX)`
+        ? `₹${Math.round(priceCache.gold / 31.1035 * 10 * priceCache.usd_inr * 1.054).toLocaleString('en-IN')}/10g (India Bullion)`
         : `$${priceCache.gold.toFixed(2)}/oz (COMEX)`;
       const silverSpotStr = isMCX
-        ? `₹${Math.round(priceCache.silver / 31.1035 * 10 * priceCache.usd_inr * 1.054).toLocaleString('en-IN')}/10g (MCX)`
+        ? `₹${Math.round(priceCache.silver / 31.1035 * 10 * priceCache.usd_inr * 1.054).toLocaleString('en-IN')}/10g (India Bullion)`
         : `$${priceCache.silver.toFixed(2)}/oz (COMEX)`;
       const platinumSpotStr = isMCX
         ? `₹${Math.round((priceCache.platinum||980) / 31.1035 * 10 * priceCache.usd_inr).toLocaleString('en-IN')}/10g (COMEX)`
@@ -2227,7 +2237,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #DDD5
 </div>
 <div class="hero">
   <div class="owner">${u.first_name} ${u.last_name}'s Holdings</div>
-  <div class="asof">As of ${asOf} &nbsp;·&nbsp; ${isMCX ? 'MCX benchmark' : 'COMEX benchmark'}</div>
+  <div class="asof">As of ${asOf} &nbsp;·&nbsp; ${isMCX ? 'India Bullion benchmark' : 'COMEX benchmark'}</div>
   <div class="total-card">
     <div>
       <div class="total-label">Portfolio Value</div>
