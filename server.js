@@ -1729,6 +1729,13 @@ app.get('/api/prices/history', async (req, res) => {
 // ─────────────────────────────────────────
 //  WEB PUSH
 // ─────────────────────────────────────────
+// Serve the push ServiceWorker as a real file (blob URLs are not supported for SW registration)
+app.get('/sw.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.setHeader('Service-Worker-Allowed', '/');
+  res.send(`self.addEventListener('push',e=>{const d=e.data?e.data.json():{};e.waitUntil(self.registration.showNotification(d.title||'MyAurum Alert',{body:d.body||'',icon:'/favicon.ico',badge:'/favicon.ico',tag:'myaurum-alert',data:{url:d.url||'/'}}))});self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(clients.openWindow(e.notification.data.url||'/'))});`);
+});
+
 app.get('/api/push/vapid-public-key', (req, res) => {
   if (!VAPID_PUBLIC) return res.status(404).json({ error: 'Push not configured' });
   res.json({ key: VAPID_PUBLIC });
