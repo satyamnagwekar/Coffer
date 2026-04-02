@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="MyAurum">
 <meta name="application-name" content="MyAurum">
 <meta name="theme-color" content="#F5F0E8">
-<meta name="description" content="A private ledger for your physical gold and silver. Weights, values, holdings, purchase history. Your family's gold, recorded for posterity.">
+<meta name="description" content="A private ledger for your physical gold, silver, and platinum. Weights, values, holdings, purchase history. Your family's precious metals, recorded for posterity.">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -17,7 +17,7 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://myaurum.app">
 <meta property="og:title" content="MyAurum — Your family's gold, recorded for posterity">
-<meta property="og:description" content="A private ledger for your physical gold and silver. Weights, values, holdings, purchase history. Your family's gold, recorded for posterity.">
+<meta property="og:description" content="A private ledger for your physical gold, silver, and platinum. Weights, values, holdings, purchase history. Your family's precious metals, recorded for posterity.">
 <meta property="og:image" content="https://myaurum.app/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -26,7 +26,7 @@
 <!-- Twitter / WhatsApp -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="MyAurum — Your family's gold, recorded for posterity">
-<meta name="twitter:description" content="A private ledger for your physical gold and silver. Weights, values, holdings, purchase history. Your family's gold, recorded for posterity.">
+<meta name="twitter:description" content="A private ledger for your physical gold, silver, and platinum. Weights, values, holdings, purchase history. Your family's precious metals, recorded for posterity.">
 <meta name="twitter:image" content="https://myaurum.app/og-image.png">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23F5F0E8'/><circle cx='76' cy='96' r='36' fill='none' stroke='%238B6914' stroke-width='12'/><circle cx='116' cy='96' r='36' fill='none' stroke='%238B6914' stroke-width='12'/></svg>">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
@@ -1655,8 +1655,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
   <div id="mobileConfirmBox" style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 40px;border-top:2px solid var(--brand)" onclick="event.stopPropagation()">
     <div id="mobileConfirmTitle" style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;color:var(--text);margin-bottom:8px;text-align:center"></div>
     <div id="mobileConfirmDesc" style="font-size:12px;color:var(--text-dim);line-height:1.7;text-align:center;margin-bottom:24px"></div>
-    <button id="mobileConfirmBtn" style="width:100%;padding:14px;background:var(--brand);color:#FDF8F0;border:none;border-radius:12px;font-family:'Jost',sans-serif;font-size:13px;letter-spacing:.08em;cursor:pointer;margin-bottom:10px"></button>
-    <button onclick="hideMobileConfirm()" style="width:100%;padding:12px;background:none;border:1.5px solid var(--border);border-radius:12px;font-family:'Jost',sans-serif;font-size:12px;color:var(--text-dim);cursor:pointer;letter-spacing:.06em">Cancel</button>
+    <button id="mobileConfirmBtn" aria-label="Confirm" style="width:100%;padding:14px;background:var(--brand);color:#FDF8F0;border:none;border-radius:12px;font-family:'Jost',sans-serif;font-size:13px;letter-spacing:.08em;cursor:pointer;margin-bottom:10px"></button>
+    <button aria-label="Cancel" onclick="hideMobileConfirm()" style="width:100%;padding:12px;background:none;border:1.5px solid var(--border);border-radius:12px;font-family:'Jost',sans-serif;font-size:12px;color:var(--text-dim);cursor:pointer;letter-spacing:.06em">Cancel</button>
   </div>
 </div>
 
@@ -1816,7 +1816,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         <div style="font-size:11px;color:var(--text-dim);margin-top:3px" id="headerStripSub"></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-        <button id="pageReloadBtn" onclick="location.reload()" title="Reload app" style="display:none;align-items:center;justify-content:center;width:36px;height:36px;background:transparent;border:1px solid rgba(139,105,20,.25);border-radius:7px;cursor:pointer;color:var(--brand);flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+        <button id="pageReloadBtn" onclick="location.reload()" title="Reload app" aria-label="Reload app" style="display:none;align-items:center;justify-content:center;width:36px;height:36px;background:transparent;border:1px solid rgba(139,105,20,.25);border-radius:7px;cursor:pointer;color:var(--brand);flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
         <button id="headerStripBtn" onclick="openAddModal()" style="padding:10px 22px;background:var(--brand);color:#FDF8F0;border:none;border-radius:7px;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;letter-spacing:.06em;cursor:pointer;white-space:nowrap;flex-shrink:0">+ Add Holding</button>
       </div>
     </div>
@@ -1928,7 +1928,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     <!-- Purchase price nudge -->
     <div id="pricePaidNudge" style="display:none;margin:0 14px 10px;padding:10px 14px;background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.2);border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:10px">
       <div style="font-size:11px;color:#6B4F10;line-height:1.6;font-family:'Jost',sans-serif"><span id="nudgeCount"></span> holding<span id="nudgePlural"></span> without a purchase price. <span style="opacity:.8">Add them to see your real gain.</span></div>
-      <button onclick="dismissNudge()" style="background:none;border:none;color:#B8A070;font-size:16px;cursor:pointer;flex-shrink:0;padding:0;line-height:1">×</button>
+      <button onclick="dismissNudge()" aria-label="Dismiss" style="background:none;border:none;color:#B8A070;font-size:16px;cursor:pointer;flex-shrink:0;padding:0;line-height:1">×</button>
     </div>
 
     <div class="filter-bar">
@@ -2293,7 +2293,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     <div class="modal" style="max-width:420px">
       <div class="modal-header">
         <div class="modal-title">Settings</div>
-        <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
+        <button class="modal-close" aria-label="Close" onclick="closeModal('settingsModal')">✕</button>
       </div>
       <div style="padding:0 20px 24px">
 
@@ -2316,7 +2316,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
             </div>
             <button id="twoFAToggleBtn" onclick="toggleTwoFA()" style="flex-shrink:0;padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:11px;font-family:'Jost',sans-serif;letter-spacing:.06em;cursor:pointer;color:var(--text-dim);transition:all .2s;white-space:nowrap">Enable</button>
           </div>
-          <div id="twoFANote" style="display:none;margin-top:8px;font-size:11px;color:#B8A070;padding:8px 12px;background:rgba(184,134,11,.06);border-radius:6px;line-height:1.6">Verify your email address before enabling two-factor authentication. <a href="#" id="verifyNowLink" onclick="sendVerifyNow(event)" style="color:#B8860B;text-decoration:underline;cursor:pointer">Send verification email →</a></div>
+          <div id="twoFANote" style="display:none;margin-top:8px;font-size:11px;color:#B8A070;padding:8px 12px;background:rgba(184,134,11,.06);border-radius:6px;line-height:1.6">Verify your email address before enabling two-factor authentication. <a href="javascript:void(0)" id="verifyNowLink" onclick="sendVerifyNow(event)" style="color:#B8860B;text-decoration:underline;cursor:pointer">Send verification email →</a></div>
         </div>
 
         <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
@@ -2351,7 +2351,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     <div class="modal" style="max-width:420px">
       <div class="modal-header">
         <div class="modal-title" style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--brand)">MyAurum Premium</div>
-        <button class="modal-close" onclick="closeModal('premiumModal')">✕</button>
+        <button class="modal-close" aria-label="Close" onclick="closeModal('premiumModal')">✕</button>
       </div>
       <div style="padding:0 20px 24px">
         <div style="text-align:center;padding:16px 0 20px">
@@ -2389,7 +2389,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 
   <div class="fab-wrap" id="fabWrap">
     <div class="fab-label">Add holding</div>
-    <button class="fab" onclick="openAddModal()">+</button>
+    <button class="fab" onclick="openAddModal()" aria-label="Add holding">+</button>
   </div>
 
 </div><!-- /app-screen -->
@@ -2400,7 +2400,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div><div class="modal-title">Add Holding</div><div class="modal-subtitle">Metal, purity, and weight is all you need to see a live value</div></div>
-      <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+      <button class="modal-close" aria-label="Close" onclick="closeModal('addModal')">✕</button>
     </div>
     <div class="modal-body">
 
@@ -2613,7 +2613,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div><div class="modal-title">Record Sale</div><div class="modal-subtitle">Log what you received for this item</div></div>
-      <button class="modal-close" onclick="closeModal('sellModal')">✕</button>
+      <button class="modal-close" aria-label="Close" onclick="closeModal('sellModal')">✕</button>
     </div>
     <div class="modal-body">
       <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--text-mid)" id="sellItemName"></div>
@@ -2645,7 +2645,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div><div class="modal-title">Record Gift</div><div class="modal-subtitle">Log this item as gifted to someone</div></div>
-      <button class="modal-close" onclick="closeModal('giftModal')">✕</button>
+      <button class="modal-close" aria-label="Close" onclick="closeModal('giftModal')">✕</button>
     </div>
     <div class="modal-body">
       <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--text-mid)" id="giftItemName"></div>
@@ -2670,7 +2670,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div><div class="modal-title" id="detailTitle">Detail</div><div class="modal-subtitle" id="detailSubtitle"></div></div>
-      <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+      <button class="modal-close" aria-label="Close" onclick="closeModal('detailModal')">✕</button>
     </div>
     <div id="detailBody" class="modal-body" style="padding-top:0"></div>
   </div>
@@ -2682,7 +2682,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div><div class="modal-title">Edit Profile</div><div class="modal-subtitle">Update your account details</div></div>
-      <button class="modal-close" onclick="closeModal('editProfileModal')">✕</button>
+      <button class="modal-close" aria-label="Close" onclick="closeModal('editProfileModal')">✕</button>
     </div>
     <div class="modal-body">
       <div id="editProfileMsg"></div>
@@ -2732,7 +2732,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
   <div class="modal upgrade-modal">
     <div class="modal-handle"></div>
     <div class="modal-header" style="justify-content:flex-end;padding-bottom:0">
-      <button class="modal-close" onclick="closeModal('upgradeModal')">✕</button>
+      <button class="modal-close" aria-label="Close" onclick="closeModal('upgradeModal')">✕</button>
     </div>
     <div class="modal-body" style="padding-top:8px">
       <div style="text-align:center;margin-bottom:16px">
@@ -2769,7 +2769,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div><div class="modal-title" id="vaultModalTitle">New Vault</div><div class="modal-subtitle">Create a named ledger for a subset of your holdings</div></div>
-      <button class="modal-close" onclick="closeModal('vaultModal')">✕</button>
+      <button class="modal-close" aria-label="Close" onclick="closeModal('vaultModal')">✕</button>
     </div>
     <div class="modal-body">
       <div class="field">
@@ -2792,7 +2792,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div><div class="modal-title" id="heirModalTitle">Add Heir</div><div class="modal-subtitle">Nominated heirs appear in your succession export</div></div>
-      <button class="modal-close" onclick="closeModal('heirModal')">✕</button>
+      <button class="modal-close" aria-label="Close" onclick="closeModal('heirModal')">✕</button>
     </div>
     <div class="modal-body">
       <div class="field">
@@ -2824,7 +2824,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div><div class="modal-title">Edit Holding</div><div class="modal-subtitle">Update this item's details</div></div>
-      <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+      <button class="modal-close" aria-label="Close" onclick="closeModal('editModal')">✕</button>
     </div>
     <div class="modal-body">
       <div class="field">
@@ -3408,7 +3408,7 @@ function renderVaultNotes(){
         ${displayVal}
         <div class="vn-card-actions">
           <button class="vn-card-btn" onclick="vnToggleReveal(${i})" title="${revealed?'Hide':'Reveal'}">${revealed?'🙈':'👁'}</button>
-          <button class="vn-card-btn" onclick="deleteVaultNote(${i})" title="Delete" style="color:var(--text-dim)">×</button>
+          <button class="vn-card-btn" onclick="deleteVaultNote(${i})" title="Delete" aria-label="Delete note" style="color:var(--text-dim)">×</button>
         </div>
       </div>`;
   }).join('');
@@ -3540,7 +3540,7 @@ function renderDMS() {
         <span class="custodian-name">${n.name.replace(/</g,'&lt;')}</span>
         <span class="custodian-email">${n.email.replace(/</g,'&lt;')}</span>
       </div>
-      <button onclick="dmsRemoveCustodian(${n.id})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;padding:0 4px;line-height:1">×</button>
+      <button onclick="dmsRemoveCustodian(${n.id})" aria-label="Remove custodian" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;padding:0 4px;line-height:1">×</button>
     </div>`).join('');
   const firedNotice = firedAt ? `<div class="dms-status">⚠️ This switch has already fired on ${new Date(firedAt).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}. Your custodians have been notified. Log in regularly to prevent future triggers.</div>` : '';
   const statusText = enabled && _dmsCustodians.length > 0
@@ -4935,7 +4935,7 @@ function handlePhotoUpload(input){
 }
 function renderPhotoGrid(){
   const grid=document.getElementById('photosGrid');
-  grid.innerHTML=photosBase64.map((b64,i)=>`<div class="photo-thumb"><img src="${b64}" alt="Photo ${i+1}" onclick="openLightbox(this.src)"><button class="remove-img" onclick="removePhoto(${i})">✕</button></div>`).join('');
+  grid.innerHTML=photosBase64.map((b64,i)=>`<div class="photo-thumb"><img src="${b64}" alt="Photo ${i+1}" onclick="openLightbox(this.src)"><button class="remove-img" onclick="removePhoto(${i})" aria-label="Remove photo">✕</button></div>`).join('');
   grid.style.display=photosBase64.length?'grid':'none';
   document.getElementById('photoUploadArea').style.display=photosBase64.length>=3?'none':'';
 }
@@ -6294,7 +6294,7 @@ function renderAlertsList(){
         ${a.note?`<div class="alert-note-text">${escHtml(a.note)}</div>`:''}
         <div class="alert-status ${statusCls}">${statusTxt} · Now ${spotDisplay}</div>
       </div>
-      <button class="alert-delete" onclick="deleteAlert(${a.id})">✕</button>
+      <button class="alert-delete" onclick="deleteAlert(${a.id})" aria-label="Delete alert">✕</button>
     </div>`;
   }).join('');
 }
@@ -6841,7 +6841,7 @@ window.onerror = (msg, src, line, col, err) => {
   <div style="max-width:600px;width:100%;background:#fff;border:1px solid #DDD5C0;border-radius:16px;padding:32px 28px;box-shadow:0 4px 24px rgba(0,0,0,.08)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
       <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#8B6914;letter-spacing:.1em">Privacy Policy</div>
-      <button onclick="document.getElementById('privacyOverlay').style.display='none'" style="background:none;border:1px solid #DDD5C0;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;color:#888;display:flex;align-items:center;justify-content:center">×</button>
+      <button onclick="document.getElementById('privacyOverlay').style.display='none'" style="background:none;border:1px solid #DDD5C0;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;color:#888;display:flex;align-items:center;justify-content:center" aria-label="Close">×</button>
     </div>
     <div style="font-size:12px;color:#555;line-height:1.95;display:flex;flex-direction:column;gap:18px">
 
@@ -6895,7 +6895,7 @@ window.onerror = (msg, src, line, col, err) => {
   <div style="max-width:600px;width:100%;background:#fff;border:1px solid #DDD5C0;border-radius:16px;padding:32px 28px;box-shadow:0 4px 24px rgba(0,0,0,.08)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
       <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#8B6914;letter-spacing:.1em">Terms of Use</div>
-      <button onclick="document.getElementById('termsOverlay').style.display='none'" style="background:none;border:1px solid #DDD5C0;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;color:#888;display:flex;align-items:center;justify-content:center">×</button>
+      <button onclick="document.getElementById('termsOverlay').style.display='none'" style="background:none;border:1px solid #DDD5C0;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;color:#888;display:flex;align-items:center;justify-content:center" aria-label="Close">×</button>
     </div>
     <div style="font-size:12px;color:#555;line-height:1.95;display:flex;flex-direction:column;gap:18px">
 
