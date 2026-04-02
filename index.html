@@ -5273,7 +5273,11 @@ function openDetail(idx){
   if(item.sold){
     actionBtn=`<div class="detail-action-btn sold-tag">✓ Sold ${item.sellDate||''}</div>`;
   } else if(item.gifted){
-    actionBtn=`<div class="detail-action-btn gifted-tag">📤 Gifted ${item.giftDate?'· '+item.giftDate:''}${item.giftTo?' to '+escHtml(item.giftTo):''}</div>`;
+    actionBtn=`<div class="detail-action-btn gifted-tag">📤 Gifted ${item.giftDate?'· '+item.giftDate:''}${item.giftTo?' to '+escHtml(item.giftTo):''}</div>
+      <div style="display:flex;flex-direction:column;gap:5px;align-items:stretch">
+        <button class="detail-action-btn" onclick="reattributeItem(${idx})" style="border-color:rgba(192,132,252,.35);color:#c084fc;background:rgba(192,132,252,.09);letter-spacing:.04em">↩ Re-attribute</button>
+        <div style="font-size:10px;color:var(--text-dim);line-height:1.5;text-align:center;padding:0 4px">Stays in the family? Add it as a fresh holding under a new holder.</div>
+      </div>`;
   } else {
     actionBtn=`<button class="detail-action-btn sell" onclick="openSellModal(${idx})">Record Sale</button>
       <button class="detail-action-btn gift" onclick="openGiftModal(${idx})">Record Gift</button>`;
@@ -5300,9 +5304,6 @@ function openDetail(idx){
         ${item.giftNotes&&!item.giftNotes.startsWith('enc:v1:')?`<div class="detail-row"><div class="detail-key">Occasion</div><div class="detail-val">${escHtml(item.giftNotes)}</div></div>`:''}
         <div class="detail-row"><div class="detail-key">Value at Gift</div><div class="detail-val">${item.giftValueUSD?fmtDisp(item.giftValueUSD*(benchmark==='MCX'&&item.metal!=='platinum'?rates.INR*1.054:rates[currency]||1)):'—'}</div></div>
         ${gRow}
-        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
-          <div style="font-size:11px;color:var(--text-dim);line-height:1.7;margin-bottom:10px">If this item remains in the family, you can re-attribute it to a new holder — it will be added as a fresh holding under their name.</div>
-          <button onclick="reattributeItem(${idx})" style="width:100%;padding:10px;background:transparent;border:1px solid var(--border-gold);border-radius:var(--radius-xs);color:var(--brand);font-family:'Jost',sans-serif;font-size:12px;letter-spacing:.06em;cursor:pointer">↩ Re-attribute to another holder</button>
         </div></div>`;
     })()}
 
