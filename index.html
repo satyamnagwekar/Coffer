@@ -51,9 +51,11 @@
   /* Silver accents */
   --silver:#7A8EA0;--silver-bright:#4A6070;--silver-dim:#A8BCC8;--silver-glow:rgba(122,142,160,.1);
   /* Status */
-  --green:#1A7A4A;--green-dim:rgba(26,122,74,.15);--green-glow:rgba(26,122,74,.1);
-  --red:#B03030;--red-dim:rgba(176,48,48,.12);
+  --green:#B8860B;--green-dim:rgba(184,134,11,.14);--green-glow:rgba(184,134,11,.08);
+  --red:#A0522D;--red-dim:rgba(160,82,45,.12);
   --blue:#2A6EA0;--blue-dim:rgba(42,110,160,.12);
+  /* Status indicators (sold, success, share) — teal-moss, distinct from gain gold */
+  --status-green:#1A7A4A;--status-green-dim:rgba(26,122,74,.12);
   /* Light parchment backgrounds */
   --bg:#F5F0E8;--bg2:#FFFFFF;--bg3:#F0EBE0;--bg4:#EAE4D8;
   --border:#DDD5C0;--border2:#CFC7B0;--border-gold:rgba(139,105,20,.25);
@@ -163,11 +165,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* Error / success messages */
 .msg{padding:10px 14px;border-radius:var(--radius-xs);font-size:11px;line-height:1.5;display:none}
 .msg.error{background:rgba(224,92,92,.1);border:1px solid rgba(224,92,92,.25);color:#f09090;display:block}
-.msg.success{background:rgba(46,204,138,.1);border:1px solid rgba(46,204,138,.25);color:#80e4b8;display:block}
+.msg.success{background:rgba(26,122,74,.1);border:1px solid rgba(26,122,74,.25);color:#5db89a;display:block}
 
 /* Free badge */
-.free-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(46,204,138,.08);border:1px solid var(--green-dim);border-radius:20px;padding:6px 14px;font-size:11px;color:var(--green);letter-spacing:.1em;text-transform:uppercase;width:fit-content}
-.free-badge .dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.free-badge{display:inline-flex;align-items:center;gap:7px;background:var(--status-green-dim);border:1px solid var(--status-green-dim);border-radius:20px;padding:6px 14px;font-size:11px;color:var(--status-green);letter-spacing:.1em;text-transform:uppercase;width:fit-content}
+.free-badge .dot{width:5px;height:5px;border-radius:50%;background:var(--status-green);animation:pulse 2s infinite}
 .premium-badge{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,rgba(139,105,20,.12),rgba(184,146,26,.08));border:1px solid rgba(139,105,20,.3);border-radius:20px;padding:6px 14px;font-size:11px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;width:fit-content}
 .premium-badge .star{font-size:10px}
 /* Plan section */
@@ -178,7 +180,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .plan-price span{font-size:12px;color:var(--text-dim);font-family:'Jost',sans-serif}
 .plan-features{margin-top:10px;display:flex;flex-direction:column;gap:5px}
 .plan-feat{font-size:11px;color:var(--text-mid);display:flex;align-items:center;gap:7px}
-.plan-feat .tick{color:var(--green);font-size:12px}
+.plan-feat .tick{color:var(--status-green);font-size:12px}
 .plan-feat .lock{color:var(--text-dim);font-size:10px}
 .btn-upgrade{width:100%;padding:15px;background:linear-gradient(135deg,#8B6914,#B8921A);border:none;border-radius:var(--radius-sm);color:#FDF8F0;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(139,105,20,.25);margin-top:12px}
 .btn-upgrade:hover{box-shadow:0 6px 20px rgba(139,105,20,.35)}
@@ -275,7 +277,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .upgrade-price-opt.selected{border-color:var(--gold);background:rgba(139,105,20,.05)}
 .upgrade-price-opt .opt-price{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text)}
 .upgrade-price-opt .opt-label{font-size:10px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
-.upgrade-price-opt .opt-save{font-size:10px;color:var(--green);margin-top:2px}
+.upgrade-price-opt .opt-save{font-size:10px;color:var(--status-green);margin-top:2px}
 .upgrade-note{font-size:10px;color:var(--text-dim);text-align:center;line-height:1.5;margin-top:8px}
 @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
 
@@ -304,10 +306,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 .user-name{font-size:11px;color:var(--text-mid);letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-.spot-strip{display:flex;gap:10px;font-size:11px;color:var(--text-dim);text-transform:uppercase;flex-shrink:0}
+.spot-strip{display:flex;gap:10px;font-size:11px;color:var(--text-dim);text-transform:uppercase;flex-shrink:0;font-variant-numeric:tabular-nums}
 .spot-item{display:flex;flex-direction:column;align-items:flex-end}
 .spot-item .metal{font-size:11px;color:var(--text-dim);margin-bottom:1px}
-.spot-item .price{font-size:13px;font-weight:500}
+.spot-item .price{font-size:13px;font-weight:500;font-variant-numeric:tabular-nums}
 .spot-item.gold .price{color:var(--brand);font-weight:600}
 .spot-item.silver .price{color:var(--silver-bright);font-weight:600}
 @media(max-width:639px){.spot-strip,.benchmark-wrap{display:none!important}}
@@ -402,7 +404,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .summary-left{flex:0 0 38%;padding-right:32px}
   .summary-right{flex:1;border-left:1px solid var(--border);padding-left:32px}
   .summary-usd{margin-bottom:0}
-  .summary-value{font-size:52px;margin-bottom:2px}
+  .summary-value{font-size:52px;margin-bottom:8px}
   /* 2-column grid in the right panel — platinum flows in naturally as 4th cell */
   .summary-split{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px;padding-top:0;border-top:none}
 
@@ -435,12 +437,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .sc-statement:hover .succ-circle{box-shadow:0 8px 28px rgba(139,105,20,.22);border-color:rgba(139,105,20,.5)}
 .sc-succession .succ-circle{background:rgba(155,107,196,.08);border-color:rgba(155,107,196,.28);color:#9B6BC4}
 .sc-succession:hover .succ-circle{box-shadow:0 8px 28px rgba(155,107,196,.22);border-color:rgba(155,107,196,.55)}
-.sc-share .succ-circle{background:rgba(26,122,74,.07);border-color:rgba(26,122,74,.25);color:var(--green)}
+.sc-share .succ-circle{background:rgba(26,122,74,.07);border-color:rgba(26,122,74,.25);color:var(--status-green)}
 .sc-share:hover .succ-circle{box-shadow:0 8px 28px rgba(26,122,74,.18);border-color:rgba(26,122,74,.5)}
 .succ-title{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400;letter-spacing:.02em;text-align:center;line-height:1.2;margin-bottom:4px}
 .sc-statement .succ-title{color:var(--brand)}
 .sc-succession .succ-title{color:#9B6BC4}
-.sc-share .succ-title{color:var(--green)}
+.sc-share .succ-title{color:var(--status-green)}
 .succ-desc{font-size:10px;color:var(--text-dim);text-align:center;letter-spacing:.04em}
 .succ-tooltip{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:rgba(44,32,8,.92);color:#F5E6C0;font-family:'Jost',sans-serif;font-size:11px;padding:7px 12px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .18s;z-index:10;letter-spacing:.03em}
 .succ-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(44,32,8,.92)}
@@ -479,12 +481,12 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .summary-card{margin:14px 14px;background:var(--bg2);border:1.5px solid var(--border2);border-left:3px solid var(--brand);border-radius:var(--radius);padding:22px;position:relative;overflow:hidden;box-shadow:0 2px 16px rgba(139,105,20,.10)}
 .summary-card::before{content:'';position:absolute;top:-60px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(139,105,20,.07) 0%,transparent 70%);pointer-events:none;border-radius:50%}
 .summary-card::after{content:'';position:absolute;bottom:-30px;left:60px;width:140px;height:100px;background:radial-gradient(ellipse,rgba(184,146,26,.05) 0%,transparent 70%);pointer-events:none}
-.summary-eyebrow{font-size:11px;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px}
-.summary-value{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;color:var(--brand);line-height:1;margin-bottom:3px}
+.summary-eyebrow{font-size:11px;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;margin-bottom:12px}
+.summary-value{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;color:var(--brand);line-height:.95;margin-bottom:10px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .summary-usd{font-size:12px;color:var(--text-dim);margin-bottom:16px;min-height:16px}
 .summary-split{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding-top:16px}
 .split-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px}
-.split-val{font-size:20px;font-weight:500;letter-spacing:-.01em}
+.split-val{font-size:20px;font-weight:500;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
 .split-val.gold{color:var(--brand)}
 .split-val.silver{color:var(--silver)}
 .split-val.pnl.pos{color:var(--green)}
@@ -507,35 +509,35 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 /* Item cards */
 .inventory-list{padding:0 14px;display:flex;flex-direction:column;gap:10px}
-.item-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:border-color .18s,background .18s,box-shadow .18s,transform .12s;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.item-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:border-color .2s,background .2s,box-shadow .22s,transform .18s;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07)}
 .item-card:active{transform:scale(.985)}
-.item-card:hover{border-color:var(--border-gold);box-shadow:0 4px 16px rgba(139,105,20,.1)}
+.item-card:hover{border-color:rgba(139,105,20,.45);box-shadow:0 8px 28px rgba(139,105,20,.14),0 2px 8px rgba(0,0,0,.06);transform:translateY(-1px)}
 .item-card.gold{background:linear-gradient(145deg,rgba(139,105,20,.035) 0%,var(--bg2) 50%)}
 .item-card.silver{background:linear-gradient(145deg,rgba(122,142,160,.04) 0%,var(--bg2) 50%)}
-.item-card:hover.gold{background:linear-gradient(145deg,rgba(139,105,20,.07) 0%,var(--bg3) 60%)}
-.item-card:hover.silver{background:linear-gradient(145deg,rgba(122,142,160,.08) 0%,var(--bg3) 60%)}
+.item-card:hover.gold{background:linear-gradient(145deg,rgba(139,105,20,.08) 0%,var(--bg3) 60%)}
+.item-card:hover.silver{background:linear-gradient(145deg,rgba(122,142,160,.09) 0%,var(--bg3) 60%)}
 .item-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
 .item-card.gold::before{background:linear-gradient(180deg,var(--brand-light),var(--brand))}
 .item-card.silver::before{background:linear-gradient(180deg,var(--silver-bright),var(--silver))}
-.item-card.sold::after{content:'SOLD';position:absolute;top:10px;right:12px;font-size:10px;letter-spacing:.12em;color:var(--green);border:1px solid var(--green-dim);background:rgba(46,204,138,.08);padding:2px 6px;border-radius:10px}
+.item-card.sold::after{content:'SOLD';position:absolute;top:10px;right:12px;font-size:10px;letter-spacing:.12em;color:var(--status-green);border:1px solid var(--status-green-dim);background:rgba(26,122,74,.08);padding:2px 6px;border-radius:10px}
 .item-card.sold .item-value{padding-right:54px}
 .item-card.gifted::after{content:'GIFTED';position:absolute;top:10px;right:12px;font-size:10px;letter-spacing:.12em;color:#c084fc;border:1px solid rgba(192,132,252,.3);background:rgba(192,132,252,.08);padding:2px 6px;border-radius:10px}
 .item-card.gifted .item-value{padding-right:64px}
 .item-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px}
 .item-name{font-family:'Cormorant Garamond',serif;font-size:23px;font-weight:400;color:var(--text);line-height:1.1;padding-right:8px}
-.item-value{font-size:18px;font-weight:500;text-align:right;flex-shrink:0;letter-spacing:-.01em}
+.item-value{font-size:18px;font-weight:500;text-align:right;flex-shrink:0;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
 .item-card.gold .item-value{color:var(--brand)}
 .item-card.silver .item-value{color:var(--silver-bright)}
-.item-card.sold .item-value{color:var(--green)}
+.item-card.sold .item-value{color:var(--status-green)}
 .item-meta{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:3px}
 .badge{font-size:10px;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:20px;border:1px solid}
 .badge-type{border-color:var(--border);color:var(--text-dim);background:var(--bg3);opacity:.8}
 .badge-grade{border-color:rgba(139,105,20,.3);color:var(--brand);background:rgba(139,105,20,.07)}
 .badge-grade.silver{border-color:var(--silver-dim);color:var(--silver);background:rgba(200,216,232,.06)}
 .badge-weight{border-color:var(--border);color:var(--text-mid);background:transparent;font-weight:500}
-.badge-provenance{border-color:var(--green-dim);color:var(--green);background:rgba(26,122,74,.06)}
+.badge-provenance{border-color:var(--status-green-dim);color:var(--status-green);background:rgba(26,122,74,.06)}
 .badge-date{border-color:var(--border);color:var(--text-dim);background:transparent;opacity:.7}
-.item-pnl{font-size:12px;margin-top:6px;font-weight:500}
+.item-pnl{font-size:12px;margin-top:6px;font-weight:500;font-variant-numeric:tabular-nums}
 .item-pnl.pos{color:var(--green)}
 .item-pnl.neg{color:var(--red)}
 .item-hint{font-size:11px;color:var(--text-dim);margin-top:3px}
@@ -575,7 +577,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .stat-card.card-portfolio{background:var(--brand);border-color:var(--brand-dim)}
 .stat-card.card-portfolio .stat-num{color:#FDF8F0}
 .stat-card.card-portfolio .stat-lbl{color:rgba(253,248,240,.7)}
-.stat-num{font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--brand);margin-bottom:3px}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--brand);margin-bottom:3px;font-variant-numeric:tabular-nums}
 .stat-lbl{font-size:11px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase}
 @media(max-width:600px){
   .profile-stats{grid-template-columns:1fr 1fr;gap:8px}
@@ -670,7 +672,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .value-preview{background:linear-gradient(135deg,rgba(139,105,20,.06),rgba(184,146,26,.04));border:1px solid var(--border-gold);border-radius:var(--radius-sm);padding:15px;display:flex;justify-content:space-between;align-items:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
 .vp-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-bottom:3px}
 .vp-sub{font-size:11px;color:var(--text-dim)}
-.vp-amt{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--brand)}
+.vp-amt{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--brand);font-variant-numeric:tabular-nums}
 .pnl-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
 .pnl-box-title{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);padding:9px 14px;border-bottom:1px solid var(--border);background:var(--bg4)}
 .pnl-row{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border)}
@@ -683,16 +685,16 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .gl-tip{display:none;position:fixed;width:240px;background:#2C2410;color:#F5F0E8;font-size:11px;line-height:1.6;padding:9px 12px;border-radius:6px;z-index:9999;font-family:'Jost',sans-serif;letter-spacing:0;text-transform:none;font-weight:400;pointer-events:none}
 .gl-tip::before{content:'';position:absolute;bottom:100%;left:12px;border:5px solid transparent;border-bottom-color:#2C2410}
 .gl-tip.tip-visible{display:block}
-.pnl-val{font-size:12px;color:var(--text-mid)}
+.pnl-val{font-size:12px;color:var(--text-mid);font-variant-numeric:tabular-nums}
 .pnl-val.pos{color:var(--green)}
 .pnl-val.neg{color:var(--red)}
-.pnl-val.hi{font-size:22px;font-family:'Cormorant Garamond',serif;font-weight:600}
+.pnl-val.hi{font-size:22px;font-family:'Cormorant Garamond',serif;font-weight:600;font-variant-numeric:tabular-nums}
 
 /* Shared buttons */
 .btn-primary{width:100%;padding:16px;background:linear-gradient(135deg,var(--brand-light) 0%,var(--brand) 60%,var(--brand-dim) 100%);border:none;border-radius:var(--radius);color:#FDF8F0;font-family:'Jost',sans-serif;font-size:12px;letter-spacing:.15em;text-transform:uppercase;font-weight:500;cursor:pointer;transition:box-shadow .2s,transform .12s;box-shadow:0 4px 18px rgba(139,105,20,.35)}
 .btn-primary:hover{box-shadow:0 6px 24px rgba(139,105,20,.45)}
 .btn-primary:active{transform:scale(.98);box-shadow:0 2px 8px rgba(139,105,20,.25)}
-.btn-primary.green{background:linear-gradient(135deg,var(--green),#40e4a0);box-shadow:0 3px 18px rgba(46,204,138,.3);color:#050e09}
+.btn-primary.green{background:linear-gradient(135deg,var(--status-green),#2ea870);box-shadow:0 3px 18px rgba(26,122,74,.3);color:#fff}
 .btn-danger{width:calc(100% - 40px);margin:6px 20px 20px;padding:14px;background:transparent;border:1px solid rgba(224,92,92,.3);border-radius:var(--radius);color:var(--red);font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s}
 .btn-danger:active{background:rgba(224,92,92,.08)}
 
@@ -702,7 +704,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);gap:14px}
 .detail-row:last-child{border-bottom:none}
 .detail-key{font-size:11px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
-.detail-val{font-size:13px;color:var(--text);text-align:right;word-break:break-word}
+.detail-val{font-size:13px;color:var(--text);text-align:right;word-break:break-word;font-variant-numeric:tabular-nums}
 .detail-val.pos{color:var(--green)}
 .detail-val.neg{color:var(--red)}
 .detail-receipt{padding:15px 20px;border-bottom:1px solid var(--border)}
@@ -710,8 +712,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .no-receipt{font-size:11px;color:var(--text-dim);font-style:italic}
 .detail-actions{display:flex;gap:10px;padding:14px 20px 4px}
 .detail-action-btn{flex:1;padding:13px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg3);color:var(--text-dim);font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s;text-align:center}
-.detail-action-btn.sell{border-color:var(--green-dim);color:var(--green);background:rgba(46,204,138,.06)}
-.detail-action-btn.sold-tag{border-color:var(--green-dim);color:var(--green);background:rgba(46,204,138,.06);cursor:default;font-size:11px}
+.detail-action-btn.sell{border-color:var(--status-green-dim);color:var(--status-green);background:rgba(26,122,74,.06)}
+.detail-action-btn.sold-tag{border-color:var(--status-green-dim);color:var(--status-green);background:rgba(26,122,74,.06);cursor:default;font-size:11px}
 .detail-action-btn.gift{border-color:rgba(192,132,252,.35);color:#c084fc;background:rgba(192,132,252,.06)}
 .detail-action-btn.gifted-tag{border-color:rgba(192,132,252,.35);color:#c084fc;background:rgba(192,132,252,.06);cursor:default;font-size:11px}
 
@@ -732,7 +734,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .chart-header{padding:20px 16px 0;background:linear-gradient(160deg,rgba(139,105,20,.07) 0%,transparent 60%);border-bottom:1px solid var(--border-gold);margin-bottom:4px}
 .chart-title-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
 .chart-eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--brand-dim);margin-bottom:6px}
-.chart-headline{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;color:var(--brand);line-height:1}
+.chart-headline{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;color:var(--brand);line-height:1;font-variant-numeric:tabular-nums}
 .chart-sub{font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.04em}
 .chart-export-btn{display:flex;align-items:center;gap:5px;padding:8px 14px;border-radius:20px;border:1px solid var(--brand-dim);background:rgba(139,105,20,.07);color:var(--brand);font-size:11px;cursor:pointer;letter-spacing:.06em;white-space:nowrap;transition:all .2s;flex-shrink:0}
 .chart-export-btn:hover{background:rgba(240,180,41,.15)}
@@ -771,10 +773,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .perf-rows{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .perf-row{background:var(--bg4);border-radius:var(--radius-xs);padding:9px 11px}
 .perf-row.perf-row-value{background:rgba(139,105,20,.06);border:1px solid rgba(139,105,20,.12)}
-.perf-row.perf-row-gl.pos-bg{background:var(--green-dim);border:1px solid rgba(26,122,74,.18)}
-.perf-row.perf-row-gl.neg-bg{background:var(--red-dim);border:1px solid rgba(176,48,48,.18)}
+.perf-row.perf-row-gl.pos-bg{background:var(--green-dim);border:1px solid rgba(139,105,20,.2)}
+.perf-row.perf-row-gl.neg-bg{background:var(--red-dim);border:1px solid rgba(160,82,45,.2)}
 .perf-key{font-size:10px;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
-.perf-val{font-size:14px;color:var(--text)}
+.perf-val{font-size:14px;color:var(--text);font-variant-numeric:tabular-nums}
 .perf-val.pos{color:var(--green)}
 .perf-val.neg{color:var(--red)}
 .perf-val.gold-c{color:var(--gold)}
@@ -855,7 +857,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .alerts-list{padding:0 16px;display:flex;flex-direction:column;gap:8px}
 .alert-card{background:var(--bg2);border:1.5px solid var(--border);border-left:3px solid var(--border-gold);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;transition:border-color .2s,box-shadow .2s}
 .alert-card:hover{border-color:var(--border-gold);box-shadow:0 2px 10px rgba(139,105,20,.08)}
-.alert-card.triggered{border-left-color:var(--green);border-color:var(--green-dim);background:rgba(26,122,74,.04)}
+.alert-card.triggered{border-left-color:var(--status-green);border-color:var(--status-green-dim);background:rgba(26,122,74,.04)}
 .alert-icon{font-size:24px;flex-shrink:0;margin-top:1px}
 .alert-info{flex:1}
 .alert-metal-name{font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px}
@@ -865,7 +867,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .alert-note-text{font-size:11px;color:var(--text-dim);margin-top:3px}
 .alert-status{font-size:11px;padding:3px 9px;border-radius:10px;border:1px solid;margin-top:5px;display:inline-block}
 .alert-status.watching{border-color:var(--border);color:var(--text-dim)}
-.alert-status.fired{border-color:var(--green-dim);color:var(--green)}
+.alert-status.fired{border-color:var(--status-green-dim);color:var(--status-green)}
 .alert-delete{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;padding:2px 4px;line-height:1;transition:color .2s;flex-shrink:0}
 .alert-delete:hover{color:var(--red)}
 .empty-alerts{text-align:center;padding:32px 20px}
@@ -1892,18 +1894,18 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <div style="background:rgba(139,105,20,.06);border:1.5px solid rgba(139,105,20,.30);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
         <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(139,105,20,.1),transparent 70%);border-radius:50%"></div>
         <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🥇 Gold spot</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--brand);line-height:1;margin-bottom:3px" id="homeGoldSpot">—</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--brand);line-height:1;margin-bottom:3px;font-variant-numeric:tabular-nums" id="homeGoldSpot">—</div>
         <div style="font-size:11px;color:var(--text-dim)" id="homeGoldUnit">per oz · USD</div>
       </div>
       <div style="background:rgba(100,130,160,.06);border:1.5px solid rgba(100,130,160,.30);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
         <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(100,130,160,.1),transparent 70%);border-radius:50%"></div>
         <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🥈 Silver spot</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--silver-bright);line-height:1;margin-bottom:3px" id="homeSilverSpot">—</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--silver-bright);line-height:1;margin-bottom:3px;font-variant-numeric:tabular-nums" id="homeSilverSpot">—</div>
         <div style="font-size:11px;color:var(--text-dim)" id="homeSilverUnit">per oz · USD</div>
       </div>
       <div id="platSpotCard" style="display:none;background:rgba(120,120,130,.06);border:1.5px solid rgba(120,120,130,.30);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;grid-column:span 2">
         <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🔷 Platinum spot</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:#757575;line-height:1;margin-bottom:3px" id="homePlatSpot">—</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:#757575;line-height:1;margin-bottom:3px;font-variant-numeric:tabular-nums" id="homePlatSpot">—</div>
         <div style="font-size:11px;color:var(--text-dim)" id="homePlatUnit">per oz · USD</div>
       </div>
     </div>
@@ -2160,7 +2162,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           <div class="stat-lbl">Holdings</div>
         </div>
         <div class="stat-card card-sold">
-          <div class="stat-num" id="statSold" style="color:var(--green)">0</div>
+          <div class="stat-num" id="statSold" style="color:var(--status-green)">0</div>
           <div class="stat-lbl">Sold</div>
         </div>
         <div class="stat-card card-gifted">
@@ -2259,7 +2261,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         </div>
         <div class="profile-row">
           <div class="profile-key">Data sharing</div>
-          <div class="profile-val muted" style="font-size:11px;color:var(--green)">None — ever</div>
+          <div class="profile-val muted" style="font-size:11px;color:var(--status-green)">None — ever</div>
         </div>
         <div class="profile-row">
           <div class="profile-key">Two-factor auth</div>
@@ -4146,7 +4148,7 @@ function refreshProfile(){
       twoFAEl.style.color='var(--text-dim)';
     } else if(currentUser.twoFactorEnabled){
       twoFAEl.textContent='Enabled';
-      twoFAEl.style.color='var(--green)';
+      twoFAEl.style.color='var(--status-green)';
     } else {
       twoFAEl.textContent='Not enabled';
       twoFAEl.style.color='var(--text-dim)';
@@ -6197,7 +6199,7 @@ function updateNotifStatus(){
   const el=document.getElementById('notifStatus');
   if(!el) return;
   if(!('Notification' in window)){el.textContent='not supported';return}
-  if(Notification.permission==='granted'){el.textContent='enabled ✓';el.style.color='var(--green)';document.querySelector('.perm-link').style.display='none'}
+  if(Notification.permission==='granted'){el.textContent='enabled ✓';el.style.color='var(--status-green)';document.querySelector('.perm-link').style.display='none'}
   else if(Notification.permission==='denied'){el.textContent='blocked by browser';document.querySelector('.perm-link').style.display='none'}
   else{el.textContent='not enabled';document.querySelector('.perm-link').style.display='inline'}
 }
