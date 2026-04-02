@@ -2235,7 +2235,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #DDD5
     </div>
     <div style="text-align:right">
       <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#B8A070;margin-bottom:4px">${items.length} holding${items.length!==1?'s':''}</div>
-      <div style="font-size:11px;color:#8B6914">Prices update live</div>
+      <div style="font-size:11px;color:#8B6914;display:flex;align-items:center;gap:8px">Prices update live &nbsp;<button onclick="window.location.reload()" style="background:none;border:1px solid rgba(184,134,11,.3);border-radius:20px;padding:3px 10px;font-size:10px;color:#8B6914;cursor:pointer;font-family:Arial,sans-serif;letter-spacing:.06em">↻ Refresh</button></div>
     </div>
   </div>
 </div>
