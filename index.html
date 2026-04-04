@@ -3524,6 +3524,7 @@ async function loadDMS() {
   } catch(e) {
     _dmsCustodians = [];
     _dmsSettings = { enabled: false, periodDays: 90 };
+    _dmsLoaded = true; // mark loaded even on error — don't retry and overwrite cached state
   }
   renderDMS();
 }
@@ -3553,10 +3554,10 @@ function renderDMS() {
 
   wrap.innerHTML = `
     <div class="dms-wrap">
-      <div class="dms-header">Access Switch</div>
+      <div class="dms-header">Emergency Access</div>
       <div class="dms-desc">If you don't log in for a set period, your nominees automatically receive your Estate Notes by email. Just logging in resets the clock.</div>
       <div class="dms-toggle-row">
-        <span class="dms-toggle-label">Enable Access Switch</span>
+        <span class="dms-toggle-label">Activate emergency access</span>
         <label class="dms-toggle">
           <input type="checkbox" ${enabled?'checked':''} onchange="dmsToggle(this.checked)">
           <span class="dms-toggle-slider"></span>
@@ -3586,9 +3587,11 @@ function renderDMS() {
     </div>`;
 }
 
-function dmsToggle(val) {
+async function dmsToggle(val) {
   _dmsSettings.enabled = val;
   renderDMS();
+  // Auto-save on toggle — this is a safety feature, state must persist immediately
+  await dmsSave();
 }
 
 function dmsSetPeriod(p) {
@@ -3633,7 +3636,7 @@ async function dmsSave() {
       });
     }
     _dmsSettings = { ..._dmsSettings };
-    showToast('Access Switch saved', 'success', 2500);
+    showToast('Emergency access settings saved', 'success', 2500);
     renderDMS();
   } catch(e) {
     showToast(e.message || 'Could not save settings', 'error');
