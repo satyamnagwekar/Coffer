@@ -978,6 +978,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .profile-section{padding:16px}
   .auth-about-two-col{grid-template-columns:1fr !important;gap:28px !important}
   .trust-grid{grid-template-columns:1fr 1fr !important}
+  .privacy-grid{grid-template-columns:1fr !important}
   .hiw-grid{grid-template-columns:1fr !important}
   @media(min-width:600px){.hiw-grid{grid-template-columns:1fr 1fr !important}}
   .howto-grid{grid-template-columns:1fr !important}
@@ -1456,7 +1457,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
   <div style="background:#fff;border-top:1px solid #DDD5C0;padding:36px 28px 36px">
     <div style="max-width:860px;margin:0 auto">
       <div style="font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'Jost',sans-serif;margin-bottom:8px;text-align:center">How it works</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;color:#2C2410;text-align:center;margin-bottom:32px;line-height:1.2;text-decoration:underline;text-decoration-color:rgba(139,105,20,.3);text-underline-offset:6px">Four steps to knowing exactly what your gold is worth</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;color:#2C2410;text-align:center;margin-bottom:32px;line-height:1.2;text-decoration:underline;text-decoration-color:rgba(139,105,20,.3);text-underline-offset:6px">Build a clear picture of every piece your family owns</div>
       <div class="hiw-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
 
         <div style="text-align:center;padding:28px 20px;border:1.5px solid rgba(139,105,20,.3);border-radius:14px;background:rgba(139,105,20,.025)">
@@ -1579,13 +1580,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         </div>
 
       </div>
-    </div>
-  </div>
 
       <!-- Privacy & Data section -->
       <div style="margin-top:48px;padding-top:36px;border-top:1px solid #DDD5C0">
         <div style="font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'Jost',sans-serif;margin-bottom:24px">Privacy &amp; Data</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+        <div class="privacy-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
 
           <div>
             <div style="font-size:11px;color:#2C2410;font-weight:500;letter-spacing:.04em;margin-bottom:8px">What we collect</div>
@@ -1605,13 +1604,15 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         </div>
       </div>
 
-            <div style="margin-top:28px;padding-top:24px;border-top:1px solid #DDD5C0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-        <div style="font-size:11px;color:#999;line-height:1.7">© 2026 MyAurum · Built by <a href="https://www.linkedin.com/in/satyamnagwekar/" target="_blank" style="color:#999;text-decoration:none">Aurum Fintech</a> · Mumbai, India · UDYAM-MH-19-0421851 · <a href="mailto:hello&#64;myaurum&#46;app" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a></div>
-        <div style="font-size:11px;color:#999;line-height:1.7;display:flex;gap:16px;flex-wrap:wrap">
-          <span>Values shown are indicative only — not financial advice, and do not constitute a valuation for insurance, legal, or tax purposes.</span>
-          <a href="/privacy" target="_blank" style="color:#B8860B;text-decoration:none;white-space:nowrap">Privacy Policy</a>
-          <a href="/terms" target="_blank" style="color:#B8860B;text-decoration:none;white-space:nowrap">Terms of Use</a>
+      <div style="margin-top:28px;padding-top:24px;border-top:1px solid #DDD5C0">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+          <div style="font-size:11px;color:#999;line-height:1.7">© 2026 MyAurum · Built by <a href="https://www.linkedin.com/in/satyamnagwekar/" target="_blank" style="color:#999;text-decoration:none">Aurum Fintech</a> · Mumbai, India · UDYAM-MH-19-0421851 · <a href="mailto:hello&#64;myaurum&#46;app" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a></div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap">
+            <a href="/privacy" target="_blank" style="font-size:11px;color:#B8860B;text-decoration:none;white-space:nowrap">Privacy Policy</a>
+            <a href="/terms" target="_blank" style="font-size:11px;color:#B8860B;text-decoration:none;white-space:nowrap">Terms of Use</a>
+          </div>
         </div>
+        <div style="font-size:10px;color:#BBB;line-height:1.7">Values shown are indicative only — not financial advice, and do not constitute a valuation for insurance, legal, or tax purposes.</div>
       </div>
 
     </div>
