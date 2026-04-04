@@ -978,7 +978,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .profile-section{padding:16px}
   .auth-about-two-col{grid-template-columns:1fr !important;gap:28px !important}
   .trust-grid{grid-template-columns:1fr 1fr !important}
-  .hiw-grid{grid-template-columns:1fr 1fr !important}
+  .hiw-grid{grid-template-columns:1fr !important}
+  @media(min-width:600px){.hiw-grid{grid-template-columns:1fr 1fr !important}}
   .howto-grid{grid-template-columns:1fr !important}
   .howto-arrow{display:none !important}
   #toastContainer{bottom:80px;width:90%}
@@ -1452,34 +1453,34 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
   </div><!-- /auth-top -->
 
   <!-- How it works — full-width section -->
-  <div style="background:#fff;border-top:1px solid #DDD5C0;padding:44px 28px 48px">
+  <div style="background:#fff;border-top:1px solid #DDD5C0;padding:36px 28px 36px">
     <div style="max-width:860px;margin:0 auto">
-      <div style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'Jost',sans-serif;margin-bottom:8px;text-align:center">How it works</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#2C2410;text-align:center;margin-bottom:36px;line-height:1.25">Four steps to knowing exactly what your gold is worth</div>
-      <div class="hiw-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px">
+      <div style="font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'Jost',sans-serif;margin-bottom:8px;text-align:center">How it works</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;color:#2C2410;text-align:center;margin-bottom:32px;line-height:1.2;text-decoration:underline;text-decoration-color:rgba(139,105,20,.3);text-underline-offset:6px">Four steps to knowing exactly what your gold is worth</div>
+      <div class="hiw-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
 
-        <div style="text-align:center;padding:24px 16px">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:rgba(139,105,20,.25);line-height:1;margin-bottom:12px">①</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#2C2410;margin-bottom:8px">Add your holdings</div>
-          <div style="font-size:11px;color:#888070;line-height:1.8">Enter the metal, purity, weight, and what you paid. Jewellery, coins, bars, raw metal — anything physical counts. Takes under a minute per item.</div>
+        <div style="text-align:center;padding:28px 20px;border:1.5px solid rgba(139,105,20,.3);border-radius:14px;background:rgba(139,105,20,.025)">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:rgba(139,105,20,.35);line-height:1;margin-bottom:14px">①</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#2C2410;margin-bottom:10px">Add your holdings</div>
+          <div style="font-size:13px;color:#6B5E4E;line-height:1.75">Enter the metal, purity, weight, and what you paid. Jewellery, coins, bars, raw metal — anything physical counts. Takes under a minute per item.</div>
         </div>
 
-        <div style="text-align:center;padding:24px 16px">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:rgba(139,105,20,.25);line-height:1;margin-bottom:12px">②</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#2C2410;margin-bottom:8px">See live value</div>
-          <div style="font-size:11px;color:#888070;line-height:1.8">Prices update every 5 minutes from global spot markets, with India Bullion rates for India. Your full portfolio value in rupees, dollars, dirhams, or pounds — right now.</div>
+        <div style="text-align:center;padding:28px 20px;border:1.5px solid rgba(139,105,20,.3);border-radius:14px;background:rgba(139,105,20,.025)">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:rgba(139,105,20,.35);line-height:1;margin-bottom:14px">②</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#2C2410;margin-bottom:10px">See live value</div>
+          <div style="font-size:13px;color:#6B5E4E;line-height:1.75">Prices update every 5 minutes from global spot markets, with India Bullion rates for India. Your full portfolio in rupees, dollars, dirhams, or pounds — right now.</div>
         </div>
 
-        <div style="text-align:center;padding:24px 16px">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:rgba(139,105,20,.25);line-height:1;margin-bottom:12px">③</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#2C2410;margin-bottom:8px">Track gains and set alerts</div>
-          <div style="font-size:11px;color:#888070;line-height:1.8">See exactly what you paid vs. what each holding is worth today. Set price alerts by email — know when gold crosses a price that matters to you.</div>
+        <div style="text-align:center;padding:28px 20px;border:1.5px solid rgba(139,105,20,.3);border-radius:14px;background:rgba(139,105,20,.025)">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:rgba(139,105,20,.35);line-height:1;margin-bottom:14px">③</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#2C2410;margin-bottom:10px">Track gains and set alerts</div>
+          <div style="font-size:13px;color:#6B5E4E;line-height:1.75">See exactly what you paid vs. what each holding is worth today. Set price alerts by email — know when gold crosses a price that matters to you.</div>
         </div>
 
-        <div style="text-align:center;padding:24px 16px">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:rgba(139,105,20,.25);line-height:1;margin-bottom:12px">④</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#2C2410;margin-bottom:8px">Plan your succession</div>
-          <div style="font-size:11px;color:#888070;line-height:1.8">Write encrypted estate notes — locker numbers, lawyer contacts, safe combinations. Generate a succession document. Add custodians who receive it automatically if you're unreachable.</div>
+        <div style="text-align:center;padding:28px 20px;border:1.5px solid rgba(139,105,20,.3);border-radius:14px;background:rgba(139,105,20,.025)">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:rgba(139,105,20,.35);line-height:1;margin-bottom:14px">④</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#2C2410;margin-bottom:10px">Plan your succession</div>
+          <div style="font-size:13px;color:#6B5E4E;line-height:1.75">Write encrypted estate notes — locker numbers, lawyer contacts, safe combinations. Generate a succession document. Add custodians who receive it automatically if you're unreachable.</div>
         </div>
 
       </div>
@@ -1489,27 +1490,27 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
   <!-- Trust signals -->
   <div style="background:#F5F0E8;border-top:1px solid #DDD5C0;padding:44px 28px 48px">
     <div style="max-width:860px;margin:0 auto">
-      <div style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'Jost',sans-serif;margin-bottom:8px;text-align:center">What makes MyAurum different</div>
+      <div style="font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'Jost',sans-serif;margin-bottom:8px;text-align:center">What makes MyAurum different</div>
       <div style="text-align:center;margin-bottom:32px;font-size:11px;color:#888070">Questions? <a href="mailto:hello&#64;myaurum&#46;app" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a></div>
       <div class="trust-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
 
         <div style="text-align:center;padding:24px 16px;border:1px solid rgba(184,134,11,.18);border-radius:12px;background:#fff">
           <div style="font-size:26px;margin-bottom:10px">📧</div>
           <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#2C2410;font-weight:300;margin-bottom:8px">No KYC. No broker.</div>
-          <div style="font-size:11px;color:#888070;line-height:1.8">No Aadhaar, no PAN, no financial account required. Sign up with just an email. Your gold is your business — not ours.</div>
+          <div style="font-size:12px;color:#6B5E4E;line-height:1.75">No Aadhaar, no PAN, no financial account required. Sign up with just an email. Your gold is your business — not ours.</div>
         </div>
 
         <div style="text-align:center;padding:24px 16px;border:1px solid rgba(184,134,11,.18);border-radius:12px;background:#fff">
           <div style="font-size:26px;margin-bottom:10px">🏅</div>
           <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#2C2410;font-weight:300;margin-bottom:8px">Physical only. No IOUs.</div>
-          <div style="font-size:11px;color:#888070;line-height:1.8">MyAurum tracks physical metal — not ETFs, not demat gold, not digital promises. What you hold in your hands, valued at today's price.</div>
+          <div style="font-size:12px;color:#6B5E4E;line-height:1.75">MyAurum tracks physical metal — not ETFs, not demat gold, not digital promises. What you hold in your hands, valued at today's price.</div>
         </div>
 
         <a href="/security" target="_blank" style="text-decoration:none">
           <div style="text-align:center;padding:24px 16px;border:2px solid #B8860B;border-radius:12px;background:#fff;transition:background .2s" onmouseover="this.style.background='rgba(184,134,11,.04)'" onmouseout="this.style.background='#fff'">
             <div style="font-size:26px;margin-bottom:10px">🔐</div>
             <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#8B6914;font-weight:400;margin-bottom:8px;letter-spacing:.04em">Bank-grade encryption.</div>
-            <div style="font-size:11px;color:#888070;line-height:1.8;margin-bottom:10px">AES-256-GCM — the same cipher used by major banks. Your holdings are encrypted before they reach our database. Passwords are hashed and unreadable, even to us.</div>
+            <div style="font-size:12px;color:#6B5E4E;line-height:1.75;margin-bottom:10px">AES-256-GCM — the same cipher used by major banks. Your holdings are encrypted before they reach our database. Passwords are hashed and unreadable, even to us.</div>
             <div style="display:flex;align-items:center;justify-content:center;gap:6px">
               <span style="font-size:11px;color:#B8860B;font-family:'Jost',sans-serif;letter-spacing:.06em">Learn more</span>
               <span style="font-size:18px;color:#B8860B;line-height:1">→</span>
@@ -1519,20 +1520,20 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 
         <div style="text-align:center;padding:24px 16px;border:1px solid rgba(184,134,11,.18);border-radius:12px;background:#fff">
           <div style="font-size:26px;margin-bottom:10px">🚫</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#2C2410;font-weight:300;margin-bottom:8px">No ads. Free forever.</div>
-          <div style="font-size:11px;color:#888070;line-height:1.8">No advertising, no data selling, no hidden costs. Your portfolio data is never used to target you. The product serves you — not advertisers.</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#2C2410;font-weight:300;margin-bottom:8px">No ads. No data selling.</div>
+          <div style="font-size:12px;color:#6B5E4E;line-height:1.75">No advertising, no tracking, no hidden costs. Your portfolio data is never sold, shared, or used to target you. The product serves you — not advertisers.</div>
         </div>
 
         <div style="text-align:center;padding:24px 16px;border:1px solid rgba(184,134,11,.18);border-radius:12px;background:#fff">
           <div style="font-size:26px;margin-bottom:10px">🔔</div>
           <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#2C2410;font-weight:300;margin-bottom:8px">Price alerts. Four currencies.</div>
-          <div style="font-size:11px;color:#888070;line-height:1.8">Set email alerts when gold or silver crosses a price you care about. View your portfolio in rupees, dollars, dirhams, or pounds — switch in one tap.</div>
+          <div style="font-size:12px;color:#6B5E4E;line-height:1.75">Set email alerts when gold or silver crosses a price you care about. View your portfolio in rupees, dollars, dirhams, or pounds — switch in one tap.</div>
         </div>
 
         <div style="text-align:center;padding:24px 16px;border:1px solid rgba(184,134,11,.18);border-radius:12px;background:#fff">
           <div style="font-size:26px;margin-bottom:10px">📋</div>
           <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#2C2410;font-weight:300;margin-bottom:8px">Estate notes &amp; succession.</div>
-          <div style="font-size:11px;color:#888070;line-height:1.8">Store locker numbers, lawyer contacts, and safe combinations. Generate a succession document. Custodians receive it automatically if you become unreachable.</div>
+          <div style="font-size:12px;color:#6B5E4E;line-height:1.75">Store locker numbers, lawyer contacts, and safe combinations. Generate a succession document. Custodians receive it automatically if you become unreachable.</div>
         </div>
 
       </div>
@@ -1547,7 +1548,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <div class="auth-about-two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start">
 
         <div>
-          <div style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'Jost',sans-serif;margin-bottom:20px">About the Project</div>
+          <div style="font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'Jost',sans-serif;margin-bottom:20px">About the Project</div>
           <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:#2C2410;line-height:1.25;margin-bottom:16px">Your gold has a story. Now it has an enduring record</div>
           <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">Indian families hold an estimated 25,000 tonnes of physical gold*, the largest private gold reserve in the world. Much of it was bought over decades — at prices that will never come again. It travels with families to Dubai, London, Toronto, Sydney. Jewellery inherited, coins tucked away, bars bought quietly. Not investments on a screen. Savings in metal.</div>
           <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:14px">The cruellest part: the only reliable way to find out what your gold was worth was to sell it. Accept a jeweller's price, and only then discover the number — by giving up the very thing you wanted to hold.</div>
@@ -1581,34 +1582,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     </div>
   </div>
 
-  <!-- Privacy Notice -->
-  <div id="privacySection" style="background:#F5F0E8;border-top:1px solid #DDD5C0;padding:36px 28px 40px">
-    <div style="max-width:860px;margin:0 auto">
-
-      <div style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'Jost',sans-serif;margin-bottom:24px">Privacy &amp; Data</div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
-
-        <div>
-          <div style="font-size:11px;color:#2C2410;font-weight:500;letter-spacing:.04em;margin-bottom:8px">What we collect</div>
-          <div style="font-size:11px;color:#666;line-height:1.85">MyAurum stores only what you choose to enter: your name, email, and the holding details you add. We do not collect behavioural data, track usage patterns, or build profiles.</div>
-        </div>
-
-        <div>
-          <div style="font-size:11px;color:#2C2410;font-weight:500;letter-spacing:.04em;margin-bottom:8px">Where it lives</div>
-          <div style="font-size:11px;color:#666;line-height:1.85">Your holdings data is stored on our encrypted servers — never shared, never sold. Sensitive fields are encrypted at the application layer before they reach the database. Nothing about your portfolio is accessible to any third party.</div>
-        </div>
-
-        <div>
-          <div style="font-size:11px;color:#2C2410;font-weight:500;letter-spacing:.04em;margin-bottom:8px">No ads, ever</div>
-          <div style="font-size:11px;color:#666;line-height:1.85">MyAurum is free to use and carries no advertising. Your financial data will never be sold, shared, or used to target you. The product exists to serve you — not to monetise your information.</div>
-        </div>
-
-      </div>
-
       <!-- Privacy & Data section -->
       <div style="margin-top:48px;padding-top:36px;border-top:1px solid #DDD5C0">
-        <div style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'Jost',sans-serif;margin-bottom:24px">Privacy &amp; Data</div>
+        <div style="font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'Jost',sans-serif;margin-bottom:24px">Privacy &amp; Data</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
 
           <div>
