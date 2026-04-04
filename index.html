@@ -441,8 +441,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .succ-card:hover .succ-tooltip{opacity:1}
 /* Share expand panel */
 .succ-share-panel{display:none;margin:4px 20px 8px;padding:18px;background:#fff;border:1.5px solid rgba(26,122,74,.25);border-radius:var(--radius)}
-#spotCardsGrid > div:nth-child(1):hover{background:rgba(139,105,20,.13);border-color:rgba(139,105,20,.55);box-shadow:0 8px 32px rgba(184,146,26,.45)}
-#spotCardsGrid > div:nth-child(2):hover{background:rgba(100,130,160,.13);border-color:rgba(100,130,160,.55);box-shadow:0 8px 32px rgba(100,130,160,.40)}
+#spotCardsGrid > div:nth-child(1):hover{background:rgba(184,134,11,.16);border-color:rgba(184,134,11,.65);box-shadow:0 8px 32px rgba(184,134,11,.35)}
+#spotCardsGrid > div:nth-child(2):hover{background:rgba(74,96,112,.16);border-color:rgba(74,96,112,.60);box-shadow:0 8px 32px rgba(74,96,112,.30)}
 #platSpotCard:hover{background:rgba(120,120,130,.13) !important;border-color:rgba(120,120,130,.55) !important;box-shadow:0 8px 32px rgba(120,120,130,.35)}
 
   /* FAB aligned to right edge of 900px column */
@@ -1865,22 +1865,22 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 
     <!-- ── Portfolio Actions ── -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 14px 14px" id="spotCardsGrid">
-      <div style="background:rgba(139,105,20,.06);border:1.5px solid rgba(139,105,20,.30);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
-        <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(139,105,20,.1),transparent 70%);border-radius:50%"></div>
-        <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🥇 Gold spot</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--brand);line-height:1;margin-bottom:3px;font-variant-numeric:tabular-nums" id="homeGoldSpot">—</div>
-        <div style="font-size:11px;color:var(--text-dim)" id="homeGoldUnit">per oz · USD</div>
+      <div style="background:rgba(184,134,11,.10);border:1.5px solid rgba(184,134,11,.45);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(184,134,11,.18),transparent 70%);border-radius:50%"></div>
+        <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--brand-dim);margin-bottom:6px">🥇 Gold spot</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:#8B6000;line-height:1;margin-bottom:3px;font-variant-numeric:tabular-nums" id="homeGoldSpot">—</div>
+        <div style="font-size:11px;color:var(--brand-dim);opacity:.8" id="homeGoldUnit">per oz · USD</div>
       </div>
-      <div style="background:rgba(100,130,160,.06);border:1.5px solid rgba(100,130,160,.30);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
-        <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(100,130,160,.1),transparent 70%);border-radius:50%"></div>
-        <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🥈 Silver spot</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--silver-bright);line-height:1;margin-bottom:3px;font-variant-numeric:tabular-nums" id="homeSilverSpot">—</div>
-        <div style="font-size:11px;color:var(--text-dim)" id="homeSilverUnit">per oz · USD</div>
+      <div style="background:rgba(74,96,112,.10);border:1.5px solid rgba(74,96,112,.42);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(74,96,112,.18),transparent 70%);border-radius:50%"></div>
+        <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--silver-bright);margin-bottom:6px;opacity:.85">🥈 Silver spot</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:#3A5060;line-height:1;margin-bottom:3px;font-variant-numeric:tabular-nums" id="homeSilverSpot">—</div>
+        <div style="font-size:11px;color:var(--silver-bright);opacity:.75" id="homeSilverUnit">per oz · USD</div>
       </div>
-      <div id="platSpotCard" style="display:none;background:rgba(120,120,130,.06);border:1.5px solid rgba(120,120,130,.30);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;grid-column:span 2">
-        <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">🔷 Platinum spot</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:#757575;line-height:1;margin-bottom:3px;font-variant-numeric:tabular-nums" id="homePlatSpot">—</div>
-        <div style="font-size:11px;color:var(--text-dim)" id="homePlatUnit">per oz · USD</div>
+      <div id="platSpotCard" style="display:none;background:rgba(90,90,100,.10);border:1.5px solid rgba(90,90,100,.40);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;grid-column:span 2">
+        <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5A5A6A;margin-bottom:6px;opacity:.9">🔷 Platinum spot</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:#484858;line-height:1;margin-bottom:3px;font-variant-numeric:tabular-nums" id="homePlatSpot">—</div>
+        <div style="font-size:11px;color:#5A5A6A;opacity:.8" id="homePlatUnit">per oz · USD</div>
       </div>
     </div>
 
