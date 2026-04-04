@@ -3815,7 +3815,7 @@ async function toggleTwoFA(){
 
 
 
-async function loginUser(user){
+async function loginUser(user, restoreTab=false){
   currentUser=user;
   // Fade auth screen out before hiding
   const authEl = document.getElementById('authScreen');
@@ -3842,9 +3842,14 @@ async function loginUser(user){
   }
   updatePriceDisplay();
   updateAll();
-  // Always land on MyAurum tab on login, scroll to top
-  sessionStorage.removeItem('myaurum_tab');
-  setNavTab('vault', document.getElementById('navMyAurum'));
+  // On fresh login always land on MyAurum; on refresh (restoreTab=true) restore last tab
+  if (restoreTab) {
+    const savedTab = sessionStorage.getItem('myaurum_tab') || 'vault';
+    _navigateToTab(savedTab);
+  } else {
+    sessionStorage.removeItem('myaurum_tab');
+    setNavTab('vault', document.getElementById('navMyAurum'));
+  }
   window.scrollTo(0,0);
   fetchPrices();
   startInactivityTimer();
@@ -6542,7 +6547,7 @@ function handleUnauthorised(){
         const data = await api('GET','/auth/me', null, controller.signal);
         clearTimeout(timeoutId);
         setToken(token);
-        await loginUser(data);
+        await loginUser(data, true); // refresh — restore last tab
         return;
       }catch(e){
         setToken(null);
