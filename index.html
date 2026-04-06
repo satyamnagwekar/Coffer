@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MyAurum">
 <meta name="application-name" content="MyAurum">
@@ -6352,7 +6353,7 @@ function renderAlertHistory(){
       const when=isNaN(d)?'':d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
       const dir=h.dir==='above'?'↑':'↓';
       const metal=h.metal.charAt(0).toUpperCase()+h.metal.slice(1);
-      return `<div class="alert-history-item">${metal} ${dir} ${h.priceDisplay}${h.note?' · '+escHtml(h.note):''}${when?' <span style='float:right;opacity:.6'>'+when+'</span>':''}</div>`;
+      const whenHtml=when?'<span style="float:right;opacity:.6">'+when+'</span>':''; return `<div class="alert-history-item">${metal} ${dir} ${h.priceDisplay}${h.note?' · '+escHtml(h.note):''} ${whenHtml}</div>`;
     }).join('');
   }catch(e){}
 }
