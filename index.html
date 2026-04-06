@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MyAurum">
 <meta name="application-name" content="MyAurum">
 <meta name="theme-color" content="#F5F0E8">
@@ -33,7 +33,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <!-- PWA manifest -->
-<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22MyAurum%20%5Cu2014%20Precious%20Metals%22%2C%22short_name%22%3A%22MyAurum%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F5F0E8%22%2C%22theme_color%22%3A%22%23F5F0E8%22%2C%22orientation%22%3A%22portrait%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20192%20192%27%3E%3Crect%20width%3D%27192%27%20height%3D%27192%27%20rx%3D%2740%27%20fill%3D%27%2523F5F0E8%27%2F%3E%3Ccircle%20cx%3D%2776%27%20cy%3D%2796%27%20r%3D%2736%27%20fill%3D%27none%27%20stroke%3D%27%25238B6914%27%20stroke-width%3D%2712%27%2F%3E%3Ccircle%20cx%3D%27116%27%20cy%3D%2796%27%20r%3D%2736%27%20fill%3D%27none%27%20stroke%3D%27%25238B6914%27%20stroke-width%3D%2712%27%2F%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+<link rel="manifest" href="/manifest.json">
 <!-- Sentry error monitoring -->
 <script>window.SENTRY_DSN = '';</script>
 <script src="https://browser.sentry-cdn.com/7.99.0/bundle.min.js" crossorigin="anonymous"
@@ -386,6 +386,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
   /* Stat cards */
   .stat-card{padding:20px 16px}
+  .profile-stats{grid-template-columns:1fr 1fr;max-width:480px;gap:10px}
+  .stat-num{font-size:28px}
 
   /* Larger logo */
   .logo{font-size:38px}
@@ -573,6 +575,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .stat-lbl{font-size:11px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase}
 @media(max-width:600px){
   .profile-stats{grid-template-columns:1fr 1fr;gap:8px}
+}
+@media(max-width:360px){
+  .profile-stats{grid-template-columns:1fr 1fr;gap:6px;padding:12px}
+  .stat-num{font-size:22px}
+  .stat-card{padding:12px 6px}
 }
 
 .btn-profile-action{width:100%;padding:14px;border:none;border-radius:var(--radius-sm);font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-bottom:8px}
