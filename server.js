@@ -2184,8 +2184,10 @@ app.get('/share/:token', async (req, res) => {
 
     const total = items.reduce((s,i) => s + spotVal(i.metal, i.grams, i.purity), 0);
     const now = new Date();
-    const asOf = now.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}) + ', ' +
-      now.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'}) + ' IST';
+    const userTz = isMCX ? 'Asia/Kolkata' : (u.country === 'UAE' ? 'Asia/Dubai' : 'America/New_York');
+    const tzLabel = isMCX ? 'IST' : (u.country === 'UAE' ? 'GST' : 'ET');
+    const asOf = now.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:userTz}) + ', ' +
+      now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:userTz}) + ' ' + tzLabel;
 
     const metalGroups = {};
     items.forEach(item => {
@@ -2199,14 +2201,20 @@ app.get('/share/:token', async (req, res) => {
     let tableRows = '';
     metalOrder.forEach(metal => {
       if (!metalGroups[metal]) return;
-      tableRows += `<tr><td colspan="4" style="background:#F5EDD0;font-size:10px;letter-spacing:.14em;color:#8B6914;font-weight:600;padding:7px 12px;text-transform:uppercase">${metalLabels[metal]}</td></tr>`;
-      metalGroups[metal].forEach(item => {
+      const groupItems = metalGroups[metal];
+      const groupGrams = groupItems.reduce((s,i) => s + i.grams, 0);
+      const groupVal = groupItems.reduce((s,i) => s + spotVal(i.metal, i.grams, i.purity), 0);
+      tableRows += `<tr><td colspan="4" style="background:#F5EDD0;font-size:10px;letter-spacing:.14em;color:#8B6914;font-weight:600;padding:7px 12px;text-transform:uppercase">
+        <span>${metalLabels[metal]}</span>
+        <span style="float:right;font-weight:400;color:#A08040">${groupGrams.toFixed(2)}g &nbsp;·&nbsp; ${fmtVal(groupVal)}</span>
+      </td></tr>`;
+      groupItems.forEach(item => {
         const v = spotVal(item.metal, item.grams, item.purity);
         tableRows += `<tr style="border-bottom:1px solid #EDE8DA">
-          <td style="padding:10px 12px;font-size:13px;color:#2C2410">${item.name}</td>
-          <td style="padding:10px 12px;font-size:12px;color:#8B6914;text-align:center">${item.gradeName.split(' — ')[0]}</td>
-          <td style="padding:10px 12px;font-size:12px;color:#555;text-align:center">${item.grams.toFixed(2)}g</td>
-          <td style="padding:10px 12px;font-size:13px;color:#2C2410;font-weight:500;text-align:right">${fmtVal(v)}</td>
+          <td style="padding:10px 12px;font-size:13px;color:#2C2410;word-break:break-word">${item.name}</td>
+          <td style="padding:10px 12px;font-size:12px;color:#8B6914;text-align:center;white-space:nowrap">${item.gradeName.split(' — ')[0]}</td>
+          <td style="padding:10px 12px;font-size:12px;color:#555;text-align:center;white-space:nowrap">${item.grams.toFixed(2)}g</td>
+          <td style="padding:10px 12px;font-size:13px;color:#2C2410;font-weight:500;text-align:right;white-space:nowrap">${fmtVal(v)}</td>
         </tr>`;
       });
     });
@@ -2235,7 +2243,15 @@ table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #DDD5
 .footer a{color:#B8860B;text-decoration:none}
 .live-dot{width:6px;height:6px;border-radius:50%;background:#4CAF50;display:inline-block;margin-right:5px;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-@media(max-width:600px){.total-val{font-size:26px}.hero{padding:24px 16px 16px}.content{padding:0 16px 40px}}
+@media(max-width:600px){
+  .total-val{font-size:26px}
+  .hero{padding:24px 16px 16px}
+  .content{padding:0 16px 40px}
+  table{font-size:12px}
+  th,td{padding:8px 8px !important;font-size:11px !important}
+  .owner{font-size:21px}
+  table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+}
 </style>
 </head><body>
 <div class="header">
@@ -2272,7 +2288,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #DDD5
 </div>
 <div class="footer">
   <p>This portfolio is shared via MyAurum &nbsp;·&nbsp; <a href="/">myaurum.app</a></p>
-  <p style="margin-top:4px;opacity:.7">© 2026 MyAurum. All rights reserved. &nbsp;·&nbsp; <a href="/privacy">Privacy Policy</a></p>
+  <p style="margin-top:4px;opacity:.7">© 2026 MyAurum. All rights reserved.</p>
 </div>
 </body></html>`);
   } catch(e) {
@@ -2489,6 +2505,25 @@ app.post(`/api/${ADMIN_SLUG}/reactivation-email`, requireAdmin, async (req, res)
 // ─────────────────────────────────────────
 // Serve a minimal gold coin SVG as favicon
 const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="40" fill="#F5F0E8"/><circle cx="76" cy="96" r="36" fill="none" stroke="#8B6914" stroke-width="12"/><circle cx="116" cy="96" r="36" fill="none" stroke="#8B6914" stroke-width="12"/></svg>`;
+
+app.get('/manifest.json', (req, res) => {
+  const p = path.join(__dirname, 'manifest.json');
+  if (require('fs').existsSync(p)) {
+    res.setHeader('Content-Type', 'application/manifest+json');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.sendFile(p);
+  } else {
+    // Inline fallback
+    res.setHeader('Content-Type', 'application/manifest+json');
+    res.json({
+      name: 'MyAurum — Precious Metals', short_name: 'MyAurum',
+      start_url: '/', display: 'standalone',
+      background_color: '#F5F0E8', theme_color: '#1A1508',
+      orientation: 'portrait', categories: ['finance','lifestyle'],
+      icons: [{ src: '/favicon.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' }]
+    });
+  }
+});
 
 app.get('/favicon.ico', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
