@@ -1292,7 +1292,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           <div class="af-row">
             <div class="af">
               <label>Age</label>
-              <input type="number" id="regAge" placeholder="35" min="18" max="100">
+              <input type="number" id="regAge" placeholder="35" min="18" max="100" inputmode="numeric">
             </div>
             <div class="af">
               <label>Country</label>
@@ -1668,7 +1668,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 </div>
 
 <!-- Inactivity warning toast -->
-<div id="inactivityWarning" style="display:none;position:fixed;bottom:100px;left:50%;transform:translateX(-50%);z-index:2500;background:#2C2410;border:1px solid rgba(184,134,11,.3);border-radius:10px;padding:12px 18px;text-align:center;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.3)">
+<div id="inactivityWarning" style="display:none;position:fixed;bottom:max(100px,calc(80px + env(safe-area-inset-bottom,0px)));left:50%;transform:translateX(-50%);z-index:2500;background:#2C2410;border:1px solid rgba(184,134,11,.3);border-radius:10px;padding:12px 18px;text-align:center;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.3)">
   <div style="font-size:12px;color:#B8A070;font-family:'Jost',sans-serif;margin-bottom:6px">Session locking in <span id="lockCountdown">60</span>s</div>
   <button onclick="resetInactivityTimer()" style="padding:5px 16px;background:#8B6914;color:#FDF8F0;border:none;border-radius:6px;font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;letter-spacing:.04em">Stay logged in</button>
 </div>
@@ -2694,7 +2694,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         <div class="af"><label>Last Name</label><input type="text" id="epLast"></div>
       </div>
       <div class="field-row">
-        <div class="af"><label>Age</label><input type="number" id="epAge" min="18" max="100"></div>
+        <div class="af"><label>Age</label><input type="number" id="epAge" min="18" max="100" inputmode="numeric"></div>
         <div class="af"><label>Country</label>
           <select id="epCountry">
             <option value="">Select…</option>
