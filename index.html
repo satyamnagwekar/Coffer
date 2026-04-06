@@ -2397,7 +2397,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 
         <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
           <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)">
-            <span style="color:var(--brand);font-size:16px">✓</span> Unlimited holdings
+            <span style="color:var(--brand);font-size:16px">✓</span> Up to 200 holdings
           </div>
           <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)">
             <span style="color:var(--brand);font-size:16px">✓</span> Live portfolio share link
@@ -2422,6 +2422,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     </div>
   </div>
 
+
+  <div id="dormancyBanner" style="display:none;margin:10px 14px;padding:12px 14px;background:rgba(160,82,45,.07);border:1px solid rgba(160,82,45,.25);border-radius:10px;font-size:12px;color:var(--text-dim);line-height:1.7">
+    <strong style="color:#A0522D;display:block;margin-bottom:4px">Premium subscription expired</strong>
+    Your holdings are fully visible and your portfolio link remains active. Adding holdings, recording sales or gifts, and generating documents are paused until you <span style="color:var(--brand);cursor:pointer;text-decoration:underline" onclick="document.getElementById('premiumModal').classList.add('open')">renew Premium</span>. Your data is never deleted.
+  </div>
 
   <div class="fab-wrap" id="fabWrap">
     <div class="fab-label">Add holding</div>
@@ -3682,11 +3687,56 @@ async function dmsSave() {
 // ══════════════════════════════════════════
 // PREMIUM / PAYMENTS
 // ══════════════════════════════════════════
-async function startCheckout(){
+
+async function openUpgradeToSuper(){
+  if(!currentUser||!currentUser.isPremium){
+    showToast('Super Premium is available to existing Premium subscribers.','warn');return;
+  }
+  // Get pro-rata quote from server before opening Razorpay
+  const btn = document.querySelector('[onclick="openUpgradeToSuper()"]');
+  if(btn){btn.textContent='Calculating…';btn.style.pointerEvents='none';}
+  try{
+    const data = await api('POST','/payment/upgrade-to-super',{});
+    if(btn){btn.textContent='Upgrade to Super Premium';btn.style.pointerEvents='';}
+    if(data.error){showToast(data.error,'error',5000);return;}
+    const options={
+      key:data.keyId,
+      subscription_id:data.subscriptionId,
+      name:'MyAurum Super Premium',
+      description:data.description,
+      image:'https://myaurum.app/og-image.png',
+      prefill:data.prefill,
+      theme:{color:'#7850C8'},
+      handler:async function(response){
+        try{
+          const verify=await api('POST','/payment/verify',{
+            razorpay_payment_id:response.razorpay_payment_id,
+            razorpay_subscription_id:response.razorpay_subscription_id,
+            razorpay_signature:response.razorpay_signature,
+          });
+          currentUser.isPremium=true;
+          currentUser.premiumTier='super';
+          currentUser.premiumExpiresAt=verify.premiumExpiresAt;
+          currentUser.razorpaySubscriptionId=response.razorpay_subscription_id;
+          refreshProfile();updateAll();
+          showToast('Welcome to MyAurum Super Premium! ✦','ok',5000);
+        }catch(e){showToast('Payment received but verification failed. Please contact support.','error',6000);}
+      },
+      modal:{ondismiss:()=>{if(btn){btn.textContent='Upgrade to Super Premium';btn.style.pointerEvents='';}}}
+    };
+    const rzp=new window.Razorpay(options);
+    rzp.open();
+  }catch(e){
+    if(btn){btn.textContent='Upgrade to Super Premium';btn.style.pointerEvents='';}
+    showToast(e.message||'Could not start upgrade. Please try again.','error');
+  }
+}
+
+async function startCheckout(tier='standard'){
   const btn = document.getElementById('upgradeBtn');
   btn.textContent = 'Loading…'; btn.disabled = true;
   try {
-    const data = await api('POST', '/payment/create-subscription', {});
+    const data = await api('POST', '/payment/create-subscription', {tier});
     if (data.error) {
       showToast(data.error, 'error', 5000);
       btn.textContent = 'Upgrade to Premium →'; btn.disabled = false;
@@ -3709,11 +3759,13 @@ async function startCheckout(){
           });
           currentUser.isPremium = true;
           currentUser.premiumExpiresAt = verify.premiumExpiresAt;
+          currentUser.premiumTier = verify.premiumTier || 'standard';
           currentUser.razorpaySubscriptionId = response.razorpay_subscription_id;
           closeModal('premiumModal');
           refreshProfile();
           updateAll();
-          showToast('Welcome to MyAurum Premium! 🎉', 'ok', 5000);
+          const toastMsg = (currentUser.premiumTier==='super') ? 'Welcome to MyAurum Super Premium! ✦' : 'Welcome to MyAurum Premium! 🎉';
+          showToast(toastMsg, 'ok', 5000);
         } catch(e) {
           showToast('Payment received but verification failed. Please contact support.', 'error', 6000);
         }
@@ -4205,27 +4257,37 @@ function refreshProfile(){
 
   // Plan section
   const activeCount=items.filter(i=>!i.sold&&!i.gifted).length;
-  const capPct=Math.min(100,Math.round((activeCount/25)*100));
-  const capColor=activeCount>=20?'var(--brand)':'var(--text-dim)';
-  document.getElementById('planSection').innerHTML=`
-    <div class="profile-section-title">MyAurum Plan</div>
+  const capPct=Math.min(100,Math.round((activeCount/20)*100));
+  const capColor=activeCount>=15?'var(--brand)':'var(--text-dim)';
+  // ── Plan section: render based on tier ──
+  const planTier = currentUser.isPremium ? (currentUser.premiumTier||'standard') : 'free';
+  const planCap  = planTier==='super' ? 300 : planTier==='standard' ? 200 : 20;
+  const planCapPct = Math.min(100,Math.round((activeCount/planCap)*100));
+  const planCapColor = activeCount >= planCap*0.75 ? 'var(--brand)' : 'var(--text-dim)';
+
+  let planHTML = '<div class="profile-section-title">MyAurum Plan</div>';
+
+  if(planTier==='free'){
+    const warnMsg = activeCount>=19 ? '<div style="font-size:11px;color:var(--red);margin-top:8px;line-height:1.6">⚠ 1 free holding remaining. Upgrade to continue adding.</div>'
+                  : activeCount>=15 ? '<div style="font-size:11px;color:var(--brand);margin-top:8px;line-height:1.6">Approaching the free limit — Premium gives you up to 200 holdings.</div>' : '';
+    planHTML += `
     <div style="background:rgba(240,180,41,.06);border:1px solid rgba(240,180,41,.18);border-radius:10px;padding:14px 16px;margin-bottom:12px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text)">Free Tier</div>
         <div style="font-size:11px;color:var(--brand);letter-spacing:.06em;text-transform:uppercase">Active</div>
       </div>
-      <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:10px">All features unlocked · up to 25 holdings</div>
+      <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:10px">Up to 20 holdings · All core features</div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-        <div style="font-size:11px;color:${capColor};letter-spacing:.04em">${activeCount} / 25 holdings used</div>
-        <div style="font-size:11px;color:var(--text-dim)">${25-activeCount} remaining</div>
+        <div style="font-size:11px;color:${planCapColor};letter-spacing:.04em">${activeCount} / 20 holdings used</div>
+        <div style="font-size:11px;color:var(--text-dim)">${20-activeCount} remaining</div>
       </div>
       <div style="height:4px;background:rgba(139,105,20,.12);border-radius:2px;overflow:hidden">
-        <div style="height:100%;width:${capPct}%;background:var(--brand);border-radius:2px;transition:width .4s"></div>
+        <div style="height:100%;width:${planCapPct}%;background:var(--brand);border-radius:2px;transition:width .4s"></div>
       </div>
-      ${activeCount>=20?`<div style="font-size:11px;color:var(--brand);margin-top:8px;line-height:1.6">You are approaching the 25-holding limit. MyAurum Premium is coming — reply to your welcome email to be first in line when it launches.</div>`:''}
+      ${warnMsg}
     </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer" onclick="openUpgradeModal()">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text);margin-bottom:10px">Premium <span style="font-size:13px;color:var(--brand)">— coming soon</span></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer" onclick="document.getElementById('premiumModal').classList.add('open')">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text);margin-bottom:10px">Premium</div>
       <div style="display:flex;gap:8px;margin-bottom:10px">
         <div style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:8px;text-align:center">
           <div style="font-size:10px;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">India</div>
@@ -4237,14 +4299,62 @@ function refreshProfile(){
         </div>
       </div>
       <div style="font-size:12px;color:var(--text-dim);line-height:1.8">
-        ✦ Unlimited holdings<br>
-        ✦ Share live portfolio with family<br>
-        ✦ Grouped P&amp;L by person (Held By)<br>
-        ✦ Nominee tracking per holding<br>
-        ✦ Succession PDF export<br>
-        ✦ Everything current users have, forever
+        ✦ Up to 200 holdings<br>✦ Share live portfolio with family<br>✦ Succession PDF export<br>✦ Priority support
       </div>
     </div>`;
+  } else if(planTier==='standard'){
+    const exp = currentUser.premiumExpiresAt ? new Date(currentUser.premiumExpiresAt).toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'}) : '—';
+    planHTML += `
+    <div style="background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.25);border-radius:10px;padding:14px 16px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--brand)">✦ Premium</div>
+        <div style="font-size:11px;color:var(--brand);letter-spacing:.06em;text-transform:uppercase">Active</div>
+      </div>
+      <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:10px">Up to 200 holdings · Renews ${exp}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+        <div style="font-size:11px;color:${planCapColor};letter-spacing:.04em">${activeCount} / 200 holdings used</div>
+        <div style="font-size:11px;color:var(--text-dim)">${200-activeCount} remaining</div>
+      </div>
+      <div style="height:4px;background:rgba(139,105,20,.12);border-radius:2px;overflow:hidden">
+        <div style="height:100%;width:${planCapPct}%;background:var(--brand);border-radius:2px;transition:width .4s"></div>
+      </div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer" onclick="openUpgradeToSuper()">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text);margin-bottom:8px">Super Premium <span style="font-size:12px;color:var(--brand)">— upgrade</span></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <div style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:8px;text-align:center">
+          <div style="font-size:10px;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">India</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--brand)">₹1,200<span style="font-size:11px;font-weight:400;color:var(--text-dim)">/yr</span></div>
+        </div>
+        <div style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:8px;text-align:center">
+          <div style="font-size:10px;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">International</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--brand)">$30<span style="font-size:11px;font-weight:400;color:var(--text-dim)">/yr</span></div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-dim);line-height:1.8">
+        ✦ Up to 300 holdings<br>✦ Everything in Premium<br>✦ Your remaining Premium days credited pro-rata
+      </div>
+    </div>`;
+  } else {
+    // super
+    const exp = currentUser.premiumExpiresAt ? new Date(currentUser.premiumExpiresAt).toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'}) : '—';
+    planHTML += `
+    <div style="background:rgba(120,80,200,.07);border:1px solid rgba(120,80,200,.25);border-radius:10px;padding:14px 16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#7850C8">✦ Super Premium</div>
+        <div style="font-size:11px;color:#7850C8;letter-spacing:.06em;text-transform:uppercase">Active</div>
+      </div>
+      <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:10px">Up to 300 holdings · Renews ${exp}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+        <div style="font-size:11px;color:${planCapColor};letter-spacing:.04em">${activeCount} / 300 holdings used</div>
+        <div style="font-size:11px;color:var(--text-dim)">${300-activeCount} remaining</div>
+      </div>
+      <div style="height:4px;background:rgba(120,80,200,.12);border-radius:2px;overflow:hidden">
+        <div style="height:100%;width:${planCapPct}%;background:#7850C8;border-radius:2px;transition:width .4s"></div>
+      </div>
+    </div>`;
+  }
+  document.getElementById('planSection').innerHTML = planHTML;
 
   // Nominee summary — show if any holdings have nominees
   const withNominee=items.filter(i=>!i.sold&&!i.gifted&&i.nominee);
@@ -4503,6 +4613,13 @@ function updateAll(){
   // Backfill heldBy for any existing holdings missing it
   items.forEach(i=>{ if(!i.heldBy) i.heldBy='Self'; });
   updateSummary();renderList();updateHeaderWelcome();if(groupedViewActive)renderGroupedPL();
+  // Dormancy banner: lapsed premium user with >20 holdings
+  const lapsedEl=document.getElementById('dormancyBanner');
+  if(lapsedEl){
+    const activeC=items.filter(i=>!i.sold&&!i.gifted).length;
+    const isLapsed=currentUser&&!currentUser.isPremium&&activeC>20;
+    lapsedEl.style.display=isLapsed?'block':'none';
+  }
   // Keep succession/profile stat card in sync
   const _activeTab=sessionStorage.getItem('myaurum_tab');
   if(_activeTab==='succession'||_activeTab==='profile') refreshProfile();
@@ -5017,7 +5134,18 @@ async function addItem(){
   if(!selectedGrade){showMsg('addItemMsg','Please select a purity grade.','error');return}
   // Soft cap at 20, hard block at 25
   const activeCount=items.filter(i=>!i.sold&&!i.gifted).length;
-  if(activeCount>=25){showMsg('addItemMsg','You have reached the 25-holding limit. Upgrade to MyAurum Premium for unlimited holdings.','error');setTimeout(()=>document.getElementById('premiumModal').classList.add('open'),600);return}
+  // Cap enforcement — mirrors server-side constants
+  const FREE_CAP_CLIENT = 20;
+  const STANDARD_CAP_CLIENT = 200;
+  const SUPER_CAP_CLIENT = 300;
+  const isPremiumUser = currentUser && currentUser.isPremium;
+  const userTier = isPremiumUser ? (currentUser.premiumTier || 'standard') : 'free';
+  const clientCap = userTier === 'super' ? SUPER_CAP_CLIENT : isPremiumUser ? STANDARD_CAP_CLIENT : FREE_CAP_CLIENT;
+  if(activeCount>=clientCap){
+    if(userTier==='super'){showMsg('addItemMsg','You have reached the 300-holding Super Premium limit.','error');return}
+    if(userTier==='standard'){showMsg('addItemMsg','You have reached the 200-holding Premium limit. Upgrade to Super Premium for up to 300 holdings.','error');setTimeout(()=>openUpgradeToSuper(),600);return}
+    showMsg('addItemMsg','You have reached the 20-holding free tier limit. Upgrade to Premium for up to 200 holdings.','error');setTimeout(()=>document.getElementById('premiumModal').classList.add('open'),600);return
+  }
   const grams=toGrams(weight,unit);
   const mcAmt=parseFloat(document.getElementById('makingCharge').value)||0;
   const hasMC=!isGift&&document.getElementById('hasMakingCharge').checked&&mcAmt>0;
@@ -5142,7 +5270,18 @@ async function saveEditItem(){
 // ══════════════════════════════════════════
 // SELL
 // ══════════════════════════════════════════
+
+function isDormant(){
+  if(!currentUser||currentUser.isPremium) return false;
+  const activeCount=items.filter(i=>!i.sold&&!i.gifted).length;
+  return activeCount>20;
+}
+
 function openSellModal(idx){
+  if(isDormant()){
+    showToast('Your account is in read-only mode. Renew Premium to record sales.','warn',4000);
+    return;
+  }
   viewingItem=idx;const item=items[idx];
   closeModal('detailModal');
   document.getElementById('sellItemName').textContent=item.name;
@@ -5211,6 +5350,10 @@ async function confirmSell(){
 }
 
 function openGiftModal(idx){
+  if(isDormant()){
+    showToast('Your account is in read-only mode. Renew Premium to record gifts.','warn',4000);
+    return;
+  }
   viewingItem=idx;
   const item=items[idx];
   const today=new Date().toISOString().slice(0,10);
