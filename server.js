@@ -40,7 +40,8 @@ console.log('[config] DATABASE_URL:', _DB_URL !== 'postgresql://postgres:cSANKPN
 
 const RZP_KEY_ID      = process.env.RAZORPAY_KEY_ID      || 'rzp_test_placeholder';
 const RZP_KEY_SECRET  = process.env.RAZORPAY_KEY_SECRET  || 'placeholder_secret';
-const RZP_PLAN_ID     = process.env.RAZORPAY_PLAN_ID     || 'plan_placeholder';
+const RZP_PLAN_ID       = process.env.RAZORPAY_PLAN_ID       || 'plan_placeholder';
+const RZP_SUPER_PLAN_ID = process.env.RAZORPAY_SUPER_PLAN_ID || 'plan_super_placeholder';
 const RZP_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || 'webhook_placeholder';
 
 const pool = new Pool({
@@ -171,6 +172,9 @@ async function initDB() {
   await q(`ALTER TABLE price_cache ADD COLUMN IF NOT EXISTS ibja_silver_inr REAL`);
   await q(`ALTER TABLE price_cache ADD COLUMN IF NOT EXISTS ibja_fetched_at TIMESTAMPTZ`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS premium_tier TEXT DEFAULT 'standard'`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS limit_warn_15_sent_at TIMESTAMPTZ`);
+  await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS limit_warn_19_sent_at TIMESTAMPTZ`);
 
   // Dead man's switch
   await q(`
@@ -693,7 +697,8 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
     if (!u) return res.status(404).json({ error:'User not found' });
     await q('UPDATE users SET last_seen=NOW() WHERE id=$1', [u.id]);
     const isPremium = !!u.is_premium && (!u.premium_expires_at || new Date(u.premium_expires_at) > new Date());
-    res.json({ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, preferred_currency:u.preferred_currency||null, joinedAt:u.created_at, emailVerified:!!u.email_verified, twoFactorEnabled:!!u.two_factor_enabled, isPremium, premiumExpiresAt:u.premium_expires_at||null, razorpaySubscriptionId:u.razorpay_subscription_id||null });
+    const premiumTier = isPremium ? (u.premium_tier || 'standard') : null;
+    res.json({ id:u.id, email:u.email, firstName:u.first_name, lastName:u.last_name, age:u.age, country:u.country, preferred_currency:u.preferred_currency||null, joinedAt:u.created_at, emailVerified:!!u.email_verified, twoFactorEnabled:!!u.two_factor_enabled, isPremium, premiumTier, premiumExpiresAt:u.premium_expires_at||null, razorpaySubscriptionId:u.razorpay_subscription_id||null });
   } catch(e) { res.status(500).json({ error:'Server error' }); }
 });
 
@@ -837,7 +842,7 @@ async function sendWelcomeEmail(email, firstName) {
     'Satyam',
     'Founder, MyAurum',
     '',
-    'MyAurum is free up to 25 holdings. No credit card, no catch.',
+    'MyAurum is free up to 20 holdings. No credit card, no catch.',
   ].join('\n');
 
   return sendEmail({
@@ -963,7 +968,7 @@ async function sendMilestone20Email(email, firstName, verifyUrl) {
     '',
     'A couple of things worth doing now that your vault has grown:',
     verifyBlock,
-    'MyAurum premium is coming. For those who want to go further — unlimited holdings, advanced succession tools, priority support — we are building it. You will hear from me first.',
+    'MyAurum premium is coming. For those who want to go further — up to 200 holdings, advanced succession tools, priority support — we are building it. You will hear from me first.',
     '',
     'If something is not working the way you expect, reply to this email. I read every one.',
     '',
@@ -1208,9 +1213,64 @@ app.get('/api/items', requireAuth, async (req, res) => {
   catch(e) { res.status(500).json({ error:'Server error' }); }
 });
 
+// ── Cap constants ──
+const FREE_CAP      = 20;
+const STANDARD_CAP  = 200;
+const SUPER_CAP     = 300;
+
+// ── Warning email: 15 holdings ──
+async function sendLimitWarn15(user) {
+  const remaining = FREE_CAP - 15;
+  const html = `
+    <div style="font-family:'Georgia',serif;max-width:520px;margin:0 auto;padding:32px 24px;color:#2C2410">
+      <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8B6914;margin-bottom:24px">MyAurum</div>
+      <p style="font-size:16px;line-height:1.7;margin-bottom:18px">Hi ${user.first_name},</p>
+      <p style="font-size:15px;line-height:1.8;margin-bottom:18px">You have reached 15 holdings in MyAurum — ${remaining} remain on the free tier.</p>
+      <p style="font-size:15px;line-height:1.8;margin-bottom:18px">If you are tracking a larger collection, MyAurum Premium gives you up to 200 holdings for ₹600 a year (or $15 internationally).</p>
+      <p style="font-size:15px;line-height:1.8;margin-bottom:24px">No pressure — your current holdings are safe and fully accessible. This is just a heads-up.</p>
+      <a href="${APP_URL}/#profile" style="display:inline-block;padding:12px 24px;background:#8B6914;color:#FDF8F0;text-decoration:none;border-radius:8px;font-size:12px;letter-spacing:.1em;text-transform:uppercase">View Plans</a>
+      <p style="font-size:12px;color:#888;margin-top:32px;line-height:1.6">You are receiving this because you have an active MyAurum account.</p>
+    </div>`;
+  const text = `Hi ${user.first_name},\n\nYou have reached 15 holdings in MyAurum — ${remaining} remain on the free tier.\n\nIf you are tracking a larger collection, MyAurum Premium gives you up to 200 holdings for ₹600/yr or $15/yr internationally.\n\nNo pressure — your holdings are safe. This is just a heads-up.\n\n${APP_URL}/#profile`;
+  return sendEmail({ to: user.email, subject: 'MyAurum: 15 of 20 free holdings used', html, text });
+}
+
+// ── Warning email: 19 holdings ──
+async function sendLimitWarn19(user) {
+  const html = `
+    <div style="font-family:'Georgia',serif;max-width:520px;margin:0 auto;padding:32px 24px;color:#2C2410">
+      <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8B6914;margin-bottom:24px">MyAurum</div>
+      <p style="font-size:16px;line-height:1.7;margin-bottom:18px">Hi ${user.first_name},</p>
+      <p style="font-size:15px;line-height:1.8;margin-bottom:18px">You have 1 holding left on the free tier.</p>
+      <p style="font-size:15px;line-height:1.8;margin-bottom:18px">Once you reach 20, you will not be able to add more without upgrading. MyAurum Premium gives you up to 200 holdings for ₹600 a year.</p>
+      <p style="font-size:15px;line-height:1.8;margin-bottom:24px">Your existing holdings will always remain accessible — upgrading simply lets you continue adding.</p>
+      <a href="${APP_URL}/#profile" style="display:inline-block;padding:12px 24px;background:#8B6914;color:#FDF8F0;text-decoration:none;border-radius:8px;font-size:12px;letter-spacing:.1em;text-transform:uppercase">Upgrade to Premium</a>
+      <p style="font-size:12px;color:#888;margin-top:32px;line-height:1.6">You are receiving this because you have an active MyAurum account.</p>
+    </div>`;
+  const text = `Hi ${user.first_name},\n\nYou have 1 holding left on the free tier.\n\nMyAurum Premium gives you up to 200 holdings for ₹600/yr or $15/yr internationally.\n\nYour existing holdings will always remain accessible.\n\n${APP_URL}/#profile`;
+  return sendEmail({ to: user.email, subject: 'MyAurum: 1 free holding remaining', html, text });
+}
+
 app.post('/api/items', requireAuth, async (req, res) => {
   const d = req.body;
   try {
+    // ── Server-side cap enforcement ──
+    const userRes = await q('SELECT * FROM users WHERE id=$1', [req.user.userId]);
+    const u = userRes.rows[0];
+    const isPremium = !!u.is_premium && (!u.premium_expires_at || new Date(u.premium_expires_at) > new Date());
+    const tier = isPremium ? (u.premium_tier || 'standard') : null;
+    const cap = isPremium ? (tier === 'super' ? SUPER_CAP : STANDARD_CAP) : FREE_CAP;
+    const countRes = await q('SELECT COUNT(*) FROM items WHERE user_id=$1 AND sold=FALSE AND (gifted IS NOT TRUE)', [req.user.userId]);
+    const activeCount = parseInt(countRes.rows[0].count, 10);
+    if (activeCount >= cap) {
+      const msg = isPremium && tier !== 'super'
+        ? `You have reached the ${STANDARD_CAP}-holding Premium limit. Upgrade to Super Premium for up to ${SUPER_CAP} holdings.`
+        : isPremium
+        ? `You have reached the ${SUPER_CAP}-holding Super Premium limit.`
+        : `You have reached the ${FREE_CAP}-holding free tier limit. Upgrade to Premium to continue adding holdings.`;
+      return res.status(403).json({ error: msg, limitReached: true, cap, tier: tier||'free' });
+    }
+
     const r = await q(`INSERT INTO items (user_id,client_id,name,metal,type,grade_name,purity,grams,notes,purchase_date,price_paid,price_paid_curr,price_paid_usd,receipt,held_by,nominee,making_charge,making_charge_currency,gold_cost_basis_usd,photos,received_as_gift,added_at)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING *`,
       [req.user.userId, d.clientId||null,
@@ -1223,7 +1283,33 @@ app.post('/api/items', requireAuth, async (req, res) => {
        d.photos?JSON.stringify(d.photos):null,
        d.receivedAsGift||false,
        d.addedAt||new Date().toISOString()]);
-    res.status(201).json(itemToClient(decryptRow(r.rows[0])));
+    const newItem = itemToClient(decryptRow(r.rows[0]));
+    res.status(201).json(newItem);
+
+    // ── Warning email triggers (fire-and-forget, after response sent) ──
+    (async () => {
+      try {
+        const freshUser = (await q('SELECT * FROM users WHERE id=$1', [req.user.userId])).rows[0];
+        const freshIsPremium = !!freshUser.is_premium && (!freshUser.premium_expires_at || new Date(freshUser.premium_expires_at) > new Date());
+        if (freshIsPremium) return; // premium users don't get free-tier warnings
+        const freshCount = parseInt((await q('SELECT COUNT(*) FROM items WHERE user_id=$1 AND sold=FALSE AND (gifted IS NOT TRUE)', [req.user.userId])).rows[0].count, 10);
+
+        if (freshCount >= 15 && freshCount < FREE_CAP) {
+          // Check if warn-15 should reset (user dropped below 15 since last send, now back)
+          // We reset limit_warn_15_sent_at when count drops below 15 (handled in sell/gift routes)
+          if (!freshUser.limit_warn_15_sent_at) {
+            await q('UPDATE users SET limit_warn_15_sent_at=NOW() WHERE id=$1', [freshUser.id]);
+            await sendLimitWarn15(freshUser).catch(e => console.error('[warn15]', e.message));
+          }
+        }
+        if (freshCount >= 19) {
+          if (!freshUser.limit_warn_19_sent_at) {
+            await q('UPDATE users SET limit_warn_19_sent_at=NOW() WHERE id=$1', [freshUser.id]);
+            await sendLimitWarn19(freshUser).catch(e => console.error('[warn19]', e.message));
+          }
+        }
+      } catch(e) { console.error('[warn-email]', e.message); }
+    })();
   } catch(e) { console.error(e); res.status(500).json({ error:'Server error' }); }
 });
 
@@ -1232,6 +1318,31 @@ app.put('/api/items/:id', requireAuth, async (req, res) => {
   try {
     const exists = await q('SELECT id FROM items WHERE id=$1 AND user_id=$2', [req.params.id, req.user.userId]);
     if (!exists.rows.length) return res.status(404).json({ error:'Item not found' });
+
+    // ── Dormancy check: block sell/gift when lapsed with >FREE_CAP active holdings ──
+    if (d.sold || d.gifted) {
+      const uRes = await q('SELECT * FROM users WHERE id=$1', [req.user.userId]);
+      const u = uRes.rows[0];
+      const isPremium = !!u.is_premium && (!u.premium_expires_at || new Date(u.premium_expires_at) > new Date());
+      const graceEnd = u.premium_expires_at ? new Date(new Date(u.premium_expires_at).getTime() + 30*24*60*60*1000) : null;
+      const inGrace = graceEnd && new Date() <= graceEnd;
+      if (!isPremium && !inGrace) {
+        const cntRes = await q('SELECT COUNT(*) FROM items WHERE user_id=$1 AND sold=FALSE AND (gifted IS NOT TRUE)', [req.user.userId]);
+        const activeCount = parseInt(cntRes.rows[0].count, 10);
+        if (activeCount > FREE_CAP) {
+          return res.status(403).json({ error: 'Your account is in read-only mode. Renew your Premium subscription to record sales or gifts.', dormant: true });
+        }
+      }
+    }
+
+    // Reset warning flags if active count drops below threshold after edit
+    (async () => {
+      try {
+        const freshCount = parseInt((await q('SELECT COUNT(*) FROM items WHERE user_id=$1 AND sold=FALSE AND (gifted IS NOT TRUE)', [req.user.userId])).rows[0].count, 10);
+        if (freshCount < 19) await q('UPDATE users SET limit_warn_19_sent_at=NULL WHERE id=$1', [req.user.userId]);
+        if (freshCount < 15) await q('UPDATE users SET limit_warn_15_sent_at=NULL WHERE id=$1', [req.user.userId]);
+      } catch(e) {}
+    })();
     const r = await q(`UPDATE items SET name=$1,metal=$2,type=$3,grade_name=$4,purity=$5,grams=$6,notes=$7,purchase_date=$8,price_paid=$9,price_paid_curr=$10,price_paid_usd=$11,receipt=$12,sold=$13,sell_price=$14,sell_currency=$15,sell_price_usd=$16,sell_date=$17,sell_notes=$18,held_by=$19,nominee=$20,making_charge=$21,making_charge_currency=$22,gold_cost_basis_usd=$23,photos=$24,received_as_gift=$25,gifted=$26,gifted_to=$27,gifted_at=$28,gift_notes=$29,gift_value_usd=$30,gift_gain_usd=$31,updated_at=NOW() WHERE id=$32 AND user_id=$33 RETURNING *`,
       [encryptField(d.name), d.metal, d.type, encryptField(d.gradeName), d.purity, d.grams,
        d.notes?encryptField(d.notes):null, d.purchaseDate||null,
@@ -1991,12 +2102,19 @@ app.post('/api/payment/create-subscription', requireAuth, async (req, res) => {
   if (RZP_KEY_ID === 'rzp_test_placeholder') {
     return res.status(503).json({ error: 'Payment gateway not configured yet. Please check back soon.' });
   }
+  const requestedTier = req.body.tier === 'super' ? 'super' : 'standard';
   try {
     const userRes = await q('SELECT * FROM users WHERE id=$1', [req.user.userId]);
     const u = userRes.rows[0];
     if (!u) return res.status(404).json({ error: 'User not found' });
-    if (u.is_premium && u.premium_expires_at && new Date(u.premium_expires_at) > new Date()) {
-      return res.status(400).json({ error: 'Already a premium member' });
+    const isPremium = !!u.is_premium && (!u.premium_expires_at || new Date(u.premium_expires_at) > new Date());
+    // Super Premium only available to existing premium subscribers
+    if (requestedTier === 'super' && !isPremium) {
+      return res.status(400).json({ error: 'Super Premium is available to existing Premium subscribers only.' });
+    }
+    // Block new standard subscription if already premium standard
+    if (requestedTier === 'standard' && isPremium && u.premium_tier !== 'super') {
+      return res.status(400).json({ error: 'Already a Premium member.' });
     }
 
     // Create or retrieve Razorpay customer
@@ -2035,6 +2153,79 @@ app.post('/api/payment/create-subscription', requireAuth, async (req, res) => {
   }
 });
 
+
+// ── Upgrade Premium → Super Premium (pro-rata) ──
+app.post('/api/payment/upgrade-to-super', requireAuth, async (req, res) => {
+  if (RZP_KEY_ID === 'rzp_test_placeholder') {
+    return res.status(503).json({ error: 'Payment gateway not configured yet.' });
+  }
+  try {
+    const userRes = await q('SELECT * FROM users WHERE id=$1', [req.user.userId]);
+    const u = userRes.rows[0];
+    if (!u) return res.status(404).json({ error: 'User not found' });
+    const isPremium = !!u.is_premium && (!u.premium_expires_at || new Date(u.premium_expires_at) > new Date());
+    if (!isPremium) return res.status(400).json({ error: 'You must be a Premium subscriber to upgrade.' });
+    if (u.premium_tier === 'super') return res.status(400).json({ error: 'Already on Super Premium.' });
+
+    // ── Pro-rata calculation (integer paise arithmetic to avoid float errors) ──
+    const now = new Date();
+    const expiresAt = new Date(u.premium_expires_at);
+    const totalMs = 365 * 24 * 60 * 60 * 1000; // 1 year in ms
+    const remainingMs = Math.max(0, expiresAt - now);
+    // Prices in paise (1 INR = 100 paise) — avoids float errors
+    const STANDARD_PAISE = 60000;  // ₹600
+    const SUPER_PAISE    = 120000; // ₹1200
+    // Credit = remaining fraction of standard year, applied to super price
+    // credit_paise = floor(STANDARD_PAISE * remainingMs / totalMs)
+    const creditPaise = Math.floor(STANDARD_PAISE * remainingMs / totalMs);
+    const chargePaise = SUPER_PAISE - creditPaise;
+    const chargeINR   = (chargePaise / 100).toFixed(2);
+
+    // Cancel existing standard subscription at Razorpay (no refund, access continues)
+    if (u.razorpay_subscription_id && RZP_KEY_ID !== 'rzp_test_placeholder') {
+      try {
+        await razorpayRequest('POST', `/subscriptions/${u.razorpay_subscription_id}/cancel`, { cancel_at_cycle_end: 0 });
+      } catch(e) { console.warn('[upgrade] Could not cancel old sub:', e.message); }
+    }
+
+    // Create new Super Premium subscription
+    let customerId = u.razorpay_customer_id;
+    if (!customerId) {
+      const custResp = await razorpayRequest('POST', '/customers', {
+        name: `${u.first_name} ${u.last_name}`.trim(),
+        email: u.email,
+        fail_existing: 0,
+      });
+      customerId = custResp.id;
+      await q('UPDATE users SET razorpay_customer_id=$1 WHERE id=$2', [customerId, u.id]);
+    }
+
+    const sub = await razorpayRequest('POST', '/subscriptions', {
+      plan_id: RZP_SUPER_PLAN_ID,
+      customer_notify: 1,
+      quantity: 1,
+      total_count: 12,
+      customer_id: customerId,
+      addons: [],
+      notes: { user_id: String(u.id), email: u.email, tier: 'super', upgraded_from: 'standard' },
+    });
+
+    res.json({
+      subscriptionId: sub.id,
+      keyId: RZP_KEY_ID,
+      name: 'MyAurum Super Premium',
+      description: `₹${chargeINR} due today (₹1,200/yr less ₹${(creditPaise/100).toFixed(2)} credit for remaining Premium days)`,
+      prefill: { name: `${u.first_name} ${u.last_name}`.trim(), email: u.email },
+      tier: 'super',
+      creditINR: (creditPaise / 100).toFixed(2),
+      chargeINR,
+    });
+  } catch(e) {
+    console.error('[upgrade-to-super] error:', e.message);
+    res.status(500).json({ error: 'Could not process upgrade. Please try again.' });
+  }
+});
+
 // Verify payment after checkout
 app.post('/api/payment/verify', requireAuth, async (req, res) => {
   const { razorpay_payment_id, razorpay_subscription_id, razorpay_signature } = req.body;
@@ -2048,10 +2239,16 @@ app.post('/api/payment/verify', requireAuth, async (req, res) => {
     }
     const expires = new Date();
     expires.setFullYear(expires.getFullYear() + 1);
-    await q(`UPDATE users SET is_premium=TRUE, premium_since=NOW(), premium_expires_at=$1, razorpay_subscription_id=$2 WHERE id=$3`,
-      [expires, razorpay_subscription_id, req.user.userId]);
-    console.log(`[payment] Premium activated for user ${req.user.userId}`);
-    res.json({ ok: true, premiumExpiresAt: expires });
+    // Determine tier from subscription notes
+    let verifyTier = 'standard';
+    try {
+      const subDetails = await razorpayRequest('GET', `/subscriptions/${razorpay_subscription_id}`, null);
+      if (subDetails.notes && subDetails.notes.tier === 'super') verifyTier = 'super';
+    } catch(e) { /* default to standard */ }
+    await q(`UPDATE users SET is_premium=TRUE, premium_since=NOW(), premium_expires_at=$1, razorpay_subscription_id=$2, premium_tier=$3 WHERE id=$4`,
+      [expires, razorpay_subscription_id, verifyTier, req.user.userId]);
+    console.log(`[payment] ${verifyTier} activated for user ${req.user.userId}`);
+    res.json({ ok: true, premiumExpiresAt: expires, premiumTier: verifyTier });
   } catch(e) {
     console.error('[payment] verify error:', e.message);
     res.status(500).json({ error: 'Verification failed' });
@@ -2094,8 +2291,9 @@ app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), asyn
       if (userId) {
         const expires = new Date();
         expires.setFullYear(expires.getFullYear() + 1);
-        await q('UPDATE users SET is_premium=TRUE, premium_expires_at=$1 WHERE id=$2', [expires, userId]);
-        console.log(`[webhook] subscription.charged — user ${userId} renewed until ${expires.toISOString()}`);
+        const whTier = sub.notes?.tier === 'super' ? 'super' : 'standard';
+        await q('UPDATE users SET is_premium=TRUE, premium_expires_at=$1, premium_tier=$2 WHERE id=$3', [expires, whTier, userId]);
+        console.log(`[webhook] subscription.charged — user ${userId} (${whTier}) renewed until ${expires.toISOString()}`);
       }
     } else if (eventType === 'subscription.cancelled' || eventType === 'subscription.halted') {
       const sub = payload.subscription.entity;
