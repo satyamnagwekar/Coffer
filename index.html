@@ -309,7 +309,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .benchmark-btn.active{background:rgba(139,105,20,.12);border-color:var(--brand-dim);color:var(--brand)}
 
 /* Nav tabs */
-.nav-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg3)}
+.nav-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg3);padding-bottom:env(safe-area-inset-bottom,0px)}
 .nav-tab{flex:1;padding:12px 4px;border:none;background:transparent;color:var(--text-dim);font-family:'Jost',sans-serif;font-size:14px;letter-spacing:.04em;cursor:pointer;transition:color .2s,background .2s;text-transform:uppercase;position:relative}
 .nav-tab.active{color:var(--brand);background:linear-gradient(180deg,transparent 60%,rgba(139,105,20,.04) 100%)}
 .nav-tab.active::after{content:'';position:absolute;bottom:0;left:10%;right:10%;height:3px;background:linear-gradient(90deg,var(--brand-dim),var(--brand-light),var(--brand-dim));border-radius:3px 3px 0 0}
@@ -465,7 +465,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .loading-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--gold-dim);animation:pulse 1.2s infinite}
 
 /* Content panels */
-.content-panel{display:none}
+.content-panel{display:none;scroll-behavior:smooth}
 .content-panel.active{display:block;animation:panelFadeIn .22s ease}
 @keyframes panelFadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 
@@ -501,7 +501,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 
 /* Item cards */
 .inventory-list{padding:0 14px;display:flex;flex-direction:column;gap:10px}
-.item-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:border-color .2s,background .2s,box-shadow .22s,transform .18s;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.item-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:border-color .2s,background .2s,box-shadow .22s,transform .18s;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07);will-change:transform}
 .item-card:active{transform:scale(.985)}
 .item-card:hover{border-color:rgba(139,105,20,.45);box-shadow:0 8px 28px rgba(139,105,20,.14),0 2px 8px rgba(0,0,0,.06);transform:translateY(-1px)}
 .item-card.gold{background:linear-gradient(145deg,rgba(139,105,20,.035) 0%,var(--bg2) 50%)}
@@ -540,10 +540,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .empty-state .sub{font-size:12px;color:var(--text-dim);line-height:1.7;max-width:260px;margin:0 auto}
 .empty-cta{margin-top:18px;display:inline-block;padding:11px 24px;background:linear-gradient(135deg,rgba(139,105,20,.1),rgba(184,146,26,.08));border:1px solid var(--brand-dim);border-radius:20px;color:var(--brand);font-size:11px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .2s,box-shadow .2s}
 .empty-cta:hover{background:linear-gradient(135deg,rgba(139,105,20,.18),rgba(184,146,26,.14));box-shadow:0 2px 10px rgba(139,105,20,.15)}
-.pb{padding-bottom:100px}
+.pb{padding-bottom:max(100px, calc(80px + env(safe-area-inset-bottom,0px)))}
 
 /* FAB */
-.fab-wrap{position:fixed;bottom:26px;right:18px;z-index:200;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.fab-wrap{position:fixed;bottom:max(26px,calc(16px + env(safe-area-inset-bottom,0px)));right:18px;z-index:200;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 .fab{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--brand-light),var(--brand));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:28px;color:#FDF8F0;box-shadow:0 4px 20px rgba(139,105,20,.45);transition:transform .18s,box-shadow .18s}
 .fab:hover{transform:scale(1.06);box-shadow:0 6px 28px rgba(139,105,20,.55)}
 .fab:active{transform:scale(.93)}
@@ -552,7 +552,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .fab-label{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 13px;font-size:11px;color:var(--text-mid);letter-spacing:.08em;white-space:nowrap;pointer-events:none}
 
 /* Profile panel */
-.profile-panel{padding:0 0 80px}
+.profile-panel{padding:0 0 max(80px,calc(60px + env(safe-area-inset-bottom,0px)))}
 .profile-section{padding:20px;border-bottom:1px solid var(--border)}
 .profile-section-title{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px;font-weight:500}
 .profile-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
@@ -722,7 +722,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* ═══════════════════════════════════════
    CHART PANEL
 ═══════════════════════════════════════ */
-.chart-panel{padding-bottom:100px}
+.chart-panel{padding-bottom:max(100px,calc(80px + env(safe-area-inset-bottom,0px)))}
 .chart-header{padding:20px 16px 0;background:linear-gradient(160deg,rgba(139,105,20,.07) 0%,transparent 60%);border-bottom:1px solid var(--border-gold);margin-bottom:4px}
 .chart-title-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
 .chart-eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--brand-dim);margin-bottom:6px}
@@ -824,7 +824,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* ═══════════════════════════════════════
    ALERTS PANEL
 ═══════════════════════════════════════ */
-.alerts-panel{padding-bottom:100px}
+.alerts-panel{padding-bottom:max(100px,calc(80px + env(safe-area-inset-bottom,0px)))}
 .alerts-header{padding:20px 18px 14px;border-bottom:1px solid var(--border-gold);background:linear-gradient(160deg,rgba(139,105,20,.06) 0%,transparent 60%)}
 .alerts-title{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--text);margin-bottom:3px}
 .alerts-sub{font-size:11px;color:var(--text-dim)}
@@ -867,7 +867,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .empty-alerts .ea-text{font-size:11px;color:var(--text-dim);line-height:1.7}
 
 /* ── Toast notifications ── */
-#toastContainer{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:800;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+#toastContainer{position:fixed;bottom:max(90px,calc(70px + env(safe-area-inset-bottom,0px)));left:50%;transform:translateX(-50%);z-index:800;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
 .toast{background:rgba(44,36,16,.95);color:var(--bg2);font-family:'Jost',sans-serif;font-size:12px;letter-spacing:.04em;padding:11px 18px 11px 16px;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.28);opacity:0;transform:translateY(12px) scale(.96);transition:opacity .22s ease,transform .28s cubic-bezier(.34,1.56,.64,1);pointer-events:auto;max-width:320px;text-align:center;line-height:1.5;border-left:3px solid var(--brand);backdrop-filter:blur(8px)}
 .toast.show{opacity:1;transform:translateY(0) scale(1)}
 .toast.warn{background:rgba(122,69,0,.95);color:#FFE8C0;border-left-color:#F0A030}
@@ -954,7 +954,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   .item-card{padding:14px 14px}
   .item-name{font-size:18px}
   .fab{width:54px;height:54px;font-size:26px}
-  .fab-wrap{bottom:20px;right:14px}
+  .fab-wrap{bottom:max(20px,calc(12px + env(safe-area-inset-bottom,0px)));right:14px}
   .modal{border-radius:20px 20px 0 0;max-height:96vh}
   .modal-body{padding:16px;gap:14px}
   .modal-title{font-size:22px}
@@ -983,7 +983,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
   @media(min-width:600px){.hiw-grid{grid-template-columns:1fr 1fr !important}}
   .howto-grid{grid-template-columns:1fr !important}
   .howto-arrow{display:none !important}
-  #toastContainer{bottom:80px;width:90%}
+  #toastContainer{bottom:max(80px,calc(60px + env(safe-area-inset-bottom,0px)));width:90%}
   #toastContainer .toast{width:100%;max-width:100%}
 }
 
@@ -1492,7 +1492,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
   <div style="background:#F5F0E8;border-top:1px solid #DDD5C0;padding:44px 28px 48px">
     <div style="max-width:860px;margin:0 auto">
       <div style="font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:#B8860B;font-weight:500;font-family:'Jost',sans-serif;margin-bottom:8px;text-align:center">What makes MyAurum different</div>
-      <div style="text-align:center;margin-bottom:32px;font-size:11px;color:#888070">Questions? <a href="mailto:hello&#64;myaurum&#46;app" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a></div>
+      <div style="text-align:center;margin-bottom:32px;font-size:11px;color:#888070">Questions? <a href="/cdn-cgi/l/email-protection#c6aea3aaaaa9e0e5f0f2fdabbfa7b3b4b3abe0e5f2f0fda7b6b6" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a></div>
       <div class="trust-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
 
         <div style="text-align:center;padding:24px 16px;border:1px solid rgba(184,134,11,.18);border-radius:12px;background:#fff">
@@ -1606,7 +1606,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 
       <div style="margin-top:28px;padding-top:24px;border-top:1px solid #DDD5C0">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-          <div style="font-size:11px;color:#999;line-height:1.7">© 2026 MyAurum · Built by <a href="https://www.linkedin.com/in/satyamnagwekar/" target="_blank" style="color:#999;text-decoration:none">Aurum Fintech</a> · Mumbai, India · UDYAM-MH-19-0421851 · <a href="mailto:hello&#64;myaurum&#46;app" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a></div>
+          <div style="font-size:11px;color:#999;line-height:1.7">© 2026 MyAurum · Built by <a href="https://www.linkedin.com/in/satyamnagwekar/" target="_blank" style="color:#999;text-decoration:none">Aurum Fintech</a> · Mumbai, India · UDYAM-MH-19-0421851 · <a href="/cdn-cgi/l/email-protection#b8d0ddd4d4d79e9b8e8c83d5c1d9cdcacdd59e9b8c8e83d9c8c8" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a></div>
           <div style="display:flex;gap:16px;flex-wrap:wrap">
             <a href="/privacy" target="_blank" style="font-size:11px;color:#B8860B;text-decoration:none;white-space:nowrap">Privacy Policy</a>
             <a href="/terms" target="_blank" style="font-size:11px;color:#B8860B;text-decoration:none;white-space:nowrap">Terms of Use</a>
@@ -1628,7 +1628,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 
 <!-- Mobile action confirmation sheet -->
 <div id="mobileConfirmSheet" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(44,36,16,.45);backdrop-filter:blur(4px)" onclick="hideMobileConfirm()">
-  <div id="mobileConfirmBox" style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 40px;border-top:2px solid var(--brand)" onclick="event.stopPropagation()">
+  <div id="mobileConfirmBox" style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;padding:28px 24px max(40px,calc(28px + env(safe-area-inset-bottom,0px)));border-top:2px solid var(--brand)" onclick="event.stopPropagation()">
     <div id="mobileConfirmTitle" style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;color:var(--text);margin-bottom:8px;text-align:center"></div>
     <div id="mobileConfirmDesc" style="font-size:12px;color:var(--text-dim);line-height:1.7;text-align:center;margin-bottom:24px"></div>
     <button id="mobileConfirmBtn" aria-label="Confirm" style="width:100%;padding:14px;background:var(--brand);color:#FDF8F0;border:none;border-radius:12px;font-family:'Jost',sans-serif;font-size:13px;letter-spacing:.08em;cursor:pointer;margin-bottom:10px"></button>
@@ -2083,7 +2083,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         <div class="field" style="margin-bottom:14px">
           <div class="field-label-row"><label id="alertPriceLabel">Target Price (USD / oz)</label></div>
           <div style="display:flex;gap:8px;align-items:stretch">
-            <input type="number" id="alertPrice" class="alert-input" placeholder="e.g. 3400" step="1" min="1" style="flex:1">
+            <input type="number" id="alertPrice" class="alert-input" placeholder="e.g. 3400" step="1" min="1" inputmode="numeric" style="flex:1">
             <select id="alertPriceCurrency" class="alert-input" style="width:auto;flex-shrink:0;padding:13px 10px" onchange="updateAlertCurrencyUI()">
               <option value="USD">USD /oz</option>
               <option value="INR">INR /10g</option>
@@ -2424,7 +2424,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 
       <div class="field">
         <div class="field-label-row"><label>Item Name</label></div>
-        <input type="text" id="itemName" placeholder="e.g. 22K gold bangle, Silver Maple Leaf…">
+        <input type="text" id="itemName" placeholder="e.g. 22K gold bangle, Silver Maple Leaf…" autocorrect="off" autocapitalize="on" spellcheck="false">
       </div>
 
       <div class="field">
@@ -2463,7 +2463,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <div class="field-row">
         <div class="field">
           <div class="field-label-row"><label>Weight</label></div>
-          <input type="number" id="itemWeight" placeholder="0.00" step="0.01" oninput="updatePreview()">
+          <input type="number" id="itemWeight" placeholder="0.00" step="0.01" inputmode="decimal" oninput="updatePreview()">
         </div>
         <div class="field">
           <div class="field-label-row"><label>Unit</label></div>
@@ -2512,7 +2512,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           <div class="field-row">
             <div class="field">
               <div class="field-label-row"><label>Price Paid</label></div>
-              <input type="number" id="pricePaid" placeholder="0.00" step="0.01" oninput="updatePreview()">
+              <input type="number" id="pricePaid" placeholder="0.00" step="0.01" inputmode="decimal" oninput="updatePreview()">
             </div>
             <div class="field">
               <div class="field-label-row"><label>Currency</label></div>
@@ -2534,7 +2534,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
               </label>
             </div>
             <div id="makingChargeRow" style="display:none">
-              <input type="number" id="makingCharge" placeholder="Making charge amount" step="0.01" oninput="updatePreview()" style="width:100%">
+              <input type="number" id="makingCharge" placeholder="Making charge amount" step="0.01" inputmode="decimal" oninput="updatePreview()" style="width:100%">
               <div style="font-size:11px;color:var(--text-dim);margin-top:4px">Making charges have no resale value — this amount will be excluded from your cost basis.</div>
             </div>
           </div>
@@ -2542,7 +2542,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 
         <div class="field">
           <div class="field-label-row"><label>Notes</label><span class="field-hint">optional</span></div>
-          <input type="text" id="itemNotes" placeholder="Jeweller, occasion, cert. number…">
+          <input type="text" id="itemNotes" placeholder="Jeweller, occasion, cert. number…" autocorrect="off" autocapitalize="on" spellcheck="false">
         </div>
       </div>
 
@@ -2622,7 +2622,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--text-mid)" id="sellItemName"></div>
       <div class="field"><div class="field-label-row"><label>Date of Sale</label></div><input type="date" id="sellDate"></div>
       <div class="field-row">
-        <div class="field"><div class="field-label-row"><label>Price Received</label></div><input type="number" id="sellPrice" placeholder="0.00" step="0.01" oninput="updateSellPreview()"></div>
+        <div class="field"><div class="field-label-row"><label>Price Received</label></div><input type="number" id="sellPrice" placeholder="0.00" step="0.01" inputmode="decimal" oninput="updateSellPreview()"></div>
         <div class="field"><div class="field-label-row"><label>Currency</label></div>
           <select id="sellCurrency" onchange="updateSellPreview()">
             <option value="USD">USD $</option><option value="INR">INR ₹</option><option value="AED">AED د.إ</option><option value="EUR">EUR €</option><option value="GBP">GBP £</option>
@@ -2832,7 +2832,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     <div class="modal-body">
       <div class="field">
         <div class="field-label-row"><label>Item Name</label></div>
-        <input type="text" id="editItemName" placeholder="e.g. 22K gold bangle">
+        <input type="text" id="editItemName" placeholder="e.g. 22K gold bangle" autocorrect="off" autocapitalize="on" spellcheck="false">
       </div>
       <div class="field">
         <div class="field-label-row"><label>Karat / Purity</label></div>
@@ -2843,7 +2843,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <div class="field-row">
         <div class="field">
           <div class="field-label-row"><label>Weight</label></div>
-          <input type="number" id="editWeight" placeholder="0.00" step="0.01">
+          <input type="number" id="editWeight" placeholder="0.00" step="0.01" inputmode="decimal">
         </div>
         <div class="field">
           <div class="field-label-row"><label>Unit</label></div>
@@ -2861,7 +2861,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <div class="field-row">
         <div class="field">
           <div class="field-label-row"><label>Price Paid</label></div>
-          <input type="number" id="editPricePaid" placeholder="0.00" step="0.01">
+          <input type="number" id="editPricePaid" placeholder="0.00" step="0.01" inputmode="decimal">
         </div>
         <div class="field">
           <div class="field-label-row"><label>Currency</label></div>
@@ -2878,13 +2878,13 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           </label>
         </div>
         <div id="editMakingChargeRow" style="display:none">
-          <input type="number" id="editMakingCharge" placeholder="Making charge amount" step="0.01" style="width:100%">
+          <input type="number" id="editMakingCharge" placeholder="Making charge amount" step="0.01" inputmode="decimal" style="width:100%">
           <div style="font-size:11px;color:var(--text-dim);margin-top:4px">Making charges have no resale value — excluded from cost basis.</div>
         </div>
       </div>
       <div class="field">
         <div class="field-label-row"><label>Notes</label><span class="field-hint">optional</span></div>
-        <input type="text" id="editNotes" placeholder="Jeweller, occasion, cert. number…">
+        <input type="text" id="editNotes" placeholder="Jeweller, occasion, cert. number…" autocorrect="off" autocapitalize="on" spellcheck="false">
       </div>
       <div class="field">
         <div class="field-label-row"><label>Source</label><span class="field-hint">optional · for your records</span></div>
@@ -2910,7 +2910,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
   <div class="lightbox-close" onclick="closeLightbox()">Close ✕</div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ══════════════════════════════════════════
 // CONSTANTS & GLOBALS
 // ══════════════════════════════════════════
@@ -6897,7 +6897,7 @@ window.onerror = (msg, src, line, col, err) => {
       If we make material changes to this policy, we will notify users by email and update the date below. We will not retroactively reduce the privacy protections described here without explicit consent.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">11. Contact</strong><br>
-      For privacy-related questions or data requests, write to us at <a href="mailto:hello&#64;myaurum&#46;app" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a>. We will respond within 5 business days.</p>
+      For privacy-related questions or data requests, write to us at <a href="/cdn-cgi/l/email-protection#d7bfb2bbbbb8f1f4e1e3ecbaaeb6a2a5a2baf1f4e3e1ecb6a7a7" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a>. We will respond within 5 business days.</p>
 
       <p style="color:#999;font-size:10px;border-top:1px solid #EEE;padding-top:12px;margin-top:4px">Last updated: March 2026 · MyAurum · Aurum Fintech, Mumbai, India · Registered under UDYAM</p>
     </div>
@@ -6933,7 +6933,7 @@ window.onerror = (msg, src, line, col, err) => {
       You retain ownership of all holdings data you enter. By using the service, you grant Aurum Fintech a limited, non-exclusive licence to store, process, and display your data solely for the purpose of providing the service to you. We do not claim ownership of your data, and we do not use it for any purpose other than operating the service. See our Privacy Policy for full details.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">7. Account security</strong><br>
-      You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. You must notify us immediately at <a href="mailto:hello&#64;myaurum&#46;app" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a> if you suspect any unauthorised use. MyAurum is not liable for loss resulting from unauthorised access caused by your failure to secure your credentials.</p>
+      You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. You must notify us immediately at <a href="/cdn-cgi/l/email-protection#e189848d8d8ec7c2d7d5da8c98809493948cc7c2d5d7da809191" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a> if you suspect any unauthorised use. MyAurum is not liable for loss resulting from unauthorised access caused by your failure to secure your credentials.</p>
 
       <p><strong style="color:#2C2410;font-size:13px">8. Subscriptions and payments</strong><br>
       Premium subscriptions are processed via Razorpay. Subscription fees are charged in advance on an annual basis. Cancellations take effect at the end of the current billing period — access continues until expiry and no partial refunds are issued. MyAurum reserves the right to change subscription pricing with 30 days' notice to existing subscribers.</p>
@@ -6947,11 +6947,4 @@ window.onerror = (msg, src, line, col, err) => {
       <p><strong style="color:#2C2410;font-size:13px">11. Changes to these terms</strong><br>
       We may update these Terms from time to time. Material changes will be communicated by email to registered users. Continued use of the service after changes are posted constitutes acceptance of the revised Terms.</p>
 
-      <p><strong style="color:#2C2410;font-size:13px">12. Contact</strong><br>
-      For questions regarding these Terms, contact us at <a href="mailto:hello&#64;myaurum&#46;app" style="color:#B8860B;text-decoration:none">hello&#64;myaurum&#46;app</a>.</p>
-
-    </div>
-  </div>
-</div>
-
-</body></html>`
+  
