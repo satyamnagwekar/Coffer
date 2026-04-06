@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyAurum · Blog Analytics</title>
+<style>
+  :root {
+    --gold: #B8860B; --gold-dim: #8B6914; --gold-pale: rgba(184,134,11,.08);
+    --bg: #FAF7F2; --bg2: #fff; --ink: #2C2410; --dim: #8B7A5A;
+    --border: rgba(139,105,20,.18); --radius: 12px;
+    --green: #1A7A4A; --red: #A0522D; --blue: #2E6B8A; --purple: #5A3B7A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Georgia', serif; background: var(--bg); color: var(--ink); font-size: 14px; }
+
+  .topbar {
+    background: #1A1508; padding: 14px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .topbar-brand { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: rgba(212,160,23,.7); font-family: monospace; }
+  .topbar-nav { display: flex; gap: 6px; }
+  .topbar-nav a {
+    font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 6px; text-decoration: none;
+    color: rgba(245,240,232,.5); font-family: monospace;
+    transition: all .15s;
+  }
+  .topbar-nav a:hover { color: rgba(245,240,232,.9); }
+  .topbar-nav a.active { background: rgba(184,134,11,.2); color: rgba(212,160,23,.9); }
+
+  .page { max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px; }
+
+  .page-header { margin-bottom: 28px; }
+  .page-title { font-size: 24px; font-weight: 300; color: var(--ink); letter-spacing: -.01em; margin-bottom: 6px; }
+  .page-sub { font-size: 12px; color: var(--dim); font-family: monospace; letter-spacing: .06em; }
+
+  /* ── Controls ── */
+  .controls { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+  .day-btn {
+    padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border);
+    background: transparent; color: var(--dim); font-family: monospace; font-size: 11px;
+    letter-spacing: .08em; cursor: pointer; transition: all .15s;
+  }
+  .day-btn:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
+  .day-btn.active { background: var(--gold-dim); border-color: var(--gold-dim); color: #FDF8F0; }
+  .refresh-btn {
+    margin-left: auto; padding: 7px 16px; border-radius: 20px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--dim); font-family: monospace; font-size: 11px;
+    letter-spacing: .08em; cursor: pointer; transition: all .15s;
+  }
+  .refresh-btn:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
+
+  /* ── KPI row ── */
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+  .kpi {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; text-align: center;
+  }
+  .kpi-val { font-size: 32px; font-weight: 300; color: var(--gold-dim); letter-spacing: -.02em; margin-bottom: 4px; }
+  .kpi-label { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); font-family: monospace; }
+
+  /* ── Grid layout ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+  .panel {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; overflow: hidden;
+  }
+  .panel-title {
+    font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--dim); font-family: monospace; margin-bottom: 16px;
+  }
+
+  /* ── Sparkline ── */
+  .sparkline-wrap { height: 80px; position: relative; }
+  canvas#sparkline { width: 100%; height: 80px; }
+
+  /* ── Article table ── */
+  .art-table { width: 100%; border-collapse: collapse; }
+  .art-table th {
+    font-size: 9px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--dim); font-family: monospace; font-weight: 500;
+    text-align: left; padding: 0 0 10px; border-bottom: 1px solid var(--border);
+  }
+  .art-table th:not(:first-child) { text-align: right; }
+  .art-table td {
+    padding: 10px 0; border-bottom: 1px solid rgba(139,105,20,.08);
+    font-size: 13px; vertical-align: middle;
+  }
+  .art-table td:not(:first-child) { text-align: right; font-family: monospace; font-size: 12px; }
+  .art-table tr:last-child td { border-bottom: none; }
+  .slug-cell { font-family: monospace; font-size: 11px; color: var(--ink); }
+  .slug-cell .slug-path { color: var(--gold-dim); font-size: 10px; display: block; margin-top: 2px; }
+
+  /* Bar chart rows */
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .bar-label { font-family: monospace; font-size: 11px; color: var(--ink); min-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-wrap { flex: 1; background: rgba(139,105,20,.08); border-radius: 3px; height: 8px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; background: var(--gold-dim); transition: width .4s cubic-bezier(.22,1,.36,1); }
+  .bar-val { font-family: monospace; font-size: 11px; color: var(--dim); min-width: 36px; text-align: right; }
+  .bar-fill.blue { background: var(--blue); }
+  .bar-fill.purple { background: var(--purple); }
+
+  /* Device pills */
+  .device-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .device-pill {
+    flex: 1; min-width: 80px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; text-align: center;
+  }
+  .device-pill .dv { font-size: 22px; margin-bottom: 4px; }
+  .device-pill .dn { font-family: monospace; font-size: 18px; font-weight: 300; color: var(--gold-dim); }
+  .device-pill .dl { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); font-family: monospace; margin-top: 2px; }
+
+  /* Loading / empty */
+  .loading { text-align: center; padding: 40px; color: var(--dim); font-family: monospace; font-size: 12px; letter-spacing: .1em; }
+  .empty-row { font-family: monospace; font-size: 11px; color: var(--dim); padding: 16px 0; text-align: center; }
+
+  /* ── Ghost embed snippet ── */
+  .snippet-block {
+    background: #1A1508; border-radius: var(--radius); padding: 20px 24px; margin-top: 24px;
+  }
+  .snippet-label { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: rgba(212,160,23,.6); font-family: monospace; margin-bottom: 12px; }
+  .snippet-code { font-family: monospace; font-size: 12px; color: #F5E6C0; line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
+  .snippet-note { font-family: monospace; font-size: 10px; color: rgba(245,240,232,.35); margin-top: 10px; line-height: 1.6; }
+  .copy-btn {
+    margin-top: 12px; padding: 7px 16px; background: rgba(184,134,11,.15);
+    border: 1px solid rgba(184,134,11,.3); border-radius: 6px;
+    color: rgba(212,160,23,.8); font-family: monospace; font-size: 10px;
+    letter-spacing: .1em; text-transform: uppercase; cursor: pointer; transition: all .15s;
+  }
+  .copy-btn:hover { background: rgba(184,134,11,.25); }
+
+  @media(max-width:700px) {
+    .kpi-row { grid-template-columns: 1fr 1fr; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">MyAurum · Admin</div>
+  <div class="topbar-nav">
+    <a href="javascript:void(0)" onclick="goAdmin()">Dashboard</a>
+    <a href="javascript:void(0)" class="active">Blog Analytics</a>
+    <a href="javascript:void(0)" onclick="logout()">Sign Out</a>
+  </div>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-title">Blog Analytics</div>
+    <div class="page-sub" id="lastUpdated">Loading…</div>
+  </div>
+
+  <div class="controls">
+    <button class="day-btn" data-d="7" onclick="setDays(7,this)">7 days</button>
+    <button class="day-btn active" data-d="30" onclick="setDays(30,this)">30 days</button>
+    <button class="day-btn" data-d="90" onclick="setDays(90,this)">90 days</button>
+    <button class="refresh-btn" onclick="load()">↻ Refresh</button>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-val" id="kpiViews">—</div><div class="kpi-label">Human views</div></div>
+    <div class="kpi"><div class="kpi-val" id="kpiSlugs">—</div><div class="kpi-label">Articles tracked</div></div>
+    <div class="kpi"><div class="kpi-val" id="kpiAllTime">—</div><div class="kpi-label">All-time views</div></div>
+    <div class="kpi"><div class="kpi-val" id="kpiBots">—</div><div class="kpi-label">Bot visits</div></div>
+  </div>
+
+  <!-- Daily sparkline -->
+  <div class="panel" style="margin-bottom:16px">
+    <div class="panel-title">Daily views (human)</div>
+    <div class="sparkline-wrap"><canvas id="sparkline"></canvas></div>
+  </div>
+
+  <!-- Articles + Referrers -->
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">Articles by views</div>
+      <div id="articleTable"><div class="loading">Loading…</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Top referrers</div>
+      <div id="referrersChart"><div class="loading">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- Countries + Devices -->
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">Top countries</div>
+      <div id="countriesChart"><div class="loading">Loading…</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Device types</div>
+      <div id="devicesChart"><div class="loading">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- Ghost embed instructions -->
+  <div class="snippet-block">
+    <div class="snippet-label">Ghost embed snippet — add to your article footer template</div>
+    <div class="snippet-code" id="snippetCode">{{! MyAurum impression pixel }}
+&lt;img src="https://myaurum.app/px?s={{slug}}&amp;r={{encode @page.url}}"
+     width="1" height="1" alt="" style="display:none;position:absolute" /&gt;</div>
+    <div class="snippet-note">
+      In Ghost: go to Settings → Code Injection → Site Footer, or add to your theme's post.hbs template.<br>
+      {{slug}} is Ghost's built-in variable for the article slug. The pixel fires on every page load.<br>
+      For the blog index page, use s=blog. For individual articles, s=blog/article-slug.
+    </div>
+    <button class="copy-btn" onclick="copySnippet()">Copy snippet</button>
+  </div>
+
+  <!-- Manual pixel URL -->
+  <div class="snippet-block" style="margin-top:12px">
+    <div class="snippet-label">Manual pixel URL — for any page</div>
+    <div class="snippet-code">&lt;img src="https://myaurum.app/px?s=YOUR-SLUG&amp;r=SOURCE" width="1" height="1" alt="" style="display:none" /&gt;</div>
+    <div class="snippet-note">Replace YOUR-SLUG with the page identifier (e.g. blog/india-gold-hallmark-scams-2026) and SOURCE with the referrer if known.</div>
+  </div>
+
+</div>
+
+<script>
+  let currentDays = 30;
+  let data = null;
+
+  const adminToken = window._adminToken || '';
+  const adminSlug  = window._adminSlug  || '';
+
+  function goAdmin() { window.location.href = '/' + adminSlug; }
+  function logout()  { window.location.href = '/' + adminSlug + '/logout'; }
+
+  function setDays(d, btn) {
+    currentDays = d;
+    document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    load();
+  }
+
+  async function load() {
+    try {
+      const r = await fetch(`/api/${adminSlug}/impressions?days=${currentDays}`, {
+        headers: { 'x-admin-token': adminToken }
+      });
+      data = await r.json();
+      render();
+    } catch(e) {
+      document.getElementById('lastUpdated').textContent = 'Error loading data — ' + e.message;
+    }
+  }
+
+  function fmt(n) {
+    if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+    if (n >= 1000)    return (n/1000).toFixed(1) + 'K';
+    return String(n || 0);
+  }
+
+  function render() {
+    if (!data) return;
+
+    // KPIs
+    const periodViews = data.bySlug.reduce((s,r) => s + parseInt(r.views), 0);
+    document.getElementById('kpiViews').textContent = fmt(periodViews);
+    document.getElementById('kpiSlugs').textContent = data.totals.total_slugs;
+    document.getElementById('kpiAllTime').textContent = fmt(data.totals.total_views);
+    document.getElementById('kpiBots').textContent = fmt(data.totals.total_bots);
+    document.getElementById('lastUpdated').textContent =
+      `Last ${currentDays} days · Updated ${new Date().toLocaleTimeString()}`;
+
+    // Sparkline
+    drawSparkline(data.daily);
+
+    // Articles table
+    renderArticles(data.bySlug);
+
+    // Referrers
+    renderBars('referrersChart', data.referrers, 'domain', 'views', 'blue');
+
+    // Countries
+    renderBars('countriesChart', data.countries, 'country', 'views', 'purple');
+
+    // Devices
+    renderDevices(data.devices);
+  }
+
+  function drawSparkline(rows) {
+    const canvas = document.getElementById('sparkline');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.offsetWidth;
+    const h = canvas.offsetHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.scale(dpr, dpr);
+
+    if (!rows || !rows.length) {
+      ctx.fillStyle = 'rgba(139,105,20,.1)';
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#8B7A5A';
+      ctx.font = '11px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('No data yet', w/2, h/2 + 4);
+      return;
+    }
+
+    const vals = rows.map(r => parseInt(r.views));
+    const max  = Math.max(...vals, 1);
+    const pad  = 8;
+    const barW = (w - pad * 2) / vals.length;
+
+    ctx.clearRect(0, 0, w, h);
+
+    vals.forEach((v, i) => {
+      const barH = ((v / max) * (h - pad * 2)) || 2;
+      const x = pad + i * barW;
+      const y = h - pad - barH;
+      // Gradient fill
+      const grad = ctx.createLinearGradient(0, y, 0, h - pad);
+      grad.addColorStop(0, 'rgba(184,134,11,.7)');
+      grad.addColorStop(1, 'rgba(184,134,11,.15)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(x + 1, y, barW - 2, barH, 2);
+      ctx.fill();
+    });
+
+    // Date labels
+    if (rows.length > 0) {
+      ctx.fillStyle = 'rgba(139,105,20,.4)';
+      ctx.font = '9px monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(rows[0].day?.slice(5), pad, h - 1);
+      ctx.textAlign = 'right';
+      ctx.fillText(rows[rows.length-1].day?.slice(5), w - pad, h - 1);
+    }
+  }
+
+  function renderArticles(rows) {
+    const el = document.getElementById('articleTable');
+    if (!rows || !rows.length) {
+      el.innerHTML = '<div class="empty-row">No article views tracked yet.<br>Add the pixel to Ghost to start.</div>';
+      return;
+    }
+    const maxV = Math.max(...rows.map(r => parseInt(r.views)), 1);
+    el.innerHTML = `<table class="art-table">
+      <thead><tr>
+        <th>Article</th>
+        <th>Views</th>
+        <th>Bots</th>
+        <th>Last seen</th>
+      </tr></thead>
+      <tbody>${rows.map(r => {
+        const pct = Math.round(parseInt(r.views) / maxV * 100);
+        const slug = r.slug || '';
+        const name = slug.split('/').pop().replace(/-/g,' ') || slug;
+        const lastSeen = r.last_seen ? new Date(r.last_seen).toLocaleDateString() : '—';
+        return `<tr>
+          <td class="slug-cell">
+            <span style="display:block;font-size:12px">${name}</span>
+            <span class="slug-path">${slug}</span>
+            <div style="margin-top:5px;height:3px;background:rgba(139,105,20,.1);border-radius:2px;overflow:hidden">
+              <div style="width:${pct}%;height:100%;background:var(--gold-dim);border-radius:2px"></div>
+            </div>
+          </td>
+          <td style="color:var(--gold-dim);font-weight:500">${fmt(r.views)}</td>
+          <td style="color:var(--dim)">${fmt(r.bots)}</td>
+          <td style="color:var(--dim)">${lastSeen}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  }
+
+  function renderBars(elId, rows, labelKey, valKey, colorClass) {
+    const el = document.getElementById(elId);
+    if (!rows || !rows.length) {
+      el.innerHTML = '<div class="empty-row">No data yet</div>';
+      return;
+    }
+    const max = Math.max(...rows.map(r => parseInt(r[valKey])), 1);
+    el.innerHTML = rows.slice(0, 12).map(r => {
+      const pct = Math.round(parseInt(r[valKey]) / max * 100);
+      const label = r[labelKey] || '—';
+      return `<div class="bar-row">
+        <div class="bar-label" title="${label}">${label}</div>
+        <div class="bar-wrap"><div class="bar-fill ${colorClass}" style="width:${pct}%"></div></div>
+        <div class="bar-val">${fmt(r[valKey])}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderDevices(rows) {
+    const el = document.getElementById('devicesChart');
+    if (!rows || !rows.length) {
+      el.innerHTML = '<div class="empty-row">No data yet</div>';
+      return;
+    }
+    const icons = { desktop: '🖥️', mobile: '📱', tablet: '📟', unknown: '❓' };
+    el.innerHTML = `<div class="device-row">${rows.map(r => `
+      <div class="device-pill">
+        <div class="dv">${icons[r.ua_type] || '❓'}</div>
+        <div class="dn">${fmt(r.views)}</div>
+        <div class="dl">${r.ua_type}</div>
+      </div>`).join('')}</div>`;
+  }
+
+  function copySnippet() {
+    const code = document.getElementById('snippetCode').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = 'Copied ✓';
+      setTimeout(() => btn.textContent = 'Copy snippet', 2000);
+    });
+  }
+
+  // Load on init
+  load();
+  // Auto-refresh every 5 minutes
+  setInterval(load, 5 * 60 * 1000);
+</script>
+</body>
+</html>
