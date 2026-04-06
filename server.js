@@ -151,6 +151,9 @@ async function initDB() {
   await q(`ALTER TABLE alerts ADD COLUMN IF NOT EXISTS price_display  REAL`);
   await q(`ALTER TABLE alerts ADD COLUMN IF NOT EXISTS price_currency TEXT DEFAULT 'USD'`);
   await q(`ALTER TABLE alerts ADD COLUMN IF NOT EXISTS notify_email   TEXT`);
+  await q(`ALTER TABLE alerts DROP CONSTRAINT IF EXISTS alerts_metal_check`);
+  await q(`ALTER TABLE alerts ADD CONSTRAINT alerts_metal_check CHECK(metal IN ('gold','silver','platinum'))`);
+  await q(`ALTER TABLE alerts ADD COLUMN IF NOT EXISTS fired_at TIMESTAMPTZ`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen TIMESTAMPTZ`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_method TEXT DEFAULT 'email'`);
@@ -563,7 +566,7 @@ function decryptRow(r) {
 function alertToClient(r) {
   return { id:r.id, clientId:r.client_id, metal:r.metal, dir:r.direction, price:r.price,
     priceDisplay:r.price_display||null, priceCurrency:r.price_currency||'USD',
-    note:r.note||'', fired:!!r.fired, createdAt:r.created_at };
+    note:r.note||'', fired:!!r.fired, firedAt:r.fired_at||null, createdAt:r.created_at };
 }
 
 // ─────────────────────────────────────────
@@ -1091,7 +1094,7 @@ async function checkAndFireAlerts() {
     if (!hit) continue;
 
     try {
-      await q('UPDATE alerts SET fired=TRUE WHERE id=$1', [alert.id]);
+      await q('UPDATE alerts SET fired=TRUE, fired_at=NOW() WHERE id=$1', [alert.id]);
     } catch(e) {
       console.error(`[alerts] Could not mark alert ${alert.id} fired:`, e.message);
       continue;
@@ -1285,6 +1288,7 @@ app.get('/api/alerts', requireAuth, async (req, res) => {
 app.post('/api/alerts', requireAuth, async (req, res) => {
   const { metal, dir, price, priceDisplay, priceCurrency, note, notifyEmail, clientId } = req.body;
   if (!metal||!dir||!price) return res.status(400).json({ error:'Missing required fields' });
+  if (!['gold','silver','platinum'].includes(metal)) return res.status(400).json({ error:'Invalid metal' });
   try {
     const r = await q(
       `INSERT INTO alerts (user_id,client_id,metal,direction,price,price_display,price_currency,notify_email,note)
@@ -1299,7 +1303,7 @@ app.post('/api/alerts', requireAuth, async (req, res) => {
 app.patch('/api/alerts/:id/fired', requireAuth, async (req, res) => {
   try {
     const r = await q(
-      'UPDATE alerts SET fired=TRUE WHERE id=$1 AND user_id=$2 AND fired=FALSE RETURNING *',
+      'UPDATE alerts SET fired=TRUE, fired_at=NOW() WHERE id=$1 AND user_id=$2 AND fired=FALSE RETURNING *',
       [req.params.id, req.user.userId]
     );
     res.json({ ok:true });
@@ -1317,6 +1321,25 @@ app.patch('/api/alerts/:id/fired', requireAuth, async (req, res) => {
         } catch(e) { console.error(`[alerts] Email failed for client-fired alert ${req.params.id}:`, e.message); }
       });
     }
+  } catch(e) { res.status(500).json({ error:'Server error' }); }
+});
+
+
+app.patch('/api/alerts/:id/rearm', requireAuth, async (req, res) => {
+  try {
+    const r = await q(
+      'UPDATE alerts SET fired=FALSE, fired_at=NULL WHERE id=$1 AND user_id=$2 RETURNING *',
+      [req.params.id, req.user.userId]
+    );
+    if (r.rowCount === 0) return res.status(404).json({ error:'Alert not found' });
+    res.json(alertToClient(r.rows[0]));
+  } catch(e) { res.status(500).json({ error:'Server error' }); }
+});
+
+app.delete('/api/alerts/fired', requireAuth, async (req, res) => {
+  try {
+    await q('DELETE FROM alerts WHERE user_id=$1 AND fired=TRUE', [req.user.userId]);
+    res.json({ ok:true });
   } catch(e) { res.status(500).json({ error:'Server error' }); }
 });
 
