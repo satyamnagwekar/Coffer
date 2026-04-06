@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>What is your gold worth today? — MyAurum</title>
+<meta name="description" content="Calculate the live market value of your gold in seconds. No login. No KYC. Your number, privately.">
+<meta property="og:title" content="What is your gold worth today?">
+<meta property="og:description" content="Get your gold's live market value in seconds — free, private, no login.">
+<meta property="og:image" content="https://myaurum.app/og-image.png">
+<meta property="og:url" content="https://myaurum.app/gold">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<style>
+  :root {
+    --gold: #B8860B;
+    --gold-light: #D4A017;
+    --gold-dim: #8B6914;
+    --gold-pale: rgba(184,134,11,.08);
+    --parchment: #F5F0E8;
+    --parchment-dark: #EDE5D4;
+    --ink: #2C2410;
+    --ink-mid: #5A4A2A;
+    --ink-dim: #8B7A5A;
+    --border: rgba(139,105,20,.18);
+    --radius: 16px;
+    --silver: #6B8299;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--parchment);
+    font-family: 'Jost', sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* ── Background texture ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(184,134,11,.12) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 100% 100%, rgba(184,134,11,.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* ── Logotype ── */
+  .wordmark {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: .32em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 52px;
+    opacity: .7;
+  }
+
+  /* ── Headline ── */
+  .headline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(32px, 8vw, 52px);
+    font-weight: 300;
+    line-height: 1.1;
+    text-align: center;
+    color: var(--ink);
+    margin-bottom: 12px;
+    letter-spacing: -.02em;
+  }
+  .headline em {
+    font-style: italic;
+    color: var(--gold-dim);
+  }
+
+  .sub {
+    font-size: 13px;
+    color: var(--ink-dim);
+    text-align: center;
+    letter-spacing: .06em;
+    margin-bottom: 44px;
+    line-height: 1.7;
+  }
+
+  /* ── Live price strip ── */
+  .price-strip {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 36px;
+    width: 100%;
+  }
+  .price-chip {
+    flex: 1;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .price-chip .chip-label {
+    font-size: 9px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 4px;
+  }
+  .price-chip .chip-val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--gold-dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .price-chip .chip-unit {
+    font-size: 9px;
+    color: var(--ink-dim);
+    margin-top: 2px;
+    letter-spacing: .04em;
+  }
+
+  /* ── Calculator form ── */
+  .calc-card {
+    width: 100%;
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: 0 4px 32px rgba(139,105,20,.08);
+    margin-bottom: 28px;
+  }
+
+  .calc-title {
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 22px;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field label {
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    font-weight: 500;
+  }
+  .field input, .field select {
+    background: var(--parchment);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--ink);
+    font-family: 'Jost', sans-serif;
+    font-size: 15px;
+    padding: 11px 13px;
+    outline: none;
+    width: 100%;
+    transition: border-color .2s, box-shadow .2s;
+    -webkit-appearance: none;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--gold-dim);
+    box-shadow: 0 0 0 3px rgba(139,105,20,.08);
+  }
+  .field-full { grid-column: span 2; }
+
+  /* ── Karat pills ── */
+  .karat-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 7px;
+  }
+  .karat-btn {
+    padding: 9px 4px;
+    background: var(--parchment);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-dim);
+    cursor: pointer;
+    transition: all .18s;
+    text-align: center;
+  }
+  .karat-btn:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
+  .karat-btn.active {
+    background: var(--gold-dim);
+    border-color: var(--gold-dim);
+    color: white;
+  }
+
+  .unit-row {
+    display: flex;
+    gap: 7px;
+    margin-bottom: 20px;
+  }
+  .unit-btn {
+    flex: 1;
+    padding: 8px;
+    background: var(--parchment);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    color: var(--ink-dim);
+    cursor: pointer;
+    transition: all .18s;
+    text-align: center;
+  }
+  .unit-btn.active { background: var(--gold-dim); border-color: var(--gold-dim); color: white; }
+
+  /* ── Calculate button ── */
+  .btn-calc {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold-dim));
+    border: none;
+    border-radius: 10px;
+    color: #FDF8F0;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: box-shadow .2s, transform .15s;
+    box-shadow: 0 4px 20px rgba(184,134,11,.3);
+    margin-top: 4px;
+  }
+  .btn-calc:hover { box-shadow: 0 6px 28px rgba(184,134,11,.42); }
+  .btn-calc:active { transform: scale(.98); }
+
+  /* ── Result card ── */
+  .result-wrap {
+    width: 100%;
+    display: none;
+    animation: fadeUp .4s cubic-bezier(.22,1,.36,1);
+  }
+  .result-wrap.show { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* The shareable card itself */
+  #goldCard {
+    width: 100%;
+    background: linear-gradient(145deg, #1A1208 0%, #2C1E0A 50%, #1A1208 100%);
+    border-radius: 20px;
+    padding: 44px 36px 36px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 12px 48px rgba(0,0,0,.35);
+  }
+
+  /* Gold foil shimmer overlay */
+  #goldCard::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 30% 20%, rgba(212,160,23,.15) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 80% 80%, rgba(184,134,11,.10) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* Decorative rings */
+  #goldCard::after {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    border: 1px solid rgba(184,134,11,.15);
+    pointer-events: none;
+  }
+
+  .card-inner-ring {
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 1px solid rgba(184,134,11,.10);
+    pointer-events: none;
+  }
+
+  .card-brand {
+    font-size: 9px;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    color: rgba(184,134,11,.6);
+    font-family: 'Jost', sans-serif;
+    margin-bottom: 32px;
+    position: relative;
+  }
+
+  .card-label {
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,.4);
+    font-family: 'Jost', sans-serif;
+    margin-bottom: 10px;
+    position: relative;
+  }
+
+  .card-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(42px, 10vw, 64px);
+    font-weight: 300;
+    color: #F5E6C0;
+    line-height: 1;
+    margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.02em;
+    position: relative;
+  }
+
+  .card-detail {
+    font-size: 12px;
+    color: rgba(245,230,192,.45);
+    font-family: 'Jost', sans-serif;
+    letter-spacing: .06em;
+    position: relative;
+    margin-bottom: 36px;
+  }
+
+  .card-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(184,134,11,.3), transparent);
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    position: relative;
+  }
+
+  .card-benchmark {
+    font-size: 10px;
+    color: rgba(245,230,192,.35);
+    font-family: 'Jost', sans-serif;
+    letter-spacing: .06em;
+    line-height: 1.6;
+  }
+
+  .card-url {
+    font-size: 10px;
+    color: rgba(184,134,11,.5);
+    font-family: 'Jost', sans-serif;
+    letter-spacing: .1em;
+    text-align: right;
+  }
+
+  /* ── Share buttons ── */
+  .share-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .btn-share {
+    padding: 13px 8px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    cursor: pointer;
+    transition: all .2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-share:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
+  .btn-share svg { width: 18px; height: 18px; }
+
+  .btn-share.whatsapp:hover { border-color: #25D366; color: #25D366; }
+  .btn-share.twitter:hover  { border-color: #1DA1F2; color: #1DA1F2; }
+
+  /* ── CTA ── */
+  .cta-block {
+    width: 100%;
+    text-align: center;
+    padding: 28px 24px;
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 48px;
+  }
+  .cta-block p {
+    font-size: 13px;
+    color: var(--ink-dim);
+    line-height: 1.8;
+    margin-bottom: 16px;
+  }
+  .cta-block strong { color: var(--ink); }
+  .btn-cta {
+    display: inline-block;
+    padding: 13px 28px;
+    background: var(--gold-dim);
+    color: #FDF8F0;
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: box-shadow .2s;
+    box-shadow: 0 3px 14px rgba(139,105,20,.28);
+  }
+  .btn-cta:hover { box-shadow: 0 5px 22px rgba(139,105,20,.4); }
+
+  /* ── Footer ── */
+  .page-footer {
+    font-size: 11px;
+    color: var(--ink-dim);
+    text-align: center;
+    opacity: .5;
+    letter-spacing: .04em;
+    line-height: 1.8;
+  }
+
+  /* ── Loading state ── */
+  .loading-dot {
+    display: inline-block;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--gold-dim);
+    animation: blink 1.2s infinite;
+  }
+  .loading-dot:nth-child(2) { animation-delay: .2s; }
+  .loading-dot:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%,100%{opacity:.2}50%{opacity:1} }
+
+  @media(max-width:400px) {
+    .field-row { grid-template-columns: 1fr; }
+    .field-full { grid-column: span 1; }
+    .karat-grid { grid-template-columns: repeat(4,1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="wordmark">MyAurum</div>
+
+  <h1 class="headline">What is your<br><em>gold worth</em> today?</h1>
+  <p class="sub">Enter weight &amp; purity. Get a live value.<br>No login. No KYC. Completely private.</p>
+
+  <!-- Live price strip -->
+  <div class="price-strip">
+    <div class="price-chip">
+      <div class="chip-label">🥇 Gold</div>
+      <div class="chip-val" id="stripGold">
+        <span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span>
+      </div>
+      <div class="chip-unit">per 10g · India Bullion</div>
+    </div>
+    <div class="price-chip">
+      <div class="chip-label">🥈 Silver</div>
+      <div class="chip-val" id="stripSilver">—</div>
+      <div class="chip-unit">per kg · India Bullion</div>
+    </div>
+    <div class="price-chip">
+      <div class="chip-label">Updated</div>
+      <div class="chip-val" id="stripTime" style="font-size:14px">—</div>
+      <div class="chip-unit">live from IBJA</div>
+    </div>
+  </div>
+
+  <!-- Calculator -->
+  <div class="calc-card">
+    <div class="calc-title">Calculate your gold value</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Weight</label>
+        <input type="number" id="weightInput" inputmode="decimal" placeholder="e.g. 50" min="0.1" max="100000" step="0.1">
+      </div>
+      <div class="field">
+        <label>Unit</label>
+        <div class="unit-row" style="margin-bottom:0">
+          <button class="unit-btn active" data-unit="g" onclick="setUnit('g',this)">Grams</button>
+          <button class="unit-btn" data-unit="tola" onclick="setUnit('tola',this)">Tola</button>
+          <button class="unit-btn" data-unit="oz" onclick="setUnit('oz',this)">Troy oz</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:14px">
+      <label>Purity (Karat)</label>
+      <div class="karat-grid">
+        <button class="karat-btn" data-k="24" data-p="0.9999" onclick="setKarat(this)">24K</button>
+        <button class="karat-btn active" data-k="22" data-p="0.916" onclick="setKarat(this)">22K</button>
+        <button class="karat-btn" data-k="20" data-p="0.833" onclick="setKarat(this)">20K</button>
+        <button class="karat-btn" data-k="18" data-p="0.750" onclick="setKarat(this)">18K</button>
+        <button class="karat-btn" data-k="14" data-p="0.585" onclick="setKarat(this)">14K</button>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:20px">
+      <label>Display currency</label>
+      <select id="currSelect">
+        <option value="INR">₹ Indian Rupee (INR)</option>
+        <option value="USD">$ US Dollar (USD)</option>
+        <option value="AED">د.إ UAE Dirham (AED)</option>
+        <option value="GBP">£ British Pound (GBP)</option>
+        <option value="EUR">€ Euro (EUR)</option>
+      </select>
+    </div>
+
+    <button class="btn-calc" onclick="calculate()">Calculate live value →</button>
+  </div>
+
+  <!-- Result -->
+  <div class="result-wrap" id="resultWrap">
+
+    <!-- The card that gets screenshotted -->
+    <div id="goldCard">
+      <div class="card-inner-ring"></div>
+      <div class="card-brand">MyAurum · Live Gold Value</div>
+      <div class="card-label" id="cardLabel">My gold is worth approximately</div>
+      <div class="card-value" id="cardValue">—</div>
+      <div class="card-detail" id="cardDetail"></div>
+      <div class="card-divider"></div>
+      <div class="card-footer">
+        <div class="card-benchmark" id="cardBenchmark"></div>
+        <div class="card-url">myaurum.app/gold</div>
+      </div>
+    </div>
+
+    <!-- Share buttons -->
+    <div class="share-row">
+      <button class="btn-share whatsapp" onclick="shareWhatsApp()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp
+      </button>
+      <button class="btn-share twitter" onclick="shareTwitter()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.26 5.632zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        X / Twitter
+      </button>
+      <button class="btn-share" onclick="downloadCard()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Save image
+      </button>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-block">
+      <p>This is a <strong>live estimate</strong> based on today's India Bullion benchmark price.<br>
+      Track the exact value of every piece in your collection — for free.</p>
+      <a class="btn-cta" href="https://myaurum.app">Track your full collection →</a>
+    </div>
+
+  </div>
+
+  <div class="page-footer">
+    Prices sourced from India Bullion &amp; Jewellers Association (IBJA).<br>
+    Values are indicative estimates, not financial advice.<br>
+    <a href="https://myaurum.app" style="color:inherit">myaurum.app</a> · <a href="https://myaurum.app/privacy" style="color:inherit">Privacy</a>
+  </div>
+
+</div>
+
+<script>
+  // ── State ──
+  let prices = null;
+  let selectedUnit = 'g';
+  let selectedPurity = 0.916;
+  let selectedKarat = '22K';
+
+  // ── Unit conversion to grams ──
+  function toGrams(w, unit) {
+    if (unit === 'oz')   return w * 31.1035;
+    if (unit === 'tola') return w * 11.6638;
+    return w;
+  }
+
+  // ── Fetch live prices from MyAurum API ──
+  async function fetchPrices() {
+    try {
+      const r = await fetch('https://myaurum.app/api/prices');
+      const d = await r.json();
+      prices = d;
+
+      // IBJA preferred for INR display, fallback to spot × rate × factor
+      const IBJA_FACTOR = (10 / 31.1035) * 1.054;
+      const goldPer10g = d.ibja?.goldInr
+        ? Math.round(d.ibja.goldInr)
+        : Math.round(d.gold * d.rates.INR * IBJA_FACTOR);
+      const silverPerKg = d.ibja?.silverInr
+        ? Math.round(d.ibja.silverInr * 100) // IBJA is per 10g, convert to per kg
+        : Math.round(d.silver * d.rates.INR * (1000 / 31.1035) * 1.054);
+
+      document.getElementById('stripGold').textContent = '₹' + goldPer10g.toLocaleString('en-IN');
+      document.getElementById('stripSilver').textContent = '₹' + silverPerKg.toLocaleString('en-IN');
+
+      const t = d.fetchedAt ? new Date(d.fetchedAt) : new Date();
+      document.getElementById('stripTime').textContent =
+        t.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    } catch(e) {
+      document.getElementById('stripGold').textContent = '—';
+    }
+  }
+
+  function setUnit(unit, btn) {
+    selectedUnit = unit;
+    document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function setKarat(btn) {
+    document.querySelectorAll('.karat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedPurity = parseFloat(btn.dataset.p);
+    selectedKarat  = btn.dataset.k + 'K';
+  }
+
+  // ── Currency symbols ──
+  const SYM = { INR: '₹', USD: '$', AED: 'د.إ', GBP: '£', EUR: '€' };
+  const FMT = {
+    INR: v => '₹' + Math.round(v).toLocaleString('en-IN'),
+    USD: v => '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+    AED: v => 'AED ' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+    GBP: v => '£' + v.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+    EUR: v => '€' + v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+  };
+
+  function calculate() {
+    if (!prices) { alert('Prices still loading — please wait a moment.'); return; }
+
+    const rawWeight = parseFloat(document.getElementById('weightInput').value);
+    if (!rawWeight || rawWeight <= 0) {
+      document.getElementById('weightInput').focus();
+      document.getElementById('weightInput').style.borderColor = '#c45a5a';
+      setTimeout(() => document.getElementById('weightInput').style.borderColor = '', 1200);
+      return;
+    }
+
+    const currency = document.getElementById('currSelect').value;
+    const grams    = toGrams(rawWeight, selectedUnit);
+    const ozPure   = (grams * selectedPurity) / 31.1035;
+
+    // Value in USD (spot × pure oz)
+    const valueUSD = ozPure * prices.gold;
+
+    // Convert to display currency
+    let displayValue;
+    if (currency === 'INR') {
+      // Use IBJA formula when showing INR: oz × spot_usd × usd_inr × ibja_factor
+      const IBJA_FACTOR = 1.054;
+      displayValue = ozPure * prices.gold * prices.rates.INR * IBJA_FACTOR;
+    } else {
+      displayValue = valueUSD * (prices.rates[currency] || 1);
+    }
+
+    // Format the big number
+    const formatted = FMT[currency](displayValue);
+
+    // Weight description
+    const unitLabel = selectedUnit === 'g' ? 'g' : selectedUnit === 'tola' ? ' tola' : ' troy oz';
+    const weightStr = rawWeight % 1 === 0 ? rawWeight : rawWeight.toFixed(2);
+    const detail = `${weightStr}${unitLabel} of ${selectedKarat} gold · ${(grams * selectedPurity).toFixed(2)}g pure`;
+
+    // Benchmark line
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    const benchStr = currency === 'INR'
+      ? `India Bullion (IBJA) · ${dateStr}, ${timeStr}`
+      : `COMEX spot × live FX · ${dateStr}, ${timeStr}`;
+
+    // Populate card
+    document.getElementById('cardValue').textContent = formatted;
+    document.getElementById('cardDetail').textContent = detail;
+    document.getElementById('cardBenchmark').textContent = benchStr;
+
+    // Show result
+    const wrap = document.getElementById('resultWrap');
+    wrap.classList.add('show');
+    setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+  }
+
+  // ── Enter key triggers calculate ──
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') calculate();
+  });
+
+  // ── Share functions ──
+  function getShareText() {
+    const val = document.getElementById('cardValue').textContent;
+    const detail = document.getElementById('cardDetail').textContent;
+    return `My ${detail} is worth approximately ${val} today.\n\nCalculate yours (free, no login): https://myaurum.app/gold`;
+  }
+
+  function shareWhatsApp() {
+    const text = encodeURIComponent(getShareText());
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  }
+
+  function shareTwitter() {
+    const val   = document.getElementById('cardValue').textContent;
+    const detail = document.getElementById('cardDetail').textContent;
+    const tweet = encodeURIComponent(`My ${detail} is worth approximately ${val} today 📊\n\nCalculate yours free (no login, no KYC): myaurum.app/gold`);
+    window.open(`https://twitter.com/intent/tweet?text=${tweet}`, '_blank');
+  }
+
+  async function downloadCard() {
+    const card = document.getElementById('goldCard');
+    try {
+      const canvas = await html2canvas(card, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: null,
+        logging: false,
+      });
+      const link = document.createElement('a');
+      link.download = 'my-gold-value-myaurum.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch(e) {
+      // Fallback: just show share text
+      alert('Image download failed. Copy this text to share:\n\n' + getShareText());
+    }
+  }
+
+  // ── Init ──
+  fetchPrices();
+</script>
+</body>
+</html>
