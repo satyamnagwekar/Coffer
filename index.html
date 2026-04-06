@@ -4060,6 +4060,9 @@ document.addEventListener('visibilitychange', async ()=>{
     items = fresh;
     updateAll();
   }catch(_){}
+  // Reset flags so DMS/vault re-fetches and items sync sooner on next price tick
+  _dmsLoaded = false;
+  _lastItemsSync = 0;
 });
 
 async function deleteAccount(){
@@ -4330,6 +4333,7 @@ function setNavTab(tab,btn){
 // PRICES
 // ══════════════════════════════════════════
 let _lastFetch = 0;
+let _lastItemsSync = 0;
 async function fetchPrices(){
   // Debounce: ignore calls within 10 seconds of last successful fetch
   const now = Date.now();
@@ -4364,6 +4368,11 @@ async function fetchPrices(){
   _shimmerPrices();
   const t=new Date();
   document.getElementById('lastUpdatedText').textContent=`Prices as of ${t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} — tap to refresh`;
+  // Silently re-sync items every 5 min to catch additions from other devices
+  if(currentUser && Date.now()-(_lastItemsSync||0) > 4.5*60*1000){
+    _lastItemsSync=Date.now();
+    api('GET','/items').then(fresh=>{items=fresh;updateAll();}).catch(()=>{});
+  }
 }
 
 function toggleSuccSharePanel(){
@@ -6363,7 +6372,15 @@ function addAlertHistory(a){
 
 function renderAlertHistory(){
   try{
-    const hist=JSON.parse(localStorage.getItem('alertHistory')||'[]');
+    // Merge server-sourced fired alerts with localStorage history
+    const serverFired=priceAlerts
+      .filter(a=>a.fired&&a.firedAt)
+      .map(a=>({metal:a.metal,dir:a.dir,priceDisplay:_alertPriceDisplay(a),note:a.note||'',firedAt:a.firedAt}));
+    const localHist=JSON.parse(localStorage.getItem('alertHistory')||'[]');
+    const seen=new Set(serverFired.map(h=>h.firedAt+h.metal));
+    const merged=[...serverFired,...localHist.filter(h=>!seen.has(h.firedAt+h.metal))];
+    merged.sort((a,b)=>new Date(b.firedAt)-new Date(a.firedAt));
+    const hist=merged.slice(0,10);
     const wrap=document.getElementById('alertHistory');
     const list=document.getElementById('alertHistoryList');
     if(!wrap||!list) return;
