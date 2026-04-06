@@ -172,6 +172,21 @@ async function initDB() {
   await q(`ALTER TABLE price_cache ADD COLUMN IF NOT EXISTS ibja_silver_inr REAL`);
   await q(`ALTER TABLE price_cache ADD COLUMN IF NOT EXISTS ibja_fetched_at TIMESTAMPTZ`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE`);
+  await q(`
+    CREATE TABLE IF NOT EXISTS page_views (
+      id          BIGSERIAL PRIMARY KEY,
+      slug        TEXT NOT NULL,
+      referrer    TEXT,
+      ref_domain  TEXT,
+      country     TEXT,
+      city        TEXT,
+      ua_type     TEXT DEFAULT 'unknown',
+      is_bot      BOOLEAN DEFAULT FALSE,
+      viewed_at   TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await q(`CREATE INDEX IF NOT EXISTS page_views_slug_idx ON page_views(slug)`);
+  await q(`CREATE INDEX IF NOT EXISTS page_views_viewed_at_idx ON page_views(viewed_at)`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS premium_tier TEXT DEFAULT 'standard'`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS limit_warn_15_sent_at TIMESTAMPTZ`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS limit_warn_19_sent_at TIMESTAMPTZ`);
@@ -1921,6 +1936,104 @@ app.get('/privacy', (req, res) => {
   else res.status(404).send('Not found');
 });
 
+
+// ─────────────────────────────────────────
+//  IMPRESSION TRACKING
+// ─────────────────────────────────────────
+
+const BOT_PATTERNS = /bot|crawl|spider|slurp|mediapartners|adsbot|facebookexternalhit|linkedinbot|twitterbot|whatsapp|telegram|curl|wget|python-requests|axios|go-http|java\/|okhttp|apache-httpclient/i;
+
+function detectUAType(ua) {
+  if (!ua) return 'unknown';
+  if (BOT_PATTERNS.test(ua)) return 'bot';
+  if (/mobile|android|iphone|ipad|ipod/i.test(ua)) return 'mobile';
+  if (/tablet/i.test(ua)) return 'tablet';
+  return 'desktop';
+}
+
+function extractRefDomain(ref) {
+  if (!ref) return null;
+  try {
+    const u = new URL(ref);
+    return u.hostname.replace(/^www\./, '');
+  } catch { return null; }
+}
+
+function geoLookup(ip) {
+  return new Promise(resolve => {
+    if (!ip || ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168') || ip.startsWith('10.')) {
+      return resolve({ country: 'Local', city: null });
+    }
+    const opts = {
+      hostname: 'ip-api.com',
+      path: `/json/${ip}?fields=country,city,status`,
+      method: 'GET',
+      timeout: 3000,
+    };
+    const req = https.get(opts, r => {
+      let buf = '';
+      r.on('data', d => buf += d);
+      r.on('end', () => {
+        try {
+          const d = JSON.parse(buf);
+          if (d.status === 'success') resolve({ country: d.country || null, city: d.city || null });
+          else resolve({ country: null, city: null });
+        } catch { resolve({ country: null, city: null }); }
+      });
+    });
+    req.on('error', () => resolve({ country: null, city: null }));
+    req.on('timeout', () => { req.destroy(); resolve({ country: null, city: null }); });
+  });
+}
+
+// 1×1 transparent GIF bytes
+const PIXEL_GIF = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+
+// GET /px?s=slug&r=referrer
+app.get('/px', async (req, res) => {
+  // Serve the pixel immediately — tracking is fire-and-forget
+  res.set({
+    'Content-Type': 'image/gif',
+    'Content-Length': PIXEL_GIF.length,
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+  });
+  res.end(PIXEL_GIF);
+
+  // Async tracking — never blocks the response
+  setImmediate(async () => {
+    try {
+      const slug = (req.query.s || '').slice(0, 200).replace(/[^a-z0-9-_\/]/gi, '');
+      if (!slug) return;
+      const referrer  = (req.query.r || '').slice(0, 500) || null;
+      const refDomain = extractRefDomain(referrer);
+      const ua        = req.headers['user-agent'] || '';
+      const uaType    = detectUAType(ua);
+      const isBot     = uaType === 'bot';
+      const ip        = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '';
+      const { country, city } = await geoLookup(ip);
+
+      await q(
+        `INSERT INTO page_views (slug, referrer, ref_domain, country, city, ua_type, is_bot) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [slug, referrer, refDomain, country, city, uaType, isBot]
+      );
+    } catch(e) { console.error('[px]', e.message); }
+  });
+});
+
+app.get('/blog', (req, res) => {
+  const p = path.join(__dirname, 'blog', 'index.html');
+  if (fs.existsSync(p)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(p); }
+  else res.status(404).send('Not found');
+});
+
+app.get('/blog/:slug', (req, res) => {
+  const p = path.join(__dirname, 'blog', req.params.slug + '.html');
+  if (fs.existsSync(p)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(p); }
+  else res.status(404).redirect('/blog');
+});
+
 app.get('/gold', (req, res) => {
   const p = path.join(__dirname, 'gold.html');
   if (fs.existsSync(p)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(p); }
@@ -2624,16 +2737,94 @@ app.get('/signed-out', (req, res) => {
   <body><div class="box"><h2>MYAURUM</h2><p>You have been signed out.</p></div></body></html>`);
 });
 
+app.get(`/${ADMIN_SLUG}/impressions`, requireAdmin, (req, res) => {
+  const p = path.join(__dirname, 'admin-impressions.html');
+  if (fs.existsSync(p)) {
+    let html = fs.readFileSync(p, 'utf8');
+    html = html.replace('</head>', `<script>window._adminToken="${adminToken()}";window._adminSlug="${ADMIN_SLUG}";</script></head>`);
+    res.setHeader('Cache-Control', 'no-store');
+    res.type('html').send(html);
+  } else res.status(404).send('Not found');
+});
+
 app.get(`/${ADMIN_SLUG}`, requireAdmin, (req, res) => {
   const adminPath = path.join(__dirname, 'admin.html');
   if (fs.existsSync(adminPath)) {
     let html = fs.readFileSync(adminPath, 'utf8');
-    html = html.replace('</head>', `<script>window._adminToken="${adminToken()}";</script></head>`);
+    html = html.replace('</head>', `<script>window._adminToken="${adminToken()}";window._adminSlug="${ADMIN_SLUG}";</script></head>`);
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '-1');
     res.type('html').send(html);
   } else res.status(404).send('Not found');
+});
+
+
+// Impression stats for admin
+app.get(`/api/${ADMIN_SLUG}/impressions`, requireAdmin, async (req, res) => {
+  try {
+    // Total views per slug (humans only), last 30 days default
+    const days = parseInt(req.query.days || '30');
+    const bySlug = await q(`
+      SELECT slug,
+        COUNT(*) FILTER (WHERE NOT is_bot) AS views,
+        COUNT(*) FILTER (WHERE is_bot)     AS bots,
+        MAX(viewed_at)                     AS last_seen
+      FROM page_views
+      WHERE viewed_at > NOW() - ($1 || ' days')::interval
+      GROUP BY slug ORDER BY views DESC LIMIT 50
+    `, [days]);
+
+    // Daily views (humans) last 30 days
+    const daily = await q(`
+      SELECT DATE(viewed_at) AS day, COUNT(*) AS views
+      FROM page_views
+      WHERE NOT is_bot AND viewed_at > NOW() - ($1 || ' days')::interval
+      GROUP BY DATE(viewed_at) ORDER BY day ASC
+    `, [days]);
+
+    // Top referrer domains (humans)
+    const referrers = await q(`
+      SELECT COALESCE(ref_domain, 'direct') AS domain, COUNT(*) AS views
+      FROM page_views
+      WHERE NOT is_bot AND viewed_at > NOW() - ($1 || ' days')::interval
+      GROUP BY ref_domain ORDER BY views DESC LIMIT 20
+    `, [days]);
+
+    // Top countries (humans)
+    const countries = await q(`
+      SELECT COALESCE(country, 'Unknown') AS country, COUNT(*) AS views
+      FROM page_views
+      WHERE NOT is_bot AND viewed_at > NOW() - ($1 || ' days')::interval
+      GROUP BY country ORDER BY views DESC LIMIT 20
+    `, [days]);
+
+    // Device breakdown
+    const devices = await q(`
+      SELECT ua_type, COUNT(*) AS views
+      FROM page_views
+      WHERE NOT is_bot AND viewed_at > NOW() - ($1 || ' days')::interval
+      GROUP BY ua_type
+    `, [days]);
+
+    // All-time totals
+    const totals = await q(`
+      SELECT COUNT(*) FILTER (WHERE NOT is_bot) AS total_views,
+             COUNT(*) FILTER (WHERE is_bot)     AS total_bots,
+             COUNT(DISTINCT slug)               AS total_slugs
+      FROM page_views
+    `);
+
+    res.json({
+      bySlug: bySlug.rows,
+      daily: daily.rows,
+      referrers: referrers.rows,
+      countries: countries.rows,
+      devices: devices.rows,
+      totals: totals.rows[0],
+      days,
+    });
+  } catch(e) { console.error('[impressions]', e.message); res.status(500).json({ error: e.message }); }
 });
 
 app.get(`/api/${ADMIN_SLUG}/stats`, requireAdmin, async (req, res) => {
@@ -2801,6 +2992,36 @@ app.get('/sitemap.xml', (req, res) => {
     <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>${base}/gold</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${base}/blog</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${base}/blog/india-gold-hallmark-scams-2026</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>${base}/blog/dubai-gold-souk-what-indians-need-to-know</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>${base}/blog/buying-indian-gold-jewellery-new-york</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>`;
   res.setHeader('Content-Type', 'application/xml');
