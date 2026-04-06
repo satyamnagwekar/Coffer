@@ -836,13 +836,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .alerts-header{padding:20px 18px 14px;border-bottom:1px solid var(--border-gold);background:linear-gradient(160deg,rgba(139,105,20,.06) 0%,transparent 60%)}
 .alerts-title{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--text);margin-bottom:3px}
 .alerts-sub{font-size:11px;color:var(--text-dim)}
-.spot-quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px}
-.spot-quick-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center}
-.sq-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px}
-.sq-price{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300}
-.gold-q{border-color:var(--border-gold);background:rgba(139,105,20,.04)}
-.gold-q .sq-price{color:var(--brand)}
-.silver-q .sq-price{color:var(--silver-bright)}
+
 .alert-form-card{margin:0 16px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;display:flex;flex-direction:column;gap:0}
 .alert-form-title{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px}
 .alert-input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'Jost',sans-serif;font-size:14px;padding:13px 14px;outline:none;width:100%;transition:all .2s;-webkit-appearance:none}
@@ -2064,18 +2058,21 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       </div>
 
       <!-- Current spot quick view -->
-      <div class="spot-quick" style="grid-template-columns:1fr 1fr 1fr">
-        <div class="spot-quick-item gold-q">
-          <div class="sq-label" id="alertGoldLabel">Gold / oz</div>
-          <div class="sq-price" id="alertGoldPrice">—</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:14px 16px">
+        <div style="background:rgba(255,252,245,.95);border:1.5px solid rgba(184,134,11,.38);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(184,134,11,.10)">
+          <div style="position:absolute;top:-16px;right:-16px;width:60px;height:60px;background:radial-gradient(circle,rgba(184,134,11,.12),transparent 70%);border-radius:50%"></div>
+          <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--brand-dim);margin-bottom:5px" id="alertGoldLabel">🥇 Gold</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:#8B6000;line-height:1;font-variant-numeric:tabular-nums" id="alertGoldPrice">—</div>
         </div>
-        <div class="spot-quick-item silver-q">
-          <div class="sq-label" id="alertSilverLabel">Silver / oz</div>
-          <div class="sq-price" id="alertSilverPrice">—</div>
+        <div style="background:rgba(248,250,252,.95);border:1.5px solid rgba(74,96,112,.32);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(74,96,112,.08)">
+          <div style="position:absolute;top:-16px;right:-16px;width:60px;height:60px;background:radial-gradient(circle,rgba(74,96,112,.12),transparent 70%);border-radius:50%"></div>
+          <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--silver-bright);margin-bottom:5px;opacity:.85" id="alertSilverLabel">🥈 Silver</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:#3A5060;line-height:1;font-variant-numeric:tabular-nums" id="alertSilverPrice">—</div>
         </div>
-        <div class="spot-quick-item" style="border:1px solid rgba(120,120,130,.2);background:rgba(120,120,130,.05)">
-          <div class="sq-label" style="color:var(--text-dim)">Platinum / oz</div>
-          <div class="sq-price" id="alertPlatPrice" style="color:var(--text-mid)">—</div>
+        <div style="background:rgba(250,250,252,.95);border:1.5px solid rgba(90,90,100,.30);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(90,90,100,.07)">
+          <div style="position:absolute;top:-16px;right:-16px;width:60px;height:60px;background:radial-gradient(circle,rgba(90,90,100,.10),transparent 70%);border-radius:50%"></div>
+          <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5A5A6A;margin-bottom:5px;opacity:.9">🔷 Platinum</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:#484858;line-height:1;font-variant-numeric:tabular-nums" id="alertPlatPrice">—</div>
         </div>
       </div>
       <div class="alert-form-card">
@@ -2116,8 +2113,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         </div>
         <button class="btn-add-alert" onclick="addAlert()">+ Set Alert</button>
         <div class="alert-permission-note" id="alertPermNote" style="display:none">
-          📧 Email to <strong id="alertEmailDisplay"></strong> when triggered.<br>
-          <span id="browserNotifNote">Browser alerts: <strong id="notifStatus">not enabled</strong>. <span class="perm-link" onclick="requestNotifPermission()">Enable →</span></span>
+          📧 Email to <strong id="alertEmailDisplay"></strong> when triggered.
+          <span id="browserNotifNote"> · <span class="perm-link" id="notifToggleLink" onclick="requestNotifPermission()">Enable browser alerts →</span></span>
         </div>
         <div id="pushPermNote" style="display:none">
           🔔 Get instant push notifications even when the app is closed. <span onclick="subscribePush()">Enable push →</span>
@@ -6229,16 +6226,15 @@ function refreshAlertsPanel(){
 }
 
 function updateNotifStatus(){
-  // Show user's email in the notice
   const emailEl=document.getElementById('alertEmailDisplay');
   if(emailEl && currentUser) emailEl.textContent=currentUser.email;
-
-  const el=document.getElementById('notifStatus');
-  if(!el) return;
-  if(!('Notification' in window)){el.textContent='not supported';return}
-  if(Notification.permission==='granted'){el.textContent='enabled ✓';el.style.color='var(--status-green)';document.querySelector('.perm-link').style.display='none'}
-  else if(Notification.permission==='denied'){el.textContent='blocked by browser';document.querySelector('.perm-link').style.display='none'}
-  else{el.textContent='not enabled';document.querySelector('.perm-link').style.display='inline'}
+  const link=document.getElementById('notifToggleLink');
+  const note=document.getElementById('browserNotifNote');
+  if(!link||!note) return;
+  if(!('Notification' in window)){note.style.display='none';return}
+  if(Notification.permission==='granted'){note.style.display='none'}
+  else if(Notification.permission==='denied'){note.style.display='none'}
+  else{note.style.display='inline';link.textContent='Enable browser alerts →'}
 }
 
 async function requestNotifPermission(){
