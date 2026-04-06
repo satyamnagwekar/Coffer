@@ -869,6 +869,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .alert-status.fired{border-color:var(--status-green-dim);color:var(--status-green)}
 .alert-delete{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;padding:2px 4px;line-height:1;transition:color .2s;flex-shrink:0}
 .alert-delete:hover{color:var(--red)}
+.alert-actions{display:flex;gap:4px;flex-shrink:0;align-items:flex-start}
+.alert-rearm{background:none;border:1px solid var(--border);border-radius:8px;color:var(--text-dim);cursor:pointer;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;font-family:"Jost",sans-serif;transition:all .18s;white-space:nowrap}
+.alert-rearm:hover{border-color:var(--brand-dim);color:var(--brand)}
+.alert-history-item{font-size:11px;color:var(--text-dim);padding:5px 0;border-bottom:1px solid var(--border);line-height:1.5}
+.alert-history-item:last-child{border-bottom:none}
 .empty-alerts{text-align:center;padding:32px 20px}
 .empty-alerts .ea-icon{font-size:34px;margin-bottom:10px}
 .empty-alerts .ea-text{font-size:11px;color:var(--text-dim);line-height:1.7}
@@ -2054,11 +2059,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
     <div class="alerts-panel pb">
       <div class="alerts-header">
         <div class="alerts-title">Price Alerts</div>
-        <div class="alerts-sub">Get notified when gold or silver hits your target price</div>
+        <div class="alerts-sub">Get notified when gold, silver, or platinum hits your target price</div>
       </div>
 
       <!-- Current spot quick view -->
-      <div class="spot-quick">
+      <div class="spot-quick" style="grid-template-columns:1fr 1fr 1fr">
         <div class="spot-quick-item gold-q">
           <div class="sq-label" id="alertGoldLabel">Gold / oz</div>
           <div class="sq-price" id="alertGoldPrice">—</div>
@@ -2067,16 +2072,20 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           <div class="sq-label" id="alertSilverLabel">Silver / oz</div>
           <div class="sq-price" id="alertSilverPrice">—</div>
         </div>
+        <div class="spot-quick-item" style="border:1px solid rgba(120,120,130,.2);background:rgba(120,120,130,.05)">
+          <div class="sq-label" style="color:var(--text-dim)">Platinum / oz</div>
+          <div class="sq-price" id="alertPlatPrice" style="color:var(--text-mid)">—</div>
+        </div>
       </div>
-      <div id="alertDutyNote" style="display:none;font-size:11px;color:var(--text-dim);text-align:center;padding:2px 0 6px;letter-spacing:.04em;opacity:0.7">India Bullion estimate</div>
       <div class="alert-form-card">
         <div class="alert-form-title">New Alert</div>
         <div class="field-row" style="margin-bottom:10px">
           <div class="field">
             <div class="field-label-row"><label>Metal</label></div>
-            <select id="alertMetal" class="alert-input">
+            <select id="alertMetal" class="alert-input" onchange="updateAlertCurrencyUI()">
               <option value="gold">🥇 Gold</option>
               <option value="silver">🥈 Silver</option>
+              <option value="platinum">🔷 Platinum</option>
             </select>
           </div>
           <div class="field">
@@ -2105,9 +2114,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           <input type="text" id="alertNote" class="alert-input" placeholder="e.g. Take profit level">
         </div>
         <button class="btn-add-alert" onclick="addAlert()">+ Set Alert</button>
-        <div class="alert-permission-note" id="alertPermNote">
-          📧 Email alert will be sent to <strong id="alertEmailDisplay"></strong> when triggered.<br>
-          <span id="browserNotifNote">Also get browser alerts: <strong id="notifStatus">not enabled</strong>. <span class="perm-link" onclick="requestNotifPermission()">Enable →</span></span>
+        <div class="alert-permission-note" id="alertPermNote" style="display:none">
+          📧 Email to <strong id="alertEmailDisplay"></strong> when triggered.<br>
+          <span id="browserNotifNote">Browser alerts: <strong id="notifStatus">not enabled</strong>. <span class="perm-link" onclick="requestNotifPermission()">Enable →</span></span>
         </div>
         <div id="pushPermNote" style="display:none">
           🔔 Get instant push notifications even when the app is closed. <span onclick="subscribePush()">Enable push →</span>
@@ -2117,9 +2126,16 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <!-- Active alerts list -->
       <div class="active-alerts-header">
         <div class="section-title">Active Alerts</div>
-        <div class="item-count" id="alertCount">0 alerts</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="item-count" id="alertCount">0 alerts</div>
+          <button id="clearFiredBtn" onclick="clearFiredAlerts()" style="display:none;font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid var(--border);border-radius:10px;padding:3px 9px;color:var(--text-dim);cursor:pointer;font-family:'Jost',sans-serif;transition:all .18s">Clear fired</button>
+        </div>
       </div>
       <div id="alertsList" class="alerts-list"></div>
+      <div id="alertHistory" style="display:none;margin:8px 16px 0">
+        <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);padding:10px 0 8px;border-top:1px solid var(--border)">Recently fired</div>
+        <div id="alertHistoryList" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
     </div>
     <div class="app-footer">
       <p>MyAurum is a personal record tool for estimating precious metal value at live spot prices. Values are indicative only — not financial advice, and do not constitute a valuation for insurance, legal, or tax purposes.<br>
@@ -6182,15 +6198,15 @@ let priceAlerts=[];
 function refreshAlertsPanel(){
   const isMCX = benchmark === 'MCX';
   const bLabel = BENCHMARK_LABELS[benchmark] || benchmark;
-  const alertDutyNote = document.getElementById('alertDutyNote');
-  if(alertDutyNote) alertDutyNote.style.display = isMCX ? 'block' : 'none';
+  const platEl = document.getElementById('alertPlatPrice');
   if(isMCX){
     const goldINR10g   = inrPer10g('gold');
     const silverINR10g = inrPer10g('silver');
-    document.getElementById('alertGoldLabel').textContent   = 'Gold / 10g (MCX)';
-    document.getElementById('alertSilverLabel').textContent = 'Silver / 10g (MCX)';
+    document.getElementById('alertGoldLabel').textContent   = 'Gold / 10g (India Bullion)';
+    document.getElementById('alertSilverLabel').textContent = 'Silver / 10g (India Bullion)';
     document.getElementById('alertGoldPrice').textContent   = '₹' + Math.round(goldINR10g).toLocaleString('en-IN');
     document.getElementById('alertSilverPrice').textContent = '₹' + Math.round(silverINR10g).toLocaleString('en-IN');
+    if(platEl) platEl.textContent = '$' + (prices.platinum||0).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});
   } else {
     const sym = SYMBOLS[currency] || '$';
     const rate = rates[currency] || 1;
@@ -6198,6 +6214,7 @@ function refreshAlertsPanel(){
     document.getElementById('alertSilverLabel').textContent = `Silver / oz (${bLabel})`;
     document.getElementById('alertGoldPrice').textContent   = sym + (prices.gold*rate).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
     document.getElementById('alertSilverPrice').textContent = sym + (prices.silver*rate).toFixed(2);
+    if(platEl) platEl.textContent = sym + (prices.platinum*(rates[currency]||1)).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});
   }
   renderAlertsList();updateNotifStatus();
   // Default price currency selector to match current display currency
@@ -6231,9 +6248,16 @@ async function requestNotifPermission(){
 }
 
 function updateAlertCurrencyUI(){
-  const c = document.getElementById('alertPriceCurrency').value;
+  const metal = document.getElementById('alertMetal').value;
+  const currEl = document.getElementById('alertPriceCurrency');
   const label = document.getElementById('alertPriceLabel');
   const input = document.getElementById('alertPrice');
+  // Platinum only traded in USD/oz — hide INR option
+  Array.from(currEl.options).forEach(o=>{
+    o.hidden = (metal==='platinum' && o.value==='INR');
+  });
+  if(metal==='platinum' && currEl.value==='INR') currEl.value='USD';
+  const c = currEl.value;
   const sym = SYMBOLS[c] || c;
   if(c === 'INR'){
     label.textContent = 'Target Price (INR / 10g)';
@@ -6241,7 +6265,7 @@ function updateAlertCurrencyUI(){
     input.step = '100';
   } else {
     label.textContent = `Target Price (${sym} / oz)`;
-    input.placeholder = c === 'GBP' ? 'e.g. 2600' : c === 'AED' ? 'e.g. 12500' : c === 'EUR' ? 'e.g. 3100' : 'e.g. 3400';
+    input.placeholder = metal==='platinum' ? 'e.g. 980' : c==='GBP' ? 'e.g. 2600' : c==='AED' ? 'e.g. 12500' : c==='EUR' ? 'e.g. 3100' : 'e.g. 3400';
     input.step = '1';
   }
 }
@@ -6279,45 +6303,125 @@ async function deleteAlert(id){
   }catch(e){alert('Error: '+e.message)}
 }
 
+async function rearmAlert(id){
+  try{
+    const updated=await api('PATCH','/alerts/'+id+'/rearm');
+    const idx=priceAlerts.findIndex(a=>a.id===id);
+    if(idx!==-1) priceAlerts[idx]=updated;
+    renderAlertsList();
+    showToast('Alert re-armed — watching again');
+  }catch(e){alert('Error: '+e.message)}
+}
+
+async function clearFiredAlerts(){
+  try{
+    // Save to history before clearing
+    const fired=priceAlerts.filter(a=>a.fired||_alertTriggered(a));
+    fired.forEach(a=>addAlertHistory(a));
+    await api('DELETE','/alerts/fired');
+    priceAlerts=priceAlerts.filter(a=>!a.fired&&!_alertTriggered(a));
+    renderAlertsList();
+    showToast('Fired alerts cleared');
+  }catch(e){alert('Error: '+e.message)}
+}
+
+// Alert history — last 20, stored in localStorage
+function addAlertHistory(a){
+  try{
+    const hist=JSON.parse(localStorage.getItem('alertHistory')||'[]');
+    hist.unshift({
+      metal:a.metal, dir:a.dir,
+      priceDisplay:_alertPriceDisplay(a),
+      note:a.note||'',
+      firedAt:a.firedAt||new Date().toISOString()
+    });
+    localStorage.setItem('alertHistory',JSON.stringify(hist.slice(0,20)));
+  }catch(e){}
+}
+
+function renderAlertHistory(){
+  try{
+    const hist=JSON.parse(localStorage.getItem('alertHistory')||'[]');
+    const wrap=document.getElementById('alertHistory');
+    const list=document.getElementById('alertHistoryList');
+    if(!wrap||!list) return;
+    if(!hist.length){wrap.style.display='none';return;}
+    wrap.style.display='block';
+    list.innerHTML=hist.slice(0,5).map(h=>{
+      const d=new Date(h.firedAt);
+      const when=isNaN(d)?'':d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      const dir=h.dir==='above'?'↑':'↓';
+      const metal=h.metal.charAt(0).toUpperCase()+h.metal.slice(1);
+      return `<div class="alert-history-item">${metal} ${dir} ${h.priceDisplay}${h.note?' · '+escHtml(h.note):''}${when?' <span style='float:right;opacity:.6'>'+when+'</span>':''}</div>`;
+    }).join('');
+  }catch(e){}
+}
+
+function _alertSpotDisplay(a){
+  const spot=a.metal==='gold'?prices.gold:a.metal==='platinum'?(prices.platinum||980):prices.silver;
+  const sym=SYMBOLS[a.priceCurrency]||'$';
+  if(a.priceCurrency==='INR'){
+    const spotMetal=a.metal==='gold'?'gold':'silver';
+    return '₹'+Math.round(inrPer10g(spotMetal)).toLocaleString('en-IN')+'/10g';
+  }
+  const rate=rates[a.priceCurrency]||1;
+  return sym+(spot*rate).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'/oz';
+}
+function _alertPriceDisplay(a){
+  const sym=SYMBOLS[a.priceCurrency]||'$';
+  if(a.priceCurrency==='INR'){
+    const inrVal=a.priceDisplay||Math.round(a.price*rates.INR*(10/31.1035)*1.054);
+    return '₹'+Math.round(inrVal).toLocaleString('en-IN')+'/10g';
+  }
+  const rate=rates[a.priceCurrency]||1;
+  const dispPrice=a.priceDisplay||(a.price*rate);
+  return sym+parseFloat(dispPrice).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'/oz';
+}
+function _alertTriggered(a){
+  const spot=a.metal==='gold'?prices.gold:a.metal==='platinum'?(prices.platinum||980):prices.silver;
+  return a.dir==='above'?spot>=a.price:spot<=a.price;
+}
+const METAL_ICONS={
+  gold:`<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--brand)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>`,
+  silver:`<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--silver-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>`,
+  platinum:`<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--text-mid)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>`
+};
 function renderAlertsList(){
   const list=document.getElementById('alertsList');
+  const hasFired=priceAlerts.some(a=>a.fired||_alertTriggered(a));
+  const clearBtn=document.getElementById('clearFiredBtn');
+  if(clearBtn) clearBtn.style.display=hasFired?'inline-block':'none';
+  // Show/hide permNote based on whether any alerts exist
+  const permNote=document.getElementById('alertPermNote');
+  if(permNote) permNote.style.display=priceAlerts.length?'block':'none';
   document.getElementById('alertCount').textContent=priceAlerts.length+' alert'+(priceAlerts.length!==1?'s':'');
   if(!priceAlerts.length){
     list.innerHTML=`<div class="empty-alerts"><div class="ea-icon" style="font-family:'Cormorant Garamond',serif;font-size:56px;font-weight:300;color:rgba(139,105,20,.15);line-height:1;margin-bottom:8px">◬</div><div class="ea-text">No alerts set yet.<br>Set a target price above to get notified.</div></div>`;
+    renderAlertHistory();
     return;
   }
   list.innerHTML=priceAlerts.map(a=>{
-    const spot=a.metal==='gold'?prices.gold:prices.silver;
-    const dirLabel=a.dir==='above'?'<span class="dir-above">↑ above</span>':'<span class="dir-below">↓ below</span>';
-    const triggered=a.dir==='above'?spot>=a.price:spot<=a.price;
-    const statusTxt=a.fired||triggered?'⚡ Triggered':'👁 Watching';
-    const statusCls=a.fired||triggered?'fired':'watching';
-    const sym = SYMBOLS[a.priceCurrency] || '$';
-    let priceDisplay,spotDisplay;
-    if(a.priceCurrency==='INR'){
-      const inrVal=a.priceDisplay||Math.round(a.price*rates.INR*(10/31.1035)*1.054);
-      priceDisplay='₹'+Math.round(inrVal).toLocaleString('en-IN')+'/10g';
-      spotDisplay='₹'+inrPer10g('gold').toLocaleString('en-IN')+'/10g';
-    } else {
-      const rate = rates[a.priceCurrency]||1;
-      const dispPrice = a.priceDisplay || (a.price * rate);
-      priceDisplay=sym+parseFloat(dispPrice).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'/oz';
-      spotDisplay=sym+(spot*rate).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'/oz';
-    }
-    return `<div class="alert-card ${a.fired||triggered?'triggered':''}">
-      <div class="alert-icon">${a.metal==='gold'
-        ? `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--brand)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>`
-        : `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--silver-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>`
-      }</div>
+    const triggered=_alertTriggered(a);
+    const isFired=a.fired||triggered;
+    const dirLabel=a.dir==='above'?'<span class="dir-above">↑ above</span>':' <span class="dir-below">↓ below</span>';
+    const statusTxt=isFired?'⚡ Triggered':'👁 Watching';
+    const statusCls=isFired?'fired':'watching';
+    const metalName=a.metal.charAt(0).toUpperCase()+a.metal.slice(1);
+    return `<div class="alert-card ${isFired?'triggered':''}" id="alert-card-${a.id}">
+      <div class="alert-icon">${METAL_ICONS[a.metal]||METAL_ICONS.gold}</div>
       <div class="alert-info">
-        <div class="alert-metal-name">${a.metal==='gold'?'Gold':'Silver'}</div>
-        <div class="alert-target">${dirLabel} ${priceDisplay}</div>
+        <div class="alert-metal-name">${metalName}</div>
+        <div class="alert-target">${dirLabel} ${_alertPriceDisplay(a)}</div>
         ${a.note?`<div class="alert-note-text">${escHtml(a.note)}</div>`:''}
-        <div class="alert-status ${statusCls}">${statusTxt} · Now ${spotDisplay}</div>
+        <div class="alert-status ${statusCls}">${statusTxt} · Now ${_alertSpotDisplay(a)}</div>
       </div>
-      <button class="alert-delete" onclick="deleteAlert(${a.id})" aria-label="Delete alert">✕</button>
+      <div class="alert-actions">
+        ${isFired?`<button class="alert-rearm" onclick="rearmAlert(${a.id})" title="Re-arm this alert">↺ Re-arm</button>`:''}
+        <button class="alert-delete" onclick="deleteAlert(${a.id})" aria-label="Delete alert">✕</button>
+      </div>
     </div>`;
   }).join('');
+  renderAlertHistory();
 }
 
 async function checkAlerts(){
