@@ -1921,6 +1921,12 @@ app.get('/privacy', (req, res) => {
   else res.status(404).send('Not found');
 });
 
+app.get('/gold', (req, res) => {
+  const p = path.join(__dirname, 'gold.html');
+  if (fs.existsSync(p)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(p); }
+  else res.status(404).send('Not found');
+});
+
 app.get('/terms', (req, res) => {
   const termsPath = path.join(__dirname, 'terms.html');
   if (fs.existsSync(termsPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(termsPath); }
