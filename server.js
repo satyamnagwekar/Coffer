@@ -2645,6 +2645,91 @@ app.get('/security', (req, res) => {
 
 
 // ─────────────────────────────────────────
+//  ADMIN DASHBOARD
+// ─────────────────────────────────────────
+const ADMIN_PASS = process.env.ADMIN_PASS || 'myaurum_admin_2026';
+const ADMIN_IP   = process.env.ADMIN_IP   || '103.156.212.177';
+const ADMIN_SLUG = process.env.ADMIN_SLUG || 'dash-4f8a2e91c3b7';
+const ADMIN_COOKIE = 'mya_adm';
+
+function adminToken() {
+  return crypto.createHmac('sha256', JWT_SECRET).update(ADMIN_PASS).digest('hex');
+}
+
+function getAdminCookie(req) {
+  const raw = req.headers.cookie || '';
+  const match = raw.split(';').map(s => s.trim()).find(s => s.startsWith(ADMIN_COOKIE + '='));
+  return match ? match.slice(ADMIN_COOKIE.length + 1) : null;
+}
+
+function requireAdmin(req, res, next) {
+  const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '';
+  if (ip !== ADMIN_IP) return res.status(404).send('Not found');
+  const cookie = getAdminCookie(req);
+  if (cookie && cookie === adminToken()) return next();
+  const qp = req.query.p || '';
+  if (qp === ADMIN_PASS) return next();
+  const authHeader = req.headers['x-admin-token'] || '';
+  if (authHeader === adminToken()) return next();
+  if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Unauthorized' });
+  res.setHeader('Cache-Control', 'no-store');
+  res.type('html').send(`<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MyAurum · Admin</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Georgia,serif;background:#FAF7F2;display:flex;align-items:center;justify-content:center;height:100vh}
+  .box{background:#fff;border:1px solid rgba(139,105,20,.2);border-radius:14px;padding:48px 40px;width:340px;text-align:center}
+  h2{font-weight:300;letter-spacing:.18em;color:#8B6914;font-size:22px;margin-bottom:6px}
+  p{font-family:monospace;font-size:11px;color:#aaa;letter-spacing:.08em;margin-bottom:32px}
+  input{width:100%;padding:13px 16px;border:1px solid rgba(139,105,20,.25);border-radius:8px;font-size:14px;background:#FAF7F2;color:#2C2410;outline:none;font-family:monospace;letter-spacing:.05em}
+  input:focus{border-color:#B8860B}
+  button{width:100%;margin-top:14px;padding:13px;background:#8B6914;color:#FDF8F0;border:none;border-radius:8px;font-family:monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+  button:hover{opacity:.88}
+  .err{color:#c0392b;font-size:12px;font-family:monospace;margin-top:12px;display:none}
+</style></head>
+<body><div class="box">
+  <h2>MYAURUM</h2>
+  <p>ADMIN ACCESS</p>
+  <input type="password" id="pw" placeholder="Password" onkeydown="if(event.key==='Enter')login()"/>
+  <button onclick="login()">Sign In →</button>
+  <div class="err" id="err">Incorrect password</div>
+</div>
+<script>
+async function login() {
+  const pw = document.getElementById('pw').value;
+  const res = await fetch('/dash-4f8a2e91c3b7/login', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({p: pw})
+  });
+  if (res.ok) { window.location.reload(); }
+  else { document.getElementById('err').style.display='block'; }
+}
+</script></body></html>`);
+}
+
+app.post(`/${ADMIN_SLUG}/login`, (req, res) => {
+  const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '';
+  if (ip !== ADMIN_IP) return res.status(404).send('Not found');
+  const { p } = req.body;
+  if (p !== ADMIN_PASS) return res.status(401).json({ error: 'Incorrect password' });
+  const token = adminToken();
+  res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=28800`);
+  res.json({ ok: true });
+});
+
+app.get(`/${ADMIN_SLUG}/logout`, (req, res) => {
+  res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0`);
+  res.setHeader('Cache-Control', 'no-store');
+  res.type('html').send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Signed Out</title>
+  <style>body{font-family:Georgia,serif;background:#FAF7F2;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+  .box{text-align:center;color:#8B6914}.box h2{font-weight:300;letter-spacing:.15em;font-size:22px;margin-bottom:8px}
+  .box p{font-family:monospace;font-size:12px;color:#aaa;letter-spacing:.08em}</style></head>
+  <body><div class="box"><h2>MYAURUM</h2><p>You have been signed out.</p></div></body></html>`);
+});
+
+// ─────────────────────────────────────────
 //  BLOG EDITOR API
 // ─────────────────────────────────────────
 
@@ -2850,90 +2935,6 @@ app.delete(`/api/${ADMIN_SLUG}/blog/:slug`, requireAdmin, (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ─────────────────────────────────────────
-//  ADMIN DASHBOARD
-// ─────────────────────────────────────────
-const ADMIN_PASS = process.env.ADMIN_PASS || 'myaurum_admin_2026';
-const ADMIN_IP   = process.env.ADMIN_IP   || '103.156.212.177';
-const ADMIN_SLUG = process.env.ADMIN_SLUG || 'dash-4f8a2e91c3b7';
-const ADMIN_COOKIE = 'mya_adm';
-
-function adminToken() {
-  return crypto.createHmac('sha256', JWT_SECRET).update(ADMIN_PASS).digest('hex');
-}
-
-function getAdminCookie(req) {
-  const raw = req.headers.cookie || '';
-  const match = raw.split(';').map(s => s.trim()).find(s => s.startsWith(ADMIN_COOKIE + '='));
-  return match ? match.slice(ADMIN_COOKIE.length + 1) : null;
-}
-
-function requireAdmin(req, res, next) {
-  const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '';
-  if (ip !== ADMIN_IP) return res.status(404).send('Not found');
-  const cookie = getAdminCookie(req);
-  if (cookie && cookie === adminToken()) return next();
-  const qp = req.query.p || '';
-  if (qp === ADMIN_PASS) return next();
-  const authHeader = req.headers['x-admin-token'] || '';
-  if (authHeader === adminToken()) return next();
-  if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Unauthorized' });
-  res.setHeader('Cache-Control', 'no-store');
-  res.type('html').send(`<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MyAurum · Admin</title>
-<style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:Georgia,serif;background:#FAF7F2;display:flex;align-items:center;justify-content:center;height:100vh}
-  .box{background:#fff;border:1px solid rgba(139,105,20,.2);border-radius:14px;padding:48px 40px;width:340px;text-align:center}
-  h2{font-weight:300;letter-spacing:.18em;color:#8B6914;font-size:22px;margin-bottom:6px}
-  p{font-family:monospace;font-size:11px;color:#aaa;letter-spacing:.08em;margin-bottom:32px}
-  input{width:100%;padding:13px 16px;border:1px solid rgba(139,105,20,.25);border-radius:8px;font-size:14px;background:#FAF7F2;color:#2C2410;outline:none;font-family:monospace;letter-spacing:.05em}
-  input:focus{border-color:#B8860B}
-  button{width:100%;margin-top:14px;padding:13px;background:#8B6914;color:#FDF8F0;border:none;border-radius:8px;font-family:monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
-  button:hover{opacity:.88}
-  .err{color:#c0392b;font-size:12px;font-family:monospace;margin-top:12px;display:none}
-</style></head>
-<body><div class="box">
-  <h2>MYAURUM</h2>
-  <p>ADMIN ACCESS</p>
-  <input type="password" id="pw" placeholder="Password" onkeydown="if(event.key==='Enter')login()"/>
-  <button onclick="login()">Sign In →</button>
-  <div class="err" id="err">Incorrect password</div>
-</div>
-<script>
-async function login() {
-  const pw = document.getElementById('pw').value;
-  const res = await fetch('/dash-4f8a2e91c3b7/login', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({p: pw})
-  });
-  if (res.ok) { window.location.reload(); }
-  else { document.getElementById('err').style.display='block'; }
-}
-</script></body></html>`);
-}
-
-app.post(`/${ADMIN_SLUG}/login`, (req, res) => {
-  const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '';
-  if (ip !== ADMIN_IP) return res.status(404).send('Not found');
-  const { p } = req.body;
-  if (p !== ADMIN_PASS) return res.status(401).json({ error: 'Incorrect password' });
-  const token = adminToken();
-  res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=28800`);
-  res.json({ ok: true });
-});
-
-app.get(`/${ADMIN_SLUG}/logout`, (req, res) => {
-  res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0`);
-  res.setHeader('Cache-Control', 'no-store');
-  res.type('html').send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Signed Out</title>
-  <style>body{font-family:Georgia,serif;background:#FAF7F2;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
-  .box{text-align:center;color:#8B6914}.box h2{font-weight:300;letter-spacing:.15em;font-size:22px;margin-bottom:8px}
-  .box p{font-family:monospace;font-size:12px;color:#aaa;letter-spacing:.08em}</style></head>
-  <body><div class="box"><h2>MYAURUM</h2><p>You have been signed out.</p></div></body></html>`);
-});
 
 app.get('/signed-out', (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
