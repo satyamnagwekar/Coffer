@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyAurum · Blog Editor</title>
+<style>
+  :root {
+    --gold:#B8860B; --gold-dim:#8B6914; --gold-pale:rgba(184,134,11,.08);
+    --bg:#FAF7F2; --bg2:#fff; --ink:#2C2410; --dim:#8B7A5A;
+    --border:rgba(139,105,20,.18); --radius:10px;
+    --green:#1A7A4A; --red:#A0522D;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Georgia,serif;background:var(--bg);color:var(--ink);font-size:14px}
+
+  .topbar{background:#1A1508;padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
+  .topbar-brand{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(212,160,23,.7);font-family:monospace}
+  .topbar-nav{display:flex;gap:6px}
+  .topbar-nav a{font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:6px 14px;border-radius:6px;text-decoration:none;color:rgba(245,240,232,.5);font-family:monospace;cursor:pointer;transition:all .15s}
+  .topbar-nav a:hover{color:rgba(245,240,232,.9)}
+  .topbar-nav a.active{background:rgba(184,134,11,.2);color:rgba(212,160,23,.9)}
+
+  .layout{display:grid;grid-template-columns:1fr 340px;gap:0;height:calc(100vh - 49px)}
+
+  /* ── Editor panel ── */
+  .editor-panel{padding:28px 32px;overflow-y:auto;border-right:1px solid var(--border)}
+  .editor-title{font-size:20px;font-weight:300;color:var(--ink);margin-bottom:24px;letter-spacing:-.01em}
+
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-family:monospace;margin-bottom:7px}
+  .field input,.field select,.field textarea{
+    width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;
+    font-size:14px;background:var(--bg2);color:var(--ink);font-family:Georgia,serif;
+    outline:none;transition:border-color .15s;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold-dim)}
+  .field textarea{resize:vertical;min-height:320px;line-height:1.7;font-size:13px}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+  /* Toolbar */
+  .toolbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .toolbar button{
+    padding:5px 11px;border:1px solid var(--border);border-radius:6px;
+    background:var(--bg2);color:var(--ink-dim);font-family:monospace;font-size:11px;
+    cursor:pointer;transition:all .15s;
+  }
+  .toolbar button:hover{background:var(--gold-pale);border-color:var(--gold-dim);color:var(--gold-dim)}
+
+  /* Image upload */
+  .image-drop{
+    border:2px dashed var(--border);border-radius:10px;padding:24px;
+    text-align:center;cursor:pointer;transition:all .18s;background:var(--bg2);
+  }
+  .image-drop:hover,.image-drop.dragover{border-color:var(--gold-dim);background:var(--gold-pale)}
+  .image-drop p{font-size:12px;color:var(--dim);font-family:monospace;margin-bottom:8px}
+  .image-drop small{font-size:10px;color:var(--dim);opacity:.6;font-family:monospace}
+  .image-preview{margin-top:12px;display:none}
+  .image-preview img{width:100%;max-height:180px;object-fit:cover;border-radius:8px;display:block}
+  .image-preview button{margin-top:8px;font-size:10px;color:var(--red);background:none;border:none;cursor:pointer;font-family:monospace;letter-spacing:.06em}
+
+  /* Publish button */
+  .publish-btn{
+    width:100%;padding:14px;background:var(--gold-dim);color:#FDF8F0;
+    border:none;border-radius:8px;font-family:monospace;font-size:11px;
+    letter-spacing:.16em;text-transform:uppercase;cursor:pointer;
+    transition:all .18s;box-shadow:0 3px 14px rgba(139,105,20,.28);margin-top:8px;
+  }
+  .publish-btn:hover{box-shadow:0 5px 20px rgba(139,105,20,.4)}
+  .publish-btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .toast-msg{
+    margin-top:12px;padding:11px 16px;border-radius:8px;font-family:monospace;
+    font-size:12px;letter-spacing:.04em;display:none;
+  }
+  .toast-msg.ok{background:rgba(26,122,74,.1);color:var(--green);border:1px solid rgba(26,122,74,.2)}
+  .toast-msg.err{background:rgba(160,82,45,.1);color:var(--red);border:1px solid rgba(160,82,45,.2)}
+
+  /* ── Articles panel ── */
+  .articles-panel{padding:24px;overflow-y:auto;background:var(--bg)}
+  .panel-title{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-family:monospace;margin-bottom:16px}
+
+  .article-card{
+    background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+    padding:14px 16px;margin-bottom:10px;
+  }
+  .article-card-headline{font-size:13px;color:var(--ink);margin-bottom:6px;line-height:1.4}
+  .article-card-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .geo-pill{font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:8px;font-family:monospace}
+  .geo-pill.india{background:rgba(139,105,20,.1);color:#8B6914}
+  .geo-pill.uae{background:rgba(46,107,138,.1);color:#2E6B8A}
+  .geo-pill.ny{background:rgba(90,59,122,.1);color:#5A3B7A}
+  .geo-pill.intl{background:rgba(58,107,74,.1);color:#3A6B4A}
+  .article-card-date{font-size:10px;color:var(--dim);font-family:monospace}
+  .article-card-actions{margin-left:auto;display:flex;gap:8px}
+  .action-link{font-size:10px;color:var(--gold-dim);font-family:monospace;text-decoration:none;cursor:pointer;letter-spacing:.06em;background:none;border:none;padding:0;transition:color .15s}
+  .action-link:hover{color:var(--ink)}
+  .action-link.del{color:var(--red)}
+  .action-link.del:hover{color:#7a2810}
+
+  .empty-list{font-family:monospace;font-size:11px;color:var(--dim);text-align:center;padding:32px 0;opacity:.7}
+
+  @media(max-width:860px){
+    .layout{grid-template-columns:1fr;height:auto}
+    .editor-panel{border-right:none;border-bottom:1px solid var(--border)}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">MyAurum · Admin</div>
+  <div class="topbar-nav">
+    <a onclick="window.location.href='/'+_adminSlug">Dashboard</a>
+    <a onclick="window.location.href='/'+_adminSlug+'/impressions'">Analytics</a>
+    <a class="active">Blog</a>
+    <a onclick="window.location.href='/'+_adminSlug+'/logout'">Sign Out</a>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- Editor -->
+  <div class="editor-panel">
+    <div class="editor-title">New Article</div>
+
+    <div class="field">
+      <label>Headline</label>
+      <input type="text" id="headline" placeholder="e.g. How to verify gold purity at home in 2026">
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Geography</label>
+        <select id="geo">
+          <option value="india">🇮🇳 India</option>
+          <option value="uae">🇦🇪 UAE</option>
+          <option value="ny">🗽 New York</option>
+          <option value="intl">🌐 Global</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Category (optional)</label>
+        <input type="text" id="category" placeholder="e.g. Buying Guide">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Slug (auto-generated, editable)</label>
+      <input type="text" id="slug" placeholder="how-to-verify-gold-purity-2026">
+    </div>
+
+    <div class="field">
+      <label>Excerpt (shown on blog index)</label>
+      <input type="text" id="excerpt" placeholder="One or two sentence summary shown on the blog index page">
+    </div>
+
+    <div class="field">
+      <label>Body — HTML permitted. Use &lt;h2&gt;, &lt;p&gt;, &lt;a href=""&gt;, &lt;ul&gt;, &lt;blockquote&gt;</label>
+      <div class="toolbar">
+        <button onclick="wrap('<h2>','</h2>')">H2</button>
+        <button onclick="wrap('<h3>','</h3>')">H3</button>
+        <button onclick="wrap('<p>','</p>')">¶ Para</button>
+        <button onclick="wrap('<strong>','</strong>')"><b>Bold</b></button>
+        <button onclick="wrap('<em>','</em>')"><i>Italic</i></button>
+        <button onclick="insertLink()">🔗 Link</button>
+        <button onclick="wrap('<ul>\n  <li>','</li>\n</ul>')">List</button>
+        <button onclick="wrap('<blockquote>','</blockquote>')">❝ Quote</button>
+        <button onclick="insertCallout()">📌 Callout</button>
+      </div>
+      <textarea id="body" spellcheck="true" placeholder="Write your article here. HTML is supported — use the toolbar above or type directly.&#10;&#10;Example:&#10;&lt;p&gt;Gold prices hit a record high in April 2026...&lt;/p&gt;&#10;&#10;&lt;h2&gt;What this means for buyers&lt;/h2&gt;&#10;&lt;p&gt;According to &lt;a href=&quot;https://example.com&quot;&gt;Reuters&lt;/a&gt;, ...&lt;/p&gt;"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Image (optional — JPEG or PNG, max 2MB)</label>
+      <div class="image-drop" id="imageDrop" onclick="document.getElementById('imageFile').click()">
+        <p>Click or drag an image here</p>
+        <small>JPEG · PNG · Max 2MB · Will be embedded in the article</small>
+        <input type="file" id="imageFile" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleImage(this)">
+      </div>
+      <div class="image-preview" id="imagePreview">
+        <img id="imageThumb" src="" alt="">
+        <div class="field" style="margin-top:10px;margin-bottom:0">
+          <label>Image caption (optional)</label>
+          <input type="text" id="imageCaption" placeholder="Source: Reuters / Bureau of Indian Standards">
+        </div>
+        <button onclick="clearImage()">✕ Remove image</button>
+      </div>
+    </div>
+
+    <button class="publish-btn" id="publishBtn" onclick="publish()">Publish Article →</button>
+    <div class="toast-msg" id="toastMsg"></div>
+  </div>
+
+  <!-- Article list -->
+  <div class="articles-panel">
+    <div class="panel-title">Published articles</div>
+    <div id="articleList"><div class="empty-list">Loading…</div></div>
+  </div>
+
+</div>
+
+<script>
+  const adminToken = window._adminToken || '';
+  const _adminSlug  = window._adminSlug  || '';
+
+  let imageBase64 = null;
+
+  // ── Auto-generate slug from headline ──
+  document.getElementById('headline').addEventListener('input', function() {
+    const slug = this.value.toLowerCase().trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .slice(0, 80);
+    document.getElementById('slug').value = slug;
+  });
+
+  // ── Toolbar helpers ──
+  function wrap(before, after) {
+    const ta = document.getElementById('body');
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const sel = ta.value.slice(start, end) || 'text here';
+    ta.value = ta.value.slice(0, start) + before + sel + after + ta.value.slice(end);
+    ta.focus();
+    ta.selectionStart = start + before.length;
+    ta.selectionEnd   = start + before.length + sel.length;
+  }
+
+  function insertLink() {
+    const url = prompt('URL:');
+    if (!url) return;
+    const ta = document.getElementById('body');
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const text = ta.value.slice(start, end) || 'link text';
+    const html = `<a href="${url}" target="_blank" rel="noopener">${text}</a>`;
+    ta.value = ta.value.slice(0, start) + html + ta.value.slice(end);
+    ta.focus();
+  }
+
+  function insertCallout() {
+    const ta = document.getElementById('body');
+    const pos = ta.selectionStart;
+    const html = `\n<div style="background:rgba(139,105,20,.07);border-left:3px solid #8B6914;padding:16px 20px;margin:28px 0;border-radius:0 8px 8px 0;font-size:14px;line-height:1.75;color:#5A4A2A">\n  <strong style="color:#2C2410;display:block;margin-bottom:4px">Key point</strong>\n  Your callout text here.\n</div>\n`;
+    ta.value = ta.value.slice(0, pos) + html + ta.value.slice(pos);
+    ta.focus();
+  }
+
+  // ── Image handling ──
+  function handleImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { alert('Image must be under 2MB'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      imageBase64 = e.target.result;
+      document.getElementById('imageThumb').src = imageBase64;
+      document.getElementById('imagePreview').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearImage() {
+    imageBase64 = null;
+    document.getElementById('imageFile').value = '';
+    document.getElementById('imageThumb').src = '';
+    document.getElementById('imagePreview').style.display = 'none';
+  }
+
+  // Drag and drop
+  const drop = document.getElementById('imageDrop');
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+  drop.addEventListener('drop', e => {
+    e.preventDefault(); drop.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const dt = new DataTransfer(); dt.items.add(file);
+      const input = document.getElementById('imageFile');
+      input.files = dt.files;
+      handleImage(input);
+    }
+  });
+
+  // ── Publish ──
+  async function publish() {
+    const headline = document.getElementById('headline').value.trim();
+    const body     = document.getElementById('body').value.trim();
+    if (!headline) { showToast('Headline is required.', 'err'); return; }
+    if (!body)     { showToast('Body is required.', 'err'); return; }
+
+    const btn = document.getElementById('publishBtn');
+    btn.disabled = true; btn.textContent = 'Publishing…';
+
+    try {
+      const res = await fetch(`/api/${_adminSlug}/blog/publish`, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'x-admin-token': adminToken },
+        body: JSON.stringify({
+          headline,
+          slug:         document.getElementById('slug').value.trim(),
+          geo:          document.getElementById('geo').value,
+          category:     document.getElementById('category').value.trim(),
+          excerpt:      document.getElementById('excerpt').value.trim(),
+          body,
+          imageBase64:  imageBase64 || null,
+          imageCaption: document.getElementById('imageCaption').value.trim(),
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Publish failed');
+      showToast(`Published → <a href="${data.url}" target="_blank">${data.url}</a>`, 'ok');
+      clearForm();
+      loadArticles();
+    } catch(e) {
+      showToast(e.message, 'err');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Publish Article →';
+    }
+  }
+
+  function clearForm() {
+    ['headline','slug','category','excerpt','body','imageCaption'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    clearImage();
+    document.getElementById('geo').value = 'india';
+  }
+
+  function showToast(msg, type) {
+    const el = document.getElementById('toastMsg');
+    el.innerHTML = msg;
+    el.className = `toast-msg ${type}`;
+    el.style.display = 'block';
+    if (type === 'ok') setTimeout(() => el.style.display = 'none', 6000);
+  }
+
+  // ── Load article list ──
+  async function loadArticles() {
+    try {
+      const res  = await fetch(`/api/${_adminSlug}/blog/articles`, {
+        headers: { 'x-admin-token': adminToken }
+      });
+      const list = await res.json();
+      const el   = document.getElementById('articleList');
+
+      if (!list.length) {
+        el.innerHTML = '<div class="empty-list">No articles yet.<br>Publish your first one.</div>';
+        return;
+      }
+
+      el.innerHTML = list.map(a => `
+        <div class="article-card">
+          <div class="article-card-headline">${a.headline}</div>
+          <div class="article-card-meta">
+            <span class="geo-pill ${a.geo}">${a.geo}</span>
+            <span class="article-card-date">${a.date||''}</span>
+            <div class="article-card-actions">
+              <a class="action-link" href="/blog/${a.slug}" target="_blank">View</a>
+              <button class="action-link del" onclick="deleteArticle('${a.slug}', this)">Delete</button>
+            </div>
+          </div>
+        </div>`).join('');
+    } catch(e) {
+      document.getElementById('articleList').innerHTML = '<div class="empty-list">Error loading articles.</div>';
+    }
+  }
+
+  async function deleteArticle(slug, btn) {
+    if (!confirm(`Delete "${slug}"? This cannot be undone.`)) return;
+    btn.textContent = '…';
+    try {
+      await fetch(`/api/${_adminSlug}/blog/${slug}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-token': adminToken }
+      });
+      loadArticles();
+    } catch(e) { btn.textContent = 'Error'; }
+  }
+
+  loadArticles();
+</script>
+</body>
+</html>
