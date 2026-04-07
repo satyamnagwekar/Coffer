@@ -89,8 +89,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .auth-box{background:#fff;border:1px solid #DDD5C0;border-radius:14px;padding:24px 22px;width:300px;flex-shrink:0;box-shadow:0 4px 24px rgba(0,0,0,.07)}
 .auth-wordmark{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;letter-spacing:.2em;color:var(--brand);margin-bottom:2px}
 .auth-tagline{font-size:11px;color:var(--text-dim);letter-spacing:.2em;text-transform:uppercase;margin-bottom:18px}
-.auth-marquee{display:inline-flex;gap:18px;white-space:nowrap;animation:marqueeScroll 32s linear infinite;font-size:10px;color:#B8A070;letter-spacing:.12em;text-transform:uppercase;font-family:'Jost',sans-serif}
-.auth-marquee-dot{color:rgba(184,134,11,.4);font-size:7px;align-self:center}
+.auth-marquee{display:inline-flex;gap:18px;white-space:nowrap;animation:marqueeScroll 28s linear infinite;font-size:11px;color:#C8A060;letter-spacing:.10em;text-transform:uppercase;font-family:'Jost',sans-serif}
+.auth-marquee-dot{color:rgba(200,160,80,.55);font-size:7px;align-self:center}
 @keyframes marqueeScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
 /* Tab switcher inside box */
@@ -1068,7 +1068,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 
 /* ── Reduced motion ── */
 @media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+  *:not(.auth-marquee),*:not(.auth-marquee)::before,*:not(.auth-marquee)::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
   .modal{animation:none}
   .app-screen.active{animation:none}
 }
