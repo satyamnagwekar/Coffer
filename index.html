@@ -89,6 +89,9 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .auth-box{background:#fff;border:1px solid #DDD5C0;border-radius:14px;padding:24px 22px;width:300px;flex-shrink:0;box-shadow:0 4px 24px rgba(0,0,0,.07)}
 .auth-wordmark{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;letter-spacing:.2em;color:var(--brand);margin-bottom:2px}
 .auth-tagline{font-size:11px;color:var(--text-dim);letter-spacing:.2em;text-transform:uppercase;margin-bottom:18px}
+.auth-marquee{display:inline-flex;gap:18px;white-space:nowrap;animation:marqueeScroll 32s linear infinite;font-size:10px;color:#B8A070;letter-spacing:.12em;text-transform:uppercase;font-family:'Jost',sans-serif}
+.auth-marquee-dot{color:rgba(184,134,11,.4);font-size:7px;align-self:center}
+@keyframes marqueeScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
 /* Tab switcher inside box */
 .auth-tabs{display:flex;background:#F5F0E8;border-radius:9px;padding:3px;border:1px solid #DDD5C0;margin-bottom:16px}
@@ -1381,7 +1384,34 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         <div class="auth-rule-icon">✦</div>
         <div class="auth-rule-line"></div>
       </div>
-      <p style="margin:0 0 10px;font-size:11px;color:#B8A070;line-height:1.7;font-family:'Jost',sans-serif;letter-spacing:.04em;text-transform:uppercase">End-to-end encrypted estate notes · No ads · No data sharing · Not a financial product · No KYC · No broker</p>
+      <div style="margin:0 0 10px;overflow:hidden;width:100%">
+        <div class="auth-marquee">
+          <span>Know what your gold is worth</span>
+          <span class="auth-marquee-dot">◆</span>
+          <span>Right now, in your currency</span>
+          <span class="auth-marquee-dot">◆</span>
+          <span>Document your holdings today</span>
+          <span class="auth-marquee-dot">◆</span>
+          <span>Your family will thank you tomorrow</span>
+          <span class="auth-marquee-dot">◆</span>
+          <span>Private by design</span>
+          <span class="auth-marquee-dot">◆</span>
+          <span>Your records, visible only to you</span>
+          <span class="auth-marquee-dot">◆</span>
+          <span>Know what your gold is worth</span>
+          <span class="auth-marquee-dot">◆</span>
+          <span>Right now, in your currency</span>
+          <span class="auth-marquee-dot">◆</span>
+          <span>Document your holdings today</span>
+          <span class="auth-marquee-dot">◆</span>
+          <span>Your family will thank you tomorrow</span>
+          <span class="auth-marquee-dot">◆</span>
+          <span>Private by design</span>
+          <span class="auth-marquee-dot">◆</span>
+          <span>Your records, visible only to you</span>
+          <span class="auth-marquee-dot">◆</span>
+        </div>
+      </div>
       <div class="auth-headline">Your family's gold, <em>recorded for posterity.</em></div>
       <div class="auth-desc">
         Add any piece of gold, silver, or platinum — jewellery, coins, bars — and see its live market value in seconds. Record what you paid, track what it's worth, and plan your succession. Works in rupees, dollars, dirhams, or pounds. Encrypted estate notes, one-tap succession document. No broker, no KYC, no ads, ever.
