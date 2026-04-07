@@ -2643,6 +2643,213 @@ app.get('/security', (req, res) => {
   else res.redirect('/');
 });
 
+
+// ─────────────────────────────────────────
+//  BLOG EDITOR API
+// ─────────────────────────────────────────
+
+const BLOG_DIR = path.join(__dirname, 'blog');
+
+// Ensure blog dir exists
+if (!fs.existsSync(BLOG_DIR)) fs.mkdirSync(BLOG_DIR, { recursive: true });
+
+// Geo tag colours matching blog CSS
+const GEO_STYLES = {
+  india: { label: '🇮🇳 India',    color: '#8B6914', bg: 'rgba(139,105,20,.10)' },
+  uae:   { label: '🇦🇪 UAE',      color: '#2E6B8A', bg: 'rgba(46,107,138,.10)' },
+  ny:    { label: '🗽 New York',  color: '#5A3B7A', bg: 'rgba(90,59,122,.10)'  },
+  intl:  { label: '🌐 Global',    color: '#3A6B4A', bg: 'rgba(58,107,74,.10)'  },
+};
+
+// Generate article HTML from fields
+function buildArticleHTML({ slug, headline, geo, category, body, imageBase64, imageCaption, date }) {
+  const geoStyle = GEO_STYLES[geo] || GEO_STYLES.india;
+  const dateStr  = date || new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+  const imgBlock = imageBase64
+    ? `<figure style="margin:0 0 28px;border-radius:12px;overflow:hidden">
+        <img src="${imageBase64}" alt="${escapeHtml(headline)}" style="width:100%;display:block;max-height:400px;object-fit:cover">
+        ${imageCaption ? `<figcaption style="font-size:11px;color:#8B7A5A;padding:8px 0;font-family:'Jost',sans-serif;font-style:italic">${escapeHtml(imageCaption)}</figcaption>` : ''}
+       </figure>` : '';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escapeHtml(headline)} — MyAurum Journal</title>
+<meta name="description" content="${escapeHtml(headline)}">
+<meta property="og:title" content="${escapeHtml(headline)} — MyAurum Journal">
+<meta property="og:image" content="https://myaurum.app/og-image.png">
+<link rel="canonical" href="https://myaurum.app/blog/${slug}">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Article","headline":${JSON.stringify(headline)},"datePublished":"${new Date().toISOString().slice(0,10)}","publisher":{"@type":"Organization","name":"MyAurum","url":"https://myaurum.app"}}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--gold:#B8860B;--gold-dim:#8B6914;--parchment:#F5F0E8;--ink:#2C2410;--ink-mid:#5A4A2A;--ink-dim:#8B7A5A;--border:rgba(139,105,20,.18)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--parchment);font-family:'Jost',sans-serif;color:var(--ink)}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 35% at 50% 0%,rgba(184,134,11,.08) 0%,transparent 70%);pointer-events:none;z-index:0}
+  .wrap{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:0 24px 80px}
+  .topnav{display:flex;align-items:center;justify-content:space-between;padding:20px 0;margin-bottom:40px;border-bottom:1px solid var(--border)}
+  .nav-brand{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:var(--gold-dim);text-decoration:none}
+  .nav-back{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);text-decoration:none;transition:color .15s}
+  .nav-back:hover{color:var(--gold-dim)}
+  .article-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+  .geo-tag{font-size:9px;letter-spacing:.16em;text-transform:uppercase;padding:4px 10px;border-radius:10px;font-weight:500;background:${geoStyle.bg};color:${geoStyle.color}}
+  .cat-tag{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim);opacity:.7}
+  .art-date{font-size:10px;color:var(--ink-dim);opacity:.6;margin-left:auto}
+  h1{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,5vw,42px);font-weight:300;line-height:1.15;color:var(--ink);margin-bottom:28px;letter-spacing:-.02em}
+  .article-body{font-size:15px;line-height:1.85;color:var(--ink)}
+  .article-body h2{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:var(--ink);margin:36px 0 14px;letter-spacing:-.01em}
+  .article-body h3{font-size:15px;font-weight:600;color:var(--ink);margin:24px 0 10px}
+  .article-body p{margin-bottom:18px}
+  .article-body a{color:var(--gold-dim);text-decoration:underline;text-underline-offset:3px}
+  .article-body a:hover{color:var(--ink)}
+  .article-body ul,.article-body ol{margin:0 0 18px;padding-left:20px;line-height:2}
+  .article-body blockquote{border-left:3px solid var(--gold-dim);padding:14px 18px;margin:24px 0;background:rgba(139,105,20,.06);border-radius:0 8px 8px 0;font-style:italic;color:var(--ink-mid)}
+  .cta-block{margin:40px 0;padding:24px 26px;background:linear-gradient(135deg,rgba(139,105,20,.08),rgba(184,134,11,.04));border:1.5px solid var(--border);border-radius:14px;text-align:center}
+  .cta-block p{font-size:14px;color:var(--ink-mid);line-height:1.75;margin-bottom:16px}
+  .cta-btn{display:inline-block;padding:12px 26px;background:var(--gold-dim);color:#FDF8F0;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;border-radius:8px;margin-right:10px;box-shadow:0 3px 14px rgba(139,105,20,.28);transition:box-shadow .2s}
+  .cta-btn:hover{box-shadow:0 5px 22px rgba(139,105,20,.4)}
+  .cta-btn-sec{display:inline-block;padding:12px 26px;border:1.5px solid var(--border);color:var(--ink-dim);font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;border-radius:8px;transition:all .18s}
+  .cta-btn-sec:hover{border-color:var(--gold-dim);color:var(--gold-dim)}
+  .art-footer{margin-top:48px;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+  .art-footer a{font-size:11px;color:var(--ink-dim);text-decoration:none;letter-spacing:.08em;transition:color .15s}
+  .art-footer a:hover{color:var(--gold-dim)}
+  .disclaimer{margin-top:20px;font-size:11px;color:var(--ink-dim);line-height:1.7;opacity:.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="topnav">
+    <a class="nav-brand" href="https://myaurum.app">MyAurum</a>
+    <a class="nav-back" href="/blog">← Journal</a>
+  </nav>
+  <div class="article-meta">
+    <span class="geo-tag">${geoStyle.label}</span>
+    ${category ? `<span class="cat-tag">${escapeHtml(category)}</span>` : ''}
+    <span class="art-date">${dateStr}</span>
+  </div>
+  <h1>${escapeHtml(headline)}</h1>
+  ${imgBlock}
+  <div class="article-body">${body}</div>
+  <div class="cta-block">
+    <p>Track the live value of your physical gold — free, private, no KYC required.</p>
+    <a class="cta-btn" href="https://myaurum.app">Track your gold free →</a>
+    <a class="cta-btn-sec" href="https://myaurum.app/gold">Quick calculator</a>
+  </div>
+  <footer class="art-footer">
+    <a href="/blog">← All articles</a>
+    <a href="https://myaurum.app">myaurum.app</a>
+  </footer>
+  <p class="disclaimer">MyAurum Journal articles are sourced from publicly available reporting. This article does not constitute financial or legal advice.</p>
+  <img src="/px?s=blog/${slug}&r=" width="1" height="1" alt="" style="display:none;position:absolute">
+</div>
+</body>
+</html>`;
+}
+
+function escapeHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Read article index (metadata stored as JSON sidecar)
+function readArticleIndex() {
+  const p = path.join(BLOG_DIR, '_index.json');
+  try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return []; }
+}
+
+function writeArticleIndex(articles) {
+  fs.writeFileSync(path.join(BLOG_DIR, '_index.json'), JSON.stringify(articles, null, 2));
+}
+
+function rebuildBlogIndex(articles) {
+  const GEO_CSS = {
+    india:'rgba(139,105,20,.10)',uae:'rgba(46,107,138,.10)',ny:'rgba(90,59,122,.10)',intl:'rgba(58,107,74,.10)'
+  };
+  const GEO_COLOR = { india:'#8B6914',uae:'#2E6B8A',ny:'#5A3B7A',intl:'#3A6B4A' };
+  const GEO_LABEL = { india:'🇮🇳 India',uae:'🇦🇪 UAE',ny:'🗽 New York',intl:'🌐 Global' };
+
+  const cards = articles.map((a, i) => `
+    <a class="card" href="/blog/${a.slug}" data-geo="${a.geo}">
+      <div class="card-meta">
+        <span class="geo-tag ${a.geo}">${GEO_LABEL[a.geo]||a.geo}</span>
+        ${a.category ? `<span class="cat-tag">${a.category}</span>` : ''}
+        <span class="card-date">${a.date||''}</span>
+      </div>
+      <h2 class="card-title">${a.headline}</h2>
+      <p class="card-excerpt">${a.excerpt||''}</p>
+      <span class="card-read">Read article →</span>
+    </a>`).join('\n');
+
+  // Read existing index and replace article grid
+  const idxPath = path.join(BLOG_DIR, 'index.html');
+  if (!fs.existsSync(idxPath)) return;
+  let html = fs.readFileSync(idxPath, 'utf8');
+  // Replace content between article grid markers
+  html = html.replace(
+    /(<div class="articles" id="articleGrid">)[\s\S]*?(<div class="empty" id="emptyState">)/,
+    `$1\n${cards}\n\n    $2`
+  );
+  fs.writeFileSync(idxPath, html);
+}
+
+// POST — publish article
+app.post(`/api/${ADMIN_SLUG}/blog/publish`, requireAdmin, express.json({ limit: '15mb' }), async (req, res) => {
+  try {
+    const { headline, slug: rawSlug, geo, category, body, imageBase64, imageCaption, excerpt, date } = req.body;
+    if (!headline || !body) return res.status(400).json({ error: 'Headline and body are required.' });
+
+    // Sanitise slug
+    const slug = (rawSlug || headline)
+      .toLowerCase().trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .slice(0, 80);
+
+    if (!slug) return res.status(400).json({ error: 'Could not generate a valid slug.' });
+
+    const html = buildArticleHTML({ slug, headline, geo: geo||'india', category, body, imageBase64, imageCaption, date });
+    const filePath = path.join(BLOG_DIR, slug + '.html');
+    fs.writeFileSync(filePath, html);
+
+    // Update index
+    const articles = readArticleIndex().filter(a => a.slug !== slug);
+    const dateStr = date || new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+    articles.unshift({ slug, headline, geo: geo||'india', category: category||'', excerpt: excerpt||'', date: dateStr });
+    writeArticleIndex(articles);
+    rebuildBlogIndex(articles);
+
+    console.log(`[blog] Published: ${slug}`);
+    res.json({ ok: true, slug, url: `/blog/${slug}` });
+  } catch(e) {
+    console.error('[blog publish]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET — list articles
+app.get(`/api/${ADMIN_SLUG}/blog/articles`, requireAdmin, (req, res) => {
+  res.json(readArticleIndex());
+});
+
+// DELETE — remove article
+app.delete(`/api/${ADMIN_SLUG}/blog/:slug`, requireAdmin, (req, res) => {
+  try {
+    const slug = req.params.slug.replace(/[^a-z0-9-]/g, '');
+    const filePath = path.join(BLOG_DIR, slug + '.html');
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    const articles = readArticleIndex().filter(a => a.slug !== slug);
+    writeArticleIndex(articles);
+    rebuildBlogIndex(articles);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ─────────────────────────────────────────
 //  ADMIN DASHBOARD
 // ─────────────────────────────────────────
@@ -2735,6 +2942,16 @@ app.get('/signed-out', (req, res) => {
   .box{text-align:center;color:#8B6914}.box h2{font-weight:300;letter-spacing:.15em;font-size:22px;margin-bottom:8px}
   .box p{font-family:monospace;font-size:12px;color:#aaa;letter-spacing:.08em}</style></head>
   <body><div class="box"><h2>MYAURUM</h2><p>You have been signed out.</p></div></body></html>`);
+});
+
+app.get(`/${ADMIN_SLUG}/blog`, requireAdmin, (req, res) => {
+  const p = path.join(__dirname, 'admin-blog.html');
+  if (fs.existsSync(p)) {
+    let html = fs.readFileSync(p, 'utf8');
+    html = html.replace('</head>', `<script>window._adminToken="${adminToken()}";window._adminSlug="${ADMIN_SLUG}";</script></head>`);
+    res.setHeader('Cache-Control', 'no-store');
+    res.type('html').send(html);
+  } else res.status(404).send('Not found');
 });
 
 app.get(`/${ADMIN_SLUG}/impressions`, requireAdmin, (req, res) => {
