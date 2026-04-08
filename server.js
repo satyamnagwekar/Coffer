@@ -2651,6 +2651,14 @@ const ADMIN_PASS = process.env.ADMIN_PASS || 'myaurum_admin_2026';
 const ADMIN_IP   = process.env.ADMIN_IP   || '103.156.212.177';
 const ADMIN_SLUG = process.env.ADMIN_SLUG || 'dash-4f8a2e91c3b7';
 const ADMIN_COOKIE = 'mya_adm';
+// TEMP: IP debug — remove after fixing admin access
+app.get('/myip', (req, res) => {
+  const forwarded = req.headers['x-forwarded-for'] || '';
+  const socket = req.socket.remoteAddress || '';
+  res.json({ forwarded, socket, first: forwarded.split(',')[0].trim(), adminIp: ADMIN_IP });
+});
+
+
 
 function adminToken() {
   return crypto.createHmac('sha256', JWT_SECRET).update(ADMIN_PASS).digest('hex');
