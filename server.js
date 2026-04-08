@@ -187,6 +187,22 @@ async function initDB() {
   `);
   await q(`CREATE INDEX IF NOT EXISTS page_views_slug_idx ON page_views(slug)`);
   await q(`CREATE INDEX IF NOT EXISTS page_views_viewed_at_idx ON page_views(viewed_at)`);
+  await q(`
+    CREATE TABLE IF NOT EXISTS blog_articles (
+      id           SERIAL PRIMARY KEY,
+      slug         TEXT UNIQUE NOT NULL,
+      headline     TEXT NOT NULL,
+      geo          TEXT DEFAULT 'india',
+      category     TEXT DEFAULT '',
+      excerpt      TEXT DEFAULT '',
+      body         TEXT NOT NULL,
+      image_base64 TEXT,
+      image_caption TEXT DEFAULT '',
+      date_label   TEXT,
+      published_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await q(`CREATE INDEX IF NOT EXISTS blog_articles_published_idx ON blog_articles(published_at DESC)`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS premium_tier TEXT DEFAULT 'standard'`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS limit_warn_15_sent_at TIMESTAMPTZ`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS limit_warn_19_sent_at TIMESTAMPTZ`);
@@ -2022,12 +2038,10 @@ app.get('/px', async (req, res) => {
   });
 });
 
-app.get('/blog', (req, res) => {
-  const p = path.join(__dirname, 'blog', 'index.html');
-  if (fs.existsSync(p)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(p); return; }
-  // Generate index from _index.json when index.html not deployed
-  const idxFile = path.join(__dirname, 'blog', '_index.json');
-  const articles = fs.existsSync(idxFile) ? JSON.parse(fs.readFileSync(idxFile,'utf8')) : [];
+app.get('/blog', async (req, res) => {
+  try {
+    const rows = await q(`SELECT slug, headline, geo, category, excerpt, date_label as date FROM blog_articles ORDER BY published_at DESC`);
+    const articles = rows.rows;
   const GEO_LABEL = { india:'🇮🇳 India', uae:'🇦🇪 UAE', ny:'🗽 New York', intl:'🌐 Global' };
   const GEO_COLOR = { india:'#8B6914', uae:'#2E6B8A', ny:'#5A3B7A', intl:'#3A6B4A' };
   const GEO_BG    = { india:'rgba(139,105,20,.10)', uae:'rgba(46,107,138,.10)', ny:'rgba(90,59,122,.10)', intl:'rgba(58,107,74,.10)' };
@@ -2095,12 +2109,24 @@ app.get('/blog', (req, res) => {
 </html>`;
   res.setHeader('Cache-Control','no-cache,no-store,must-revalidate');
   res.type('html').send(html);
+  } catch(e) { res.status(500).send('Error loading blog'); }
 });
 
-app.get('/blog/:slug', (req, res) => {
-  const p = path.join(__dirname, 'blog', req.params.slug + '.html');
-  if (fs.existsSync(p)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(p); }
-  else res.status(404).redirect('/blog');
+app.get('/blog/:slug', async (req, res) => {
+  try {
+    const slug = req.params.slug.replace(/[^a-z0-9-]/g, '');
+    const row = await q(`SELECT * FROM blog_articles WHERE slug=$1`, [slug]);
+    if (!row.rows.length) return res.status(404).redirect('/blog');
+    const a = row.rows[0];
+    const html = buildArticleHTML({
+      slug: a.slug, headline: a.headline, geo: a.geo,
+      category: a.category, body: a.body,
+      imageBase64: a.image_base64, imageCaption: a.image_caption,
+      date: a.date_label,
+    });
+    res.setHeader('Cache-Control','no-cache,no-store,must-revalidate');
+    res.type('html').send(html);
+  } catch(e) { res.status(500).send('Error loading article'); }
 });
 
 app.get('/gold', (req, res) => {
@@ -2808,23 +2834,20 @@ app.get(`/${ADMIN_SLUG}/logout`, (req, res) => {
 });
 
 // ─────────────────────────────────────────
-//  BLOG EDITOR API
+//  BLOG EDITOR API  (Postgres-backed — survives redeploys)
 // ─────────────────────────────────────────
 
-const BLOG_DIR = path.join(__dirname, 'blog');
-
-// Ensure blog dir exists
-if (!fs.existsSync(BLOG_DIR)) fs.mkdirSync(BLOG_DIR, { recursive: true });
-
-// Geo tag colours matching blog CSS
 const GEO_STYLES = {
-  india: { label: '🇮🇳 India',    color: '#8B6914', bg: 'rgba(139,105,20,.10)' },
-  uae:   { label: '🇦🇪 UAE',      color: '#2E6B8A', bg: 'rgba(46,107,138,.10)' },
-  ny:    { label: '🗽 New York',  color: '#5A3B7A', bg: 'rgba(90,59,122,.10)'  },
-  intl:  { label: '🌐 Global',    color: '#3A6B4A', bg: 'rgba(58,107,74,.10)'  },
+  india: { label: '🇮🇳 India',   color: '#8B6914', bg: 'rgba(139,105,20,.10)' },
+  uae:   { label: '🇦🇪 UAE',     color: '#2E6B8A', bg: 'rgba(46,107,138,.10)' },
+  ny:    { label: '🗽 New York', color: '#5A3B7A', bg: 'rgba(90,59,122,.10)'  },
+  intl:  { label: '🌐 Global',   color: '#3A6B4A', bg: 'rgba(58,107,74,.10)'  },
 };
 
-// Generate article HTML from fields
+function escapeHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function buildArticleHTML({ slug, headline, geo, category, body, imageBase64, imageCaption, date }) {
   const geoStyle = GEO_STYLES[geo] || GEO_STYLES.india;
   const dateStr  = date || new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
@@ -2833,20 +2856,16 @@ function buildArticleHTML({ slug, headline, geo, category, body, imageBase64, im
         <img src="${imageBase64}" alt="${escapeHtml(headline)}" style="width:100%;display:block;max-height:400px;object-fit:cover">
         ${imageCaption ? `<figcaption style="font-size:11px;color:#8B7A5A;padding:8px 0;font-family:'Jost',sans-serif;font-style:italic">${escapeHtml(imageCaption)}</figcaption>` : ''}
        </figure>` : '';
-
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>${escapeHtml(headline)} — MyAurum Journal</title>
 <meta name="description" content="${escapeHtml(headline)}">
 <meta property="og:title" content="${escapeHtml(headline)} — MyAurum Journal">
 <meta property="og:image" content="https://myaurum.app/og-image.png">
 <link rel="canonical" href="https://myaurum.app/blog/${slug}">
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Article","headline":${JSON.stringify(headline)},"datePublished":"${new Date().toISOString().slice(0,10)}","publisher":{"@type":"Organization","name":"MyAurum","url":"https://myaurum.app"}}
-</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":${JSON.stringify(headline)},"datePublished":"${new Date().toISOString().slice(0,10)}","publisher":{"@type":"Organization","name":"MyAurum","url":"https://myaurum.app"}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
@@ -2889,7 +2908,7 @@ function buildArticleHTML({ slug, headline, geo, category, body, imageBase64, im
 <div class="wrap">
   <nav class="topnav">
     <a class="nav-brand" href="https://myaurum.app">MyAurum</a>
-    <a class="nav-back" href="/blog">← Journal</a>
+    <a class="nav-back" href="/blog">\u2190 Journal</a>
   </nav>
   <div class="article-meta">
     <span class="geo-tag">${geoStyle.label}</span>
@@ -2900,12 +2919,12 @@ function buildArticleHTML({ slug, headline, geo, category, body, imageBase64, im
   ${imgBlock}
   <div class="article-body">${body}</div>
   <div class="cta-block">
-    <p>Track the live value of your physical gold — free, private, no KYC required.</p>
-    <a class="cta-btn" href="https://myaurum.app">Track your gold free →</a>
+    <p>Track the live value of your physical gold \u2014 free, private, no KYC required.</p>
+    <a class="cta-btn" href="https://myaurum.app">Track your gold free \u2192</a>
     <a class="cta-btn-sec" href="https://myaurum.app/gold">Quick calculator</a>
   </div>
   <footer class="art-footer">
-    <a href="/blog">← All articles</a>
+    <a href="/blog">\u2190 All articles</a>
     <a href="https://myaurum.app">myaurum.app</a>
   </footer>
   <p class="disclaimer">MyAurum Journal articles are sourced from publicly available reporting. This article does not constitute financial or legal advice.</p>
@@ -2915,78 +2934,23 @@ function buildArticleHTML({ slug, headline, geo, category, body, imageBase64, im
 </html>`;
 }
 
-function escapeHtml(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// Read article index (metadata stored as JSON sidecar)
-function readArticleIndex() {
-  const p = path.join(BLOG_DIR, '_index.json');
-  try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return []; }
-}
-
-function writeArticleIndex(articles) {
-  fs.writeFileSync(path.join(BLOG_DIR, '_index.json'), JSON.stringify(articles, null, 2));
-}
-
-function rebuildBlogIndex(articles) {
-  const GEO_CSS = {
-    india:'rgba(139,105,20,.10)',uae:'rgba(46,107,138,.10)',ny:'rgba(90,59,122,.10)',intl:'rgba(58,107,74,.10)'
-  };
-  const GEO_COLOR = { india:'#8B6914',uae:'#2E6B8A',ny:'#5A3B7A',intl:'#3A6B4A' };
-  const GEO_LABEL = { india:'🇮🇳 India',uae:'🇦🇪 UAE',ny:'🗽 New York',intl:'🌐 Global' };
-
-  const cards = articles.map((a, i) => `
-    <a class="card" href="/blog/${a.slug}" data-geo="${a.geo}">
-      <div class="card-meta">
-        <span class="geo-tag ${a.geo}">${GEO_LABEL[a.geo]||a.geo}</span>
-        ${a.category ? `<span class="cat-tag">${a.category}</span>` : ''}
-        <span class="card-date">${a.date||''}</span>
-      </div>
-      <h2 class="card-title">${a.headline}</h2>
-      <p class="card-excerpt">${a.excerpt||''}</p>
-      <span class="card-read">Read article →</span>
-    </a>`).join('\n');
-
-  // Read existing index and replace article grid
-  const idxPath = path.join(BLOG_DIR, 'index.html');
-  if (!fs.existsSync(idxPath)) return;
-  let html = fs.readFileSync(idxPath, 'utf8');
-  // Replace content between article grid markers
-  html = html.replace(
-    /(<div class="articles" id="articleGrid">)[\s\S]*?(<div class="empty" id="emptyState">)/,
-    `$1\n${cards}\n\n    $2`
-  );
-  fs.writeFileSync(idxPath, html);
-}
-
-// POST — publish article
+// POST — publish article (stored in Postgres)
 app.post(`/api/${ADMIN_SLUG}/blog/publish`, requireAdmin, express.json({ limit: '15mb' }), async (req, res) => {
   try {
     const { headline, slug: rawSlug, geo, category, body, imageBase64, imageCaption, excerpt, date } = req.body;
     if (!headline || !body) return res.status(400).json({ error: 'Headline and body are required.' });
-
-    // Sanitise slug
-    const slug = (rawSlug || headline)
-      .toLowerCase().trim()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .slice(0, 80);
-
+    const slug = (rawSlug || headline).toLowerCase().trim()
+      .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 80);
     if (!slug) return res.status(400).json({ error: 'Could not generate a valid slug.' });
-
-    const html = buildArticleHTML({ slug, headline, geo: geo||'india', category, body, imageBase64, imageCaption, date });
-    const filePath = path.join(BLOG_DIR, slug + '.html');
-    fs.writeFileSync(filePath, html);
-
-    // Update index
-    const articles = readArticleIndex().filter(a => a.slug !== slug);
     const dateStr = date || new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
-    articles.unshift({ slug, headline, geo: geo||'india', category: category||'', excerpt: excerpt||'', date: dateStr });
-    writeArticleIndex(articles);
-    rebuildBlogIndex(articles);
-
+    await q(
+      `INSERT INTO blog_articles (slug, headline, geo, category, excerpt, body, image_base64, image_caption, date_label, published_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW())
+       ON CONFLICT (slug) DO UPDATE SET
+         headline=$2, geo=$3, category=$4, excerpt=$5, body=$6,
+         image_base64=$7, image_caption=$8, date_label=$9, published_at=NOW()`,
+      [slug, headline, geo||'india', category||'', excerpt||'', body, imageBase64||null, imageCaption||'', dateStr]
+    );
     console.log(`[blog] Published: ${slug}`);
     res.json({ ok: true, slug, url: `/blog/${slug}` });
   } catch(e) {
@@ -2996,19 +2960,18 @@ app.post(`/api/${ADMIN_SLUG}/blog/publish`, requireAdmin, express.json({ limit: 
 });
 
 // GET — list articles
-app.get(`/api/${ADMIN_SLUG}/blog/articles`, requireAdmin, (req, res) => {
-  res.json(readArticleIndex());
+app.get(`/api/${ADMIN_SLUG}/blog/articles`, requireAdmin, async (req, res) => {
+  try {
+    const rows = await q(`SELECT slug, headline, geo, category, excerpt, date_label as date, published_at FROM blog_articles ORDER BY published_at DESC`);
+    res.json(rows.rows);
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 // DELETE — remove article
-app.delete(`/api/${ADMIN_SLUG}/blog/:slug`, requireAdmin, (req, res) => {
+app.delete(`/api/${ADMIN_SLUG}/blog/:slug`, requireAdmin, async (req, res) => {
   try {
     const slug = req.params.slug.replace(/[^a-z0-9-]/g, '');
-    const filePath = path.join(BLOG_DIR, slug + '.html');
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-    const articles = readArticleIndex().filter(a => a.slug !== slug);
-    writeArticleIndex(articles);
-    rebuildBlogIndex(articles);
+    await q(`DELETE FROM blog_articles WHERE slug=$1`, [slug]);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
