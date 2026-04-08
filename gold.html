@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>What is your gold worth today? — MyAurum</title>
-<meta name="description" content="Calculate the live market value of your gold in seconds. No login. No KYC. Your number, privately.">
-<meta property="og:title" content="What is your gold worth today?">
-<meta property="og:description" content="Get your gold's live market value in seconds — free, private, no login.">
+<title>Know the fair price before you buy — MyAurum Gold Calculator</title>
+<meta name="description" content="Calculate the fair price of gold jewellery before you buy — or check the live value of what you own. No login. No KYC. Completely private.">
+<meta property="og:title" content="Know the fair price before you buy">
+<meta property="og:description" content="Enter weight, karat, and making charges. See exactly what you should pay — before you walk into the shop.">
 <meta property="og:image" content="https://myaurum.app/og-image.png">
 <meta property="og:url" content="https://myaurum.app/gold">
 <meta name="twitter:card" content="summary_large_image">
@@ -16,501 +16,166 @@
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <style>
   :root {
-    --gold: #B8860B;
-    --gold-light: #D4A017;
-    --gold-dim: #8B6914;
-    --gold-pale: rgba(184,134,11,.08);
-    --parchment: #F5F0E8;
-    --parchment-dark: #EDE5D4;
-    --ink: #2C2410;
-    --ink-mid: #5A4A2A;
-    --ink-dim: #8B7A5A;
-    --border: rgba(139,105,20,.18);
-    --radius: 16px;
-    --silver: #6B8299;
+    --gold:#B8860B; --gold-light:#D4A017; --gold-dim:#8B6914;
+    --gold-pale:rgba(184,134,11,.08);
+    --parchment:#F5F0E8; --parchment-dark:#EDE5D4;
+    --ink:#2C2410; --ink-mid:#5A4A2A; --ink-dim:#8B7A5A;
+    --border:rgba(139,105,20,.18); --radius:16px;
   }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{min-height:100vh;background:var(--parchment);font-family:'Jost',sans-serif;color:var(--ink);overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(184,134,11,.12) 0%,transparent 70%),radial-gradient(ellipse 40% 40% at 100% 100%,rgba(184,134,11,.07) 0%,transparent 70%);pointer-events:none;z-index:0}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  .page{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:32px 20px 60px}
 
-  html, body {
-    min-height: 100vh;
-    background: var(--parchment);
-    font-family: 'Jost', sans-serif;
-    color: var(--ink);
-    overflow-x: hidden;
-  }
+  .wordmark{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;letter-spacing:.28em;text-transform:uppercase;color:var(--gold-dim);text-align:center;margin-bottom:28px;text-decoration:none;display:block}
 
-  /* ── Background texture ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(184,134,11,.12) 0%, transparent 70%),
-      radial-gradient(ellipse 40% 40% at 100% 100%, rgba(184,134,11,.07) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
+  /* ── Mode tabs ── */
+  .mode-tabs{display:grid;grid-template-columns:1fr 1fr;background:white;border:1.5px solid var(--border);border-radius:12px;padding:4px;gap:4px;margin-bottom:20px}
+  .mode-tab{padding:12px 8px;border-radius:9px;border:none;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;background:transparent;color:var(--ink-dim);text-align:center;line-height:1.3}
+  .mode-tab .tab-title{display:block;font-size:12px;letter-spacing:.04em}
+  .mode-tab .tab-sub{display:block;font-size:10px;opacity:.65;margin-top:2px}
+  .mode-tab.active{background:var(--gold-dim);color:#FDF8F0}
+  .mode-tab.active .tab-sub{opacity:.75}
 
-  .page {
-    position: relative;
-    z-index: 1;
-    max-width: 560px;
-    margin: 0 auto;
-    padding: 48px 24px 80px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0;
-  }
+  /* ── Price strip ── */
+  .price-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px}
+  .price-chip{background:white;border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center}
+  .chip-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:4px}
+  .chip-val{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;color:var(--gold-dim)}
+  .chip-unit{font-size:9px;color:var(--ink-dim);opacity:.65;margin-top:2px;letter-spacing:.04em}
 
-  /* ── Logotype ── */
-  .wordmark {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 13px;
-    font-weight: 400;
-    letter-spacing: .32em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    margin-bottom: 52px;
-    opacity: .7;
-  }
+  /* ── Card ── */
+  .calc-card{background:white;border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px}
+  .calc-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--ink);margin-bottom:20px;letter-spacing:-.01em;line-height:1.2}
+  .calc-title em{font-style:italic;color:var(--gold-dim)}
 
-  /* ── Headline ── */
-  .headline {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(32px, 8vw, 52px);
-    font-weight: 300;
-    line-height: 1.1;
-    text-align: center;
-    color: var(--ink);
-    margin-bottom: 12px;
-    letter-spacing: -.02em;
-  }
-  .headline em {
-    font-style: italic;
-    color: var(--gold-dim);
-  }
+  /* ── Fields ── */
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:7px}
+  .field input[type=text],.field input[type=number],.field select{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:15px;font-family:'Jost',sans-serif;background:var(--parchment);color:var(--ink);outline:none;transition:border-color .15s}
+  .field input:focus,.field select:focus{border-color:var(--gold-dim);background:white}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
 
-  .sub {
-    font-size: 13px;
-    color: var(--ink-dim);
-    text-align: center;
-    letter-spacing: .06em;
-    margin-bottom: 44px;
-    line-height: 1.7;
-  }
+  .karat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .karat-btn{padding:9px 4px;border-radius:8px;border:1.5px solid var(--border);background:var(--parchment);font-family:'Jost',sans-serif;font-size:12px;font-weight:500;color:var(--ink-dim);cursor:pointer;transition:all .15s;text-align:center}
+  .karat-btn.active{background:var(--gold-dim);border-color:var(--gold-dim);color:#FDF8F0}
 
-  /* ── Live price strip ── */
-  .price-strip {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 36px;
-    width: 100%;
-  }
-  .price-chip {
-    flex: 1;
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    text-align: center;
-  }
-  .price-chip .chip-label {
-    font-size: 9px;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    color: var(--ink-dim);
-    margin-bottom: 4px;
-  }
-  .price-chip .chip-val {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 18px;
-    font-weight: 300;
-    color: var(--gold-dim);
-    font-variant-numeric: tabular-nums;
-  }
-  .price-chip .chip-unit {
-    font-size: 9px;
-    color: var(--ink-dim);
-    margin-top: 2px;
-    letter-spacing: .04em;
-  }
+  .unit-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .unit-btn{padding:9px 4px;border-radius:8px;border:1.5px solid var(--border);background:var(--parchment);font-family:'Jost',sans-serif;font-size:12px;color:var(--ink-dim);cursor:pointer;transition:all .15s;text-align:center}
+  .unit-btn.active{background:var(--gold-dim);border-color:var(--gold-dim);color:#FDF8F0}
 
-  /* ── Calculator form ── */
-  .calc-card {
-    width: 100%;
-    background: white;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px;
-    box-shadow: 0 4px 32px rgba(139,105,20,.08);
-    margin-bottom: 28px;
-  }
+  /* ── Making charge presets ── */
+  .making-presets{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px}
+  .making-btn{padding:9px 4px;border-radius:8px;border:1.5px solid var(--border);background:var(--parchment);font-family:'Jost',sans-serif;font-size:11px;color:var(--ink-dim);cursor:pointer;transition:all .15s;text-align:center;line-height:1.3}
+  .making-btn span{display:block;font-size:9px;opacity:.65;margin-top:1px}
+  .making-btn.active{background:var(--ink);border-color:var(--ink);color:#FDF8F0}
+  .making-btn.active span{opacity:.7}
+  .making-custom{display:none;width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:15px;font-family:'Jost',sans-serif;background:var(--parchment);color:var(--ink);outline:none;transition:border-color .15s}
+  .making-custom:focus{border-color:var(--gold-dim);background:white}
 
-  .calc-title {
-    font-size: 10px;
-    letter-spacing: .2em;
-    text-transform: uppercase;
-    color: var(--ink-dim);
-    margin-bottom: 22px;
-  }
-
-  .field-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 14px;
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .field label {
-    font-size: 10px;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    color: var(--ink-dim);
-    font-weight: 500;
-  }
-  .field input, .field select {
-    background: var(--parchment);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--ink);
-    font-family: 'Jost', sans-serif;
-    font-size: 15px;
-    padding: 11px 13px;
-    outline: none;
-    width: 100%;
-    transition: border-color .2s, box-shadow .2s;
-    -webkit-appearance: none;
-  }
-  .field input:focus, .field select:focus {
-    border-color: var(--gold-dim);
-    box-shadow: 0 0 0 3px rgba(139,105,20,.08);
-  }
-  .field-full { grid-column: span 2; }
-
-  /* ── Karat pills ── */
-  .karat-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 7px;
-  }
-  .karat-btn {
-    padding: 9px 4px;
-    background: var(--parchment);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-family: 'Jost', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--ink-dim);
-    cursor: pointer;
-    transition: all .18s;
-    text-align: center;
-  }
-  .karat-btn:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
-  .karat-btn.active {
-    background: var(--gold-dim);
-    border-color: var(--gold-dim);
-    color: white;
-  }
-
-  .unit-row {
-    display: flex;
-    gap: 7px;
-    margin-bottom: 20px;
-  }
-  .unit-btn {
-    flex: 1;
-    padding: 8px;
-    background: var(--parchment);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-family: 'Jost', sans-serif;
-    font-size: 11px;
-    color: var(--ink-dim);
-    cursor: pointer;
-    transition: all .18s;
-    text-align: center;
-  }
-  .unit-btn.active { background: var(--gold-dim); border-color: var(--gold-dim); color: white; }
+  /* ── Checkbox rows ── */
+  .check-row{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--parchment);border:1.5px solid var(--border);border-radius:9px;cursor:pointer;transition:border-color .15s;margin-bottom:10px;-webkit-user-select:none;user-select:none}
+  .check-row:hover{border-color:var(--gold-dim)}
+  .check-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--gold-dim);cursor:pointer;flex-shrink:0}
+  .check-label{flex:1}
+  .check-label-main{font-size:13px;color:var(--ink)}
+  .check-label-sub{font-size:10px;color:var(--ink-dim);margin-top:1px}
+  .check-pct{font-size:13px;color:var(--gold-dim);font-weight:500;flex-shrink:0}
+  .check-input{width:64px;padding:6px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:'Jost',sans-serif;background:var(--parchment);color:var(--ink);outline:none;text-align:right}
+  .check-input:focus{border-color:var(--gold-dim);background:white}
 
   /* ── Calculate button ── */
-  .btn-calc {
-    width: 100%;
-    padding: 16px;
-    background: linear-gradient(135deg, var(--gold-light), var(--gold-dim));
-    border: none;
-    border-radius: 10px;
-    color: #FDF8F0;
-    font-family: 'Jost', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: box-shadow .2s, transform .15s;
-    box-shadow: 0 4px 20px rgba(184,134,11,.3);
-    margin-top: 4px;
-  }
-  .btn-calc:hover { box-shadow: 0 6px 28px rgba(184,134,11,.42); }
-  .btn-calc:active { transform: scale(.98); }
+  .btn-calc{width:100%;padding:15px;background:var(--gold-dim);color:#FDF8F0;border:none;border-radius:10px;font-family:'Jost',sans-serif;font-size:12px;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;transition:box-shadow .2s;margin-top:8px;box-shadow:0 3px 14px rgba(139,105,20,.28)}
+  .btn-calc:hover{box-shadow:0 5px 22px rgba(139,105,20,.4)}
 
-  /* ── Result card ── */
-  .result-wrap {
-    width: 100%;
-    display: none;
-    animation: fadeUp .4s cubic-bezier(.22,1,.36,1);
-  }
-  .result-wrap.show { display: block; }
+  /* ── Buy result ── */
+  .buy-result{background:white;border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;display:none}
+  .buy-result.show{display:block;animation:fadeUp .3s ease}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  .buy-result-title{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:16px;line-height:1.5}
 
-  /* The shareable card itself */
-  #goldCard {
-    width: 100%;
-    background: linear-gradient(145deg, #1A1208 0%, #2C1E0A 50%, #1A1208 100%);
-    border-radius: 20px;
-    padding: 44px 36px 36px;
-    position: relative;
-    overflow: hidden;
-    margin-bottom: 20px;
-    box-shadow: 0 12px 48px rgba(0,0,0,.35);
-  }
+  .breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(139,105,20,.08)}
+  .breakdown-row:last-of-type{border-bottom:none}
+  .breakdown-label{font-size:14px;color:var(--ink-mid)}
+  .breakdown-label small{display:block;font-size:10px;color:var(--ink-dim);margin-top:2px;line-height:1.5}
+  .breakdown-val{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:var(--ink)}
+  .breakdown-val.gold-val{color:var(--gold-dim)}
 
-  /* Gold foil shimmer overlay */
-  #goldCard::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 70% 50% at 30% 20%, rgba(212,160,23,.15) 0%, transparent 60%),
-      radial-gradient(ellipse 50% 40% at 80% 80%, rgba(184,134,11,.10) 0%, transparent 60%);
-    pointer-events: none;
-  }
+  .total-row{display:flex;justify-content:space-between;align-items:center;padding:16px 0 8px;margin-top:8px;border-top:2px solid var(--border)}
+  .total-label{font-size:13px;font-weight:500;color:var(--ink);letter-spacing:.03em}
+  .total-val{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;color:var(--ink)}
 
-  /* Decorative rings */
-  #goldCard::after {
-    content: '';
-    position: absolute;
-    top: -60px;
-    right: -60px;
-    width: 240px;
-    height: 240px;
-    border-radius: 50%;
-    border: 1px solid rgba(184,134,11,.15);
-    pointer-events: none;
-  }
+  .compare-note{margin-top:14px;padding:12px 14px;background:rgba(26,122,74,.06);border:1px solid rgba(26,122,74,.2);border-radius:8px;font-size:12px;color:#1A6A3E;line-height:1.65}
 
-  .card-inner-ring {
-    position: absolute;
-    top: -30px;
-    right: -30px;
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    border: 1px solid rgba(184,134,11,.10);
-    pointer-events: none;
-  }
+  /* ── Own result (dark card) ── */
+  .result-wrap{display:none}
+  .result-wrap.show{display:block;animation:fadeUp .3s ease}
 
-  .card-brand {
-    font-size: 9px;
-    letter-spacing: .28em;
-    text-transform: uppercase;
-    color: rgba(184,134,11,.6);
-    font-family: 'Jost', sans-serif;
-    margin-bottom: 32px;
-    position: relative;
-  }
+  #goldCard{background:linear-gradient(135deg,#2C1810 0%,#1A0F08 100%);border-radius:var(--radius);padding:28px 24px;margin-bottom:16px;position:relative;overflow:hidden}
+  .card-inner-ring{position:absolute;inset:-20px;border:40px solid rgba(184,134,11,.06);border-radius:50%}
+  .card-brand{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:rgba(184,134,11,.5);margin-bottom:20px}
+  .card-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(245,240,232,.45);margin-bottom:10px}
+  .card-value{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;color:#F5E6C0;line-height:1;margin-bottom:8px}
+  .card-detail{font-size:12px;color:rgba(245,240,232,.55);letter-spacing:.04em;margin-bottom:20px}
+  .card-divider{height:1px;background:rgba(184,134,11,.2);margin-bottom:16px}
+  .card-footer{display:flex;justify-content:space-between;align-items:flex-end}
+  .card-benchmark{font-size:10px;color:rgba(184,134,11,.45);letter-spacing:.06em}
+  .card-url{text-align:right}
+  .card-url span{display:block;font-size:9px;color:rgba(245,240,232,.3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+  .card-url-text{font-size:11px;color:rgba(184,134,11,.55);letter-spacing:.06em}
 
-  .card-label {
-    font-size: 11px;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: rgba(245,240,232,.4);
-    font-family: 'Jost', sans-serif;
-    margin-bottom: 10px;
-    position: relative;
-  }
+  .share-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+  .btn-share{padding:13px 8px;border-radius:10px;border:1.5px solid var(--border);background:white;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px}
+  .btn-share:hover{border-color:var(--gold-dim);color:var(--gold-dim)}
+  .btn-share svg{width:18px;height:18px}
+  .btn-share.whatsapp:hover{border-color:#25D366;color:#25D366}
+  .btn-share.twitter:hover{border-color:#1DA1F2;color:#1DA1F2}
 
-  .card-value {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(42px, 10vw, 64px);
-    font-weight: 300;
-    color: #F5E6C0;
-    line-height: 1;
-    margin-bottom: 8px;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -.02em;
-    position: relative;
-  }
+  .cta-block{background:white;border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;text-align:center;margin-bottom:32px}
+  .cta-block p{font-size:13px;color:var(--ink-dim);line-height:1.8;margin-bottom:16px}
+  .cta-block strong{color:var(--ink)}
+  .btn-cta{display:inline-block;padding:13px 28px;background:var(--gold-dim);color:#FDF8F0;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;border-radius:8px;transition:box-shadow .2s;box-shadow:0 3px 14px rgba(139,105,20,.28)}
+  .btn-cta:hover{box-shadow:0 5px 22px rgba(139,105,20,.4)}
 
-  .card-detail {
-    font-size: 12px;
-    color: rgba(245,230,192,.45);
-    font-family: 'Jost', sans-serif;
-    letter-spacing: .06em;
-    position: relative;
-    margin-bottom: 36px;
-  }
+  .page-footer{font-size:11px;color:var(--ink-dim);text-align:center;opacity:.5;letter-spacing:.04em;line-height:1.8}
+  .page-footer a{color:inherit}
 
-  .card-divider {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(184,134,11,.3), transparent);
-    margin-bottom: 20px;
-    position: relative;
-  }
+  .loading-dot{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--gold-dim);animation:blink 1.2s infinite}
+  .loading-dot:nth-child(2){animation-delay:.2s}
+  .loading-dot:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
 
-  .card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    position: relative;
-  }
-
-  .card-benchmark {
-    font-size: 10px;
-    color: rgba(245,230,192,.35);
-    font-family: 'Jost', sans-serif;
-    letter-spacing: .06em;
-    line-height: 1.6;
-  }
-
-  .card-url {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 18px;
-    font-weight: 400;
-    color: rgba(212,160,23,.85);
-    letter-spacing: .04em;
-    text-align: right;
-    line-height: 1.2;
-  }
-  .card-url span {
-    display: block;
-    font-family: 'Jost', sans-serif;
-    font-size: 9px;
-    letter-spacing: .18em;
-    text-transform: uppercase;
-    color: rgba(184,134,11,.45);
-    margin-bottom: 3px;
-  }
-
-  /* ── Share buttons ── */
-  .share-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 28px;
-  }
-
-  .btn-share {
-    padding: 13px 8px;
-    border-radius: 10px;
-    border: 1.5px solid var(--border);
-    background: white;
-    font-family: 'Jost', sans-serif;
-    font-size: 11px;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: var(--ink-dim);
-    cursor: pointer;
-    transition: all .2s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-  }
-  .btn-share:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
-  .btn-share svg { width: 18px; height: 18px; }
-
-  .btn-share.whatsapp:hover { border-color: #25D366; color: #25D366; }
-  .btn-share.twitter:hover  { border-color: #1DA1F2; color: #1DA1F2; }
-
-  /* ── CTA ── */
-  .cta-block {
-    width: 100%;
-    text-align: center;
-    padding: 28px 24px;
-    background: white;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 48px;
-  }
-  .cta-block p {
-    font-size: 13px;
-    color: var(--ink-dim);
-    line-height: 1.8;
-    margin-bottom: 16px;
-  }
-  .cta-block strong { color: var(--ink); }
-  .btn-cta {
-    display: inline-block;
-    padding: 13px 28px;
-    background: var(--gold-dim);
-    color: #FDF8F0;
-    font-family: 'Jost', sans-serif;
-    font-size: 11px;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    text-decoration: none;
-    border-radius: 8px;
-    transition: box-shadow .2s;
-    box-shadow: 0 3px 14px rgba(139,105,20,.28);
-  }
-  .btn-cta:hover { box-shadow: 0 5px 22px rgba(139,105,20,.4); }
-
-  /* ── Footer ── */
-  .page-footer {
-    font-size: 11px;
-    color: var(--ink-dim);
-    text-align: center;
-    opacity: .5;
-    letter-spacing: .04em;
-    line-height: 1.8;
-  }
-
-  /* ── Loading state ── */
-  .loading-dot {
-    display: inline-block;
-    width: 4px; height: 4px;
-    border-radius: 50%;
-    background: var(--gold-dim);
-    animation: blink 1.2s infinite;
-  }
-  .loading-dot:nth-child(2) { animation-delay: .2s; }
-  .loading-dot:nth-child(3) { animation-delay: .4s; }
-  @keyframes blink { 0%,100%{opacity:.2}50%{opacity:1} }
-
-  @media(max-width:400px) {
-    .field-row { grid-template-columns: 1fr; }
-    .field-full { grid-column: span 1; }
-    .karat-grid { grid-template-columns: repeat(4,1fr); }
+  @media(max-width:400px){
+    .making-presets{grid-template-columns:1fr 1fr}
+    .price-strip{grid-template-columns:1fr 1fr}
+    .price-strip .price-chip:last-child{display:none}
   }
 </style>
 </head>
 <body>
 <div class="page">
 
-  <div class="wordmark">MyAurum</div>
+  <a class="wordmark" href="https://myaurum.app">MyAurum</a>
 
-  <h1 class="headline">What is your<br><em>gold worth</em> today?</h1>
-  <p class="sub">Enter weight &amp; purity. Get a live value.<br>No login. No KYC. Completely private.</p>
+  <!-- Mode tabs -->
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tabBuy" onclick="setMode('buy')">
+      <span class="tab-title">Before you buy</span>
+      <span class="tab-sub">Know the fair price</span>
+    </button>
+    <button class="mode-tab" id="tabOwn" onclick="setMode('own')">
+      <span class="tab-title">What you own</span>
+      <span class="tab-sub">Live value of your gold</span>
+    </button>
+  </div>
 
   <!-- Live price strip -->
   <div class="price-strip">
     <div class="price-chip">
       <div class="chip-label">🥇 Gold</div>
-      <div class="chip-val" id="stripGold">
-        <span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span>
-      </div>
+      <div class="chip-val" id="stripGold"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div>
       <div class="chip-unit">per 10g · Indian Bullion</div>
     </div>
     <div class="price-chip">
@@ -525,263 +190,419 @@
     </div>
   </div>
 
-  <!-- Calculator -->
-  <div class="calc-card">
-    <div class="calc-title">Calculate your gold value</div>
+  <!-- ══ BEFORE YOU BUY ══ -->
+  <div id="panelBuy">
+    <div class="calc-card">
+      <div class="calc-title">Know the fair price<br><em>before you make the purchase</em></div>
 
-    <div class="field-row">
       <div class="field">
-        <label>Weight</label>
-        <input type="number" id="weightInput" inputmode="decimal" placeholder="e.g. 50" min="0.1" max="100000" step="0.1">
+        <label>Item name <span style="opacity:.5;font-size:9px">(optional)</span></label>
+        <input type="text" id="buyItemName" placeholder="e.g. 22K Gold Necklace">
       </div>
-      <div class="field">
-        <label>Unit</label>
-        <div class="unit-row" style="margin-bottom:0">
-          <button class="unit-btn active" data-unit="g" onclick="setUnit('g',this)">Grams</button>
-          <button class="unit-btn" data-unit="tola" onclick="setUnit('tola',this)">Tola</button>
-          <button class="unit-btn" data-unit="oz" onclick="setUnit('oz',this)">Troy oz</button>
+
+      <div class="field-row">
+        <div class="field" style="margin-bottom:0">
+          <label>Weight</label>
+          <input type="number" id="buyWeight" inputmode="decimal" placeholder="e.g. 20" min="0.1" max="100000" step="0.1">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>Unit</label>
+          <div class="unit-row">
+            <button class="unit-btn active" onclick="setBuyUnit('g',this)">Grams</button>
+            <button class="unit-btn" onclick="setBuyUnit('tola',this)">Tola</button>
+            <button class="unit-btn" onclick="setBuyUnit('oz',this)">Troy oz</button>
+          </div>
         </div>
       </div>
+
+      <div class="field" style="margin-top:16px;margin-bottom:16px">
+        <label>Purity (Karat)</label>
+        <div class="karat-grid">
+          <button class="karat-btn" data-k="24" data-p="0.9999" onclick="setBuyKarat(this)">24K</button>
+          <button class="karat-btn active" data-k="22" data-p="0.916" onclick="setBuyKarat(this)">22K</button>
+          <button class="karat-btn" data-k="20" data-p="0.833" onclick="setBuyKarat(this)">20K</button>
+          <button class="karat-btn" data-k="18" data-p="0.750" onclick="setBuyKarat(this)">18K</button>
+          <button class="karat-btn" data-k="14" data-p="0.585" onclick="setBuyKarat(this)">14K</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Currency</label>
+        <select id="buyCurr" onchange="onCurrChange()">
+          <option value="INR">₹ Indian Rupee (INR)</option>
+          <option value="USD">$ US Dollar (USD)</option>
+          <option value="AED">د.إ UAE Dirham (AED)</option>
+          <option value="GBP">£ British Pound (GBP)</option>
+          <option value="EUR">€ Euro (EUR)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Making charges</label>
+        <div class="making-presets">
+          <button class="making-btn" data-pct="8" onclick="setMaking(8,this)">8%<span>Simple</span></button>
+          <button class="making-btn active" data-pct="12" onclick="setMaking(12,this)">12%<span>Standard</span></button>
+          <button class="making-btn" data-pct="20" onclick="setMaking(20,this)">20%<span>Bridal</span></button>
+          <button class="making-btn" data-pct="custom" onclick="setMaking('custom',this)">Custom</button>
+        </div>
+        <input type="number" id="makingCustom" class="making-custom" inputmode="decimal" placeholder="Enter %" min="0" max="100" step="0.5" oninput="calculateBuy()">
+      </div>
+
+      <!-- GST -->
+      <div class="check-row" onclick="toggleAndCalc('gstCheck')">
+        <input type="checkbox" id="gstCheck" checked onclick="event.stopPropagation();calculateBuy()">
+        <div class="check-label">
+          <div class="check-label-main">GST on gold jewellery</div>
+          <div class="check-label-sub">Mandatory in India on all purchases</div>
+        </div>
+        <div class="check-pct">3%</div>
+      </div>
+
+      <!-- Other charges -->
+      <div class="check-row" onclick="toggleAndCalc('otherCheck')">
+        <input type="checkbox" id="otherCheck" onclick="event.stopPropagation();calculateBuy()">
+        <div class="check-label">
+          <div class="check-label-main">Other charges</div>
+          <div class="check-label-sub">Wastage, hallmarking, or extras your jeweller adds</div>
+        </div>
+        <input type="number" id="otherPct" class="check-input" inputmode="decimal" placeholder="%" min="0" max="50" step="0.5"
+          onclick="event.stopPropagation()"
+          oninput="document.getElementById('otherCheck').checked=!!this.value;calculateBuy()">
+      </div>
+
+      <button class="btn-calc" onclick="calculateBuy()">Calculate fair price →</button>
     </div>
 
-    <div class="field" style="margin-bottom:14px">
-      <label>Purity (Karat)</label>
-      <div class="karat-grid">
-        <button class="karat-btn" data-k="24" data-p="0.9999" onclick="setKarat(this)">24K</button>
-        <button class="karat-btn active" data-k="22" data-p="0.916" onclick="setKarat(this)">22K</button>
-        <button class="karat-btn" data-k="20" data-p="0.833" onclick="setKarat(this)">20K</button>
-        <button class="karat-btn" data-k="18" data-p="0.750" onclick="setKarat(this)">18K</button>
-        <button class="karat-btn" data-k="14" data-p="0.585" onclick="setKarat(this)">14K</button>
+    <!-- Buy result -->
+    <div class="buy-result" id="buyResult">
+      <div class="buy-result-title" id="buyResultTitle">Estimated fair price breakdown</div>
+
+      <div class="breakdown-row">
+        <div class="breakdown-label">Gold value (metal only)<small id="buyMetalDetail"></small></div>
+        <div class="breakdown-val gold-val" id="buyMetalVal">—</div>
+      </div>
+      <div class="breakdown-row">
+        <div class="breakdown-label">Making charges<small id="buyMakingDetail"></small></div>
+        <div class="breakdown-val" id="buyMakingVal">—</div>
+      </div>
+      <div class="breakdown-row" id="buyGstRow">
+        <div class="breakdown-label">GST<small>3% on gold + making charges</small></div>
+        <div class="breakdown-val" id="buyGstVal">—</div>
+      </div>
+      <div class="breakdown-row" id="buyOtherRow" style="display:none">
+        <div class="breakdown-label">Other charges<small id="buyOtherDetail"></small></div>
+        <div class="breakdown-val" id="buyOtherVal">—</div>
+      </div>
+
+      <div class="total-row">
+        <div class="total-label">You should pay approximately</div>
+        <div class="total-val" id="buyTotal">—</div>
+      </div>
+
+      <div class="compare-note">
+        Compare this estimate with your jeweller's invoice before paying. The gold value is based on today's Indian Bullion rate — your jeweller may use a slightly different benchmark.
       </div>
     </div>
 
-    <div class="field" style="margin-bottom:20px">
-      <label>Display currency</label>
-      <select id="currSelect">
-        <option value="INR">₹ Indian Rupee (INR)</option>
-        <option value="USD">$ US Dollar (USD)</option>
-        <option value="AED">د.إ UAE Dirham (AED)</option>
-        <option value="GBP">£ British Pound (GBP)</option>
-        <option value="EUR">€ Euro (EUR)</option>
-      </select>
-    </div>
-
-    <button class="btn-calc" onclick="calculate()">Calculate live value →</button>
-  </div>
-
-  <!-- Result -->
-  <div class="result-wrap" id="resultWrap">
-
-    <!-- The card that gets screenshotted -->
-    <div id="goldCard">
-      <div class="card-inner-ring"></div>
-      <div class="card-brand">MyAurum · Live Gold Value</div>
-      <div class="card-label" id="cardLabel">My gold is worth approximately</div>
-      <div class="card-value" id="cardValue">—</div>
-      <div class="card-detail" id="cardDetail"></div>
-      <div class="card-divider"></div>
-      <div class="card-footer">
-        <div class="card-benchmark" id="cardBenchmark"></div>
-        <div class="card-url"><span>Track your full collection</span>myaurum.app/gold</div>
-      </div>
-    </div>
-
-    <!-- Share buttons -->
-    <div class="share-row">
-      <button class="btn-share whatsapp" onclick="shareWhatsApp()">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        WhatsApp
-      </button>
-      <button class="btn-share twitter" onclick="shareTwitter()">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.26 5.632zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-        X / Twitter
-      </button>
-      <button class="btn-share" onclick="downloadCard()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Save image
-      </button>
-    </div>
-
-    <!-- CTA -->
     <div class="cta-block">
-      <p>This is a <strong>live estimate</strong> based on today's Indian Bullion estimate.<br>
-      Track the exact value of every piece in your collection — for free.</p>
+      <p>Once you've bought, <strong>record it in MyAurum</strong> — weight, purity, price paid. Your family will always know exactly what it's worth.</p>
       <a class="btn-cta" href="https://myaurum.app">Track your full collection →</a>
     </div>
+  </div>
 
+  <!-- ══ WHAT YOU OWN ══ -->
+  <div id="panelOwn" style="display:none">
+    <div class="calc-card">
+      <div class="calc-title">What is your<br><em>gold worth today?</em></div>
+
+      <div class="field-row">
+        <div class="field" style="margin-bottom:0">
+          <label>Weight</label>
+          <input type="number" id="ownWeight" inputmode="decimal" placeholder="e.g. 50" min="0.1" step="0.1">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>Unit</label>
+          <div class="unit-row">
+            <button class="unit-btn active" onclick="setOwnUnit('g',this)">Grams</button>
+            <button class="unit-btn" onclick="setOwnUnit('tola',this)">Tola</button>
+            <button class="unit-btn" onclick="setOwnUnit('oz',this)">Troy oz</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:16px;margin-bottom:16px">
+        <label>Purity (Karat)</label>
+        <div class="karat-grid">
+          <button class="karat-btn" data-k="24" data-p="0.9999" onclick="setOwnKarat(this)">24K</button>
+          <button class="karat-btn active" data-k="22" data-p="0.916" onclick="setOwnKarat(this)">22K</button>
+          <button class="karat-btn" data-k="20" data-p="0.833" onclick="setOwnKarat(this)">20K</button>
+          <button class="karat-btn" data-k="18" data-p="0.750" onclick="setOwnKarat(this)">18K</button>
+          <button class="karat-btn" data-k="14" data-p="0.585" onclick="setOwnKarat(this)">14K</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Display currency</label>
+        <select id="ownCurr">
+          <option value="INR">₹ Indian Rupee (INR)</option>
+          <option value="USD">$ US Dollar (USD)</option>
+          <option value="AED">د.إ UAE Dirham (AED)</option>
+          <option value="GBP">£ British Pound (GBP)</option>
+          <option value="EUR">€ Euro (EUR)</option>
+        </select>
+      </div>
+
+      <button class="btn-calc" onclick="calculateOwn()">Calculate live value →</button>
+    </div>
+
+    <div class="result-wrap" id="resultWrap">
+      <div id="goldCard">
+        <div class="card-inner-ring"></div>
+        <div class="card-brand">MyAurum · Live Gold Value</div>
+        <div class="card-label">My gold is worth approximately</div>
+        <div class="card-value" id="cardValue">—</div>
+        <div class="card-detail" id="cardDetail"></div>
+        <div class="card-divider"></div>
+        <div class="card-footer">
+          <div class="card-benchmark" id="cardBenchmark"></div>
+          <div class="card-url"><span>Track your full collection</span><div class="card-url-text">myaurum.app/gold</div></div>
+        </div>
+      </div>
+
+      <div class="share-row">
+        <button class="btn-share whatsapp" onclick="shareWhatsApp()">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          WhatsApp
+        </button>
+        <button class="btn-share twitter" onclick="shareTwitter()">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.26 5.632zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          X / Twitter
+        </button>
+        <button class="btn-share" onclick="downloadCard()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Save image
+        </button>
+      </div>
+
+      <div class="cta-block">
+        <p>This is a <strong>live estimate</strong> based on today's Indian Bullion estimate.<br>Track the exact value of every piece in your collection — for free.</p>
+        <a class="btn-cta" href="https://myaurum.app">Track your full collection →</a>
+      </div>
+    </div>
   </div>
 
   <div class="page-footer">
     Prices are Indian Bullion estimates based on live international spot rates.<br>
-    Values are indicative estimates, not financial advice.<br>
-    <a href="https://myaurum.app" style="color:inherit">myaurum.app</a> · <a href="https://myaurum.app/privacy" style="color:inherit">Privacy</a>
+    Values are indicative estimates only, not financial advice.<br>
+    <a href="https://myaurum.app">myaurum.app</a> · <a href="https://myaurum.app/privacy">Privacy</a>
   </div>
 
 </div>
-
 <script>
-  // ── State ──
   let prices = null;
-  let selectedUnit = 'g';
-  let selectedPurity = 0.916;
-  let selectedKarat = '22K';
+  let buyUnit='g', buyPurity=0.916, buyKarat='22K', makingPct=12;
+  let ownUnit='g', ownPurity=0.916, ownKarat='22K';
+  let activeMode='buy';
 
-  // ── Unit conversion to grams ──
-  function toGrams(w, unit) {
-    if (unit === 'oz')   return w * 31.1035;
-    if (unit === 'tola') return w * 11.6638;
+  const FMT = {
+    INR: v=>'₹'+Math.round(v).toLocaleString('en-IN'),
+    USD: v=>'$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}),
+    AED: v=>'AED '+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}),
+    GBP: v=>'£'+v.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}),
+    EUR: v=>'€'+v.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}),
+  };
+
+  function toGrams(w,unit){
+    if(unit==='oz')   return w*31.1035;
+    if(unit==='tola') return w*11.6638;
     return w;
   }
 
-  // ── Fetch live prices from MyAurum API ──
-  async function fetchPrices() {
-    try {
-      const r = await fetch('https://myaurum.app/api/prices');
-      const d = await r.json();
-      prices = d;
+  function setMode(mode){
+    activeMode=mode;
+    document.getElementById('tabBuy').classList.toggle('active',mode==='buy');
+    document.getElementById('tabOwn').classList.toggle('active',mode==='own');
+    document.getElementById('panelBuy').style.display=mode==='buy'?'block':'none';
+    document.getElementById('panelOwn').style.display=mode==='own'?'block':'none';
+  }
 
-      // IBJA preferred for INR display, fallback to spot × rate × factor
-      const IBJA_FACTOR = (10 / 31.1035) * 1.054;
-      const goldPer10g = d.ibja?.goldInr
-        ? Math.round(d.ibja.goldInr)
-        : Math.round(d.gold * d.rates.INR * IBJA_FACTOR);
-      const silverPerKg = d.ibja?.silverInr
-        ? Math.round(d.ibja.silverInr * 100) // IBJA is per 10g, convert to per kg
-        : Math.round(d.silver * d.rates.INR * (1000 / 31.1035) * 1.054);
+  function onCurrChange(){
+    const curr=document.getElementById('buyCurr').value;
+    document.getElementById('gstCheck').checked=(curr==='INR');
+    calculateBuy();
+  }
 
-      document.getElementById('stripGold').textContent = '₹' + goldPer10g.toLocaleString('en-IN');
-      document.getElementById('stripSilver').textContent = '₹' + silverPerKg.toLocaleString('en-IN');
+  async function fetchPrices(){
+    try{
+      const r=await fetch('https://myaurum.app/api/prices');
+      prices=await r.json();
+      const F=(10/31.1035)*1.054;
+      const g=prices.ibja?.goldInr?Math.round(prices.ibja.goldInr):Math.round(prices.gold*prices.rates.INR*F);
+      const s=prices.ibja?.silverInr?Math.round(prices.ibja.silverInr*100):Math.round(prices.silver*prices.rates.INR*(1000/31.1035)*1.054);
+      document.getElementById('stripGold').textContent='₹'+g.toLocaleString('en-IN');
+      document.getElementById('stripSilver').textContent='₹'+s.toLocaleString('en-IN');
+      const t=prices.fetchedAt?new Date(prices.fetchedAt):new Date();
+      document.getElementById('stripTime').textContent=t.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    }catch(e){document.getElementById('stripGold').textContent='—';}
+  }
 
-      const t = d.fetchedAt ? new Date(d.fetchedAt) : new Date();
-      document.getElementById('stripTime').textContent =
-        t.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-    } catch(e) {
-      document.getElementById('stripGold').textContent = '—';
+  function metalValue(grams,purity,currency){
+    const oz=(grams*purity)/31.1035;
+    if(currency==='INR') return oz*prices.gold*prices.rates.INR*1.054;
+    return oz*prices.gold*(prices.rates[currency]||1);
+  }
+
+  // ── Before You Buy ──
+  function setBuyUnit(unit,btn){
+    buyUnit=unit;
+    document.querySelectorAll('#panelBuy .unit-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    calculateBuy();
+  }
+  function setBuyKarat(btn){
+    document.querySelectorAll('#panelBuy .karat-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    buyPurity=parseFloat(btn.dataset.p);
+    buyKarat=btn.dataset.k+'K';
+    calculateBuy();
+  }
+  function setMaking(pct,btn){
+    document.querySelectorAll('.making-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const custom=document.getElementById('makingCustom');
+    if(pct==='custom'){
+      custom.style.display='block';
+      custom.focus();
+      makingPct=parseFloat(custom.value)||0;
+    } else {
+      custom.style.display='none';
+      makingPct=pct;
+      calculateBuy();
     }
   }
-
-  function setUnit(unit, btn) {
-    selectedUnit = unit;
-    document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+  function toggleAndCalc(id){
+    const el=document.getElementById(id);
+    el.checked=!el.checked;
+    calculateBuy();
   }
 
-  function setKarat(btn) {
-    document.querySelectorAll('.karat-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    selectedPurity = parseFloat(btn.dataset.p);
-    selectedKarat  = btn.dataset.k + 'K';
+  function calculateBuy(){
+    if(!prices) return;
+    const rawW=parseFloat(document.getElementById('buyWeight').value);
+    if(!rawW||rawW<=0){document.getElementById('buyResult').classList.remove('show');return;}
+    const currency=document.getElementById('buyCurr').value;
+    const grams=toGrams(rawW,buyUnit);
+    const metal=metalValue(grams,buyPurity,currency);
+
+    let mc=makingPct;
+    const customEl=document.getElementById('makingCustom');
+    if(customEl.style.display!=='none') mc=parseFloat(customEl.value)||0;
+    const making=metal*(mc/100);
+
+    const gstOn=document.getElementById('gstCheck').checked;
+    const gst=gstOn?(metal+making)*0.03:0;
+
+    const otherOn=document.getElementById('otherCheck').checked;
+    const otherPctVal=parseFloat(document.getElementById('otherPct').value)||0;
+    const other=(otherOn&&otherPctVal>0)?metal*(otherPctVal/100):0;
+
+    const total=metal+making+gst+other;
+
+    const unitLabel=buyUnit==='g'?'g':buyUnit==='tola'?' tola':' troy oz';
+    const wStr=rawW%1===0?rawW:rawW.toFixed(2);
+    const itemName=document.getElementById('buyItemName').value.trim();
+    const title=itemName
+      ?`Fair price estimate · ${itemName}`
+      :`Fair price estimate · ${wStr}${unitLabel} ${buyKarat} gold`;
+
+    document.getElementById('buyResultTitle').textContent=title;
+    document.getElementById('buyMetalVal').textContent=FMT[currency](metal);
+    document.getElementById('buyMetalDetail').textContent=`${wStr}${unitLabel} · ${buyKarat} · ${(grams*buyPurity).toFixed(2)}g pure gold · live Indian Bullion rate`;
+    document.getElementById('buyMakingVal').textContent=FMT[currency](making);
+    document.getElementById('buyMakingDetail').textContent=`${mc}% of gold value`;
+    document.getElementById('buyGstVal').textContent=gstOn?FMT[currency](gst):'—';
+    document.getElementById('buyGstRow').style.opacity=gstOn?'1':'0.35';
+
+    if(otherOn&&otherPctVal>0){
+      document.getElementById('buyOtherRow').style.display='flex';
+      document.getElementById('buyOtherVal').textContent=FMT[currency](other);
+      document.getElementById('buyOtherDetail').textContent=`${otherPctVal}% on gold value`;
+    } else {
+      document.getElementById('buyOtherRow').style.display='none';
+    }
+
+    document.getElementById('buyTotal').textContent=FMT[currency](total);
+    const result=document.getElementById('buyResult');
+    result.classList.add('show');
+    setTimeout(()=>result.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
   }
 
-  // ── Currency symbols ──
-  const SYM = { INR: '₹', USD: '$', AED: 'د.إ', GBP: '£', EUR: '€' };
-  const FMT = {
-    INR: v => '₹' + Math.round(v).toLocaleString('en-IN'),
-    USD: v => '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-    AED: v => 'AED ' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-    GBP: v => '£' + v.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-    EUR: v => '€' + v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-  };
-
-  function calculate() {
-    if (!prices) { alert('Prices still loading — please wait a moment.'); return; }
-
-    const rawWeight = parseFloat(document.getElementById('weightInput').value);
-    if (!rawWeight || rawWeight <= 0) {
-      document.getElementById('weightInput').focus();
-      document.getElementById('weightInput').style.borderColor = '#c45a5a';
-      setTimeout(() => document.getElementById('weightInput').style.borderColor = '', 1200);
+  // ── What You Own ──
+  function setOwnUnit(unit,btn){
+    ownUnit=unit;
+    document.querySelectorAll('#panelOwn .unit-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  function setOwnKarat(btn){
+    document.querySelectorAll('#panelOwn .karat-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ownPurity=parseFloat(btn.dataset.p);
+    ownKarat=btn.dataset.k+'K';
+  }
+  function calculateOwn(){
+    if(!prices){alert('Prices still loading — please wait a moment.');return;}
+    const rawW=parseFloat(document.getElementById('ownWeight').value);
+    if(!rawW||rawW<=0){
+      document.getElementById('ownWeight').style.borderColor='#c45a5a';
+      setTimeout(()=>document.getElementById('ownWeight').style.borderColor='',1200);
       return;
     }
-
-    const currency = document.getElementById('currSelect').value;
-    const grams    = toGrams(rawWeight, selectedUnit);
-    const ozPure   = (grams * selectedPurity) / 31.1035;
-
-    // Value in USD (spot × pure oz)
-    const valueUSD = ozPure * prices.gold;
-
-    // Convert to display currency
-    let displayValue;
-    if (currency === 'INR') {
-      // Use IBJA formula when showing INR: oz × spot_usd × usd_inr × ibja_factor
-      const IBJA_FACTOR = 1.054;
-      displayValue = ozPure * prices.gold * prices.rates.INR * IBJA_FACTOR;
-    } else {
-      displayValue = valueUSD * (prices.rates[currency] || 1);
-    }
-
-    // Format the big number
-    const formatted = FMT[currency](displayValue);
-
-    // Weight description
-    const unitLabel = selectedUnit === 'g' ? 'g' : selectedUnit === 'tola' ? ' tola' : ' troy oz';
-    const weightStr = rawWeight % 1 === 0 ? rawWeight : rawWeight.toFixed(2);
-    const detail = `${weightStr}${unitLabel} of ${selectedKarat} gold · ${(grams * selectedPurity).toFixed(2)}g pure`;
-
-    // Benchmark line
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-    const dateStr = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-    const benchStr = currency === 'INR'
-      ? `Indian Bullion estimate · ${dateStr}, ${timeStr}`
-      : `COMEX spot × live FX · ${dateStr}, ${timeStr}`;
-
-    // Populate card
-    document.getElementById('cardValue').textContent = formatted;
-    document.getElementById('cardDetail').textContent = detail;
-    document.getElementById('cardBenchmark').textContent = benchStr;
-
-    // Show result
-    const wrap = document.getElementById('resultWrap');
+    const currency=document.getElementById('ownCurr').value;
+    const grams=toGrams(rawW,ownUnit);
+    const value=metalValue(grams,ownPurity,currency);
+    const unitLabel=ownUnit==='g'?'g':ownUnit==='tola'?' tola':' troy oz';
+    const wStr=rawW%1===0?rawW:rawW.toFixed(2);
+    const now=new Date();
+    document.getElementById('cardValue').textContent=FMT[currency](value);
+    document.getElementById('cardDetail').textContent=`${wStr}${unitLabel} of ${ownKarat} gold · ${(grams*ownPurity).toFixed(2)}g pure`;
+    document.getElementById('cardBenchmark').textContent=currency==='INR'
+      ?`Indian Bullion estimate · ${now.toLocaleDateString('en-IN',{day:'numeric',month:'short'})} ${now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}`
+      :`COMEX spot × live FX · ${now.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}`;
+    const wrap=document.getElementById('resultWrap');
     wrap.classList.add('show');
-    setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+    setTimeout(()=>wrap.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
   }
 
-  // ── Enter key triggers calculate ──
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter') calculate();
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){activeMode==='buy'?calculateBuy():calculateOwn();}
   });
 
-  // ── Share functions ──
-  function getShareText() {
-    const val = document.getElementById('cardValue').textContent;
-    const detail = document.getElementById('cardDetail').textContent;
+  function getShareText(){
+    const val=document.getElementById('cardValue').textContent;
+    const detail=document.getElementById('cardDetail').textContent;
     return `My ${detail} is worth approximately ${val} today.\n\nCalculate yours (free, no login): https://myaurum.app/gold`;
   }
-
-  function shareWhatsApp() {
-    const text = encodeURIComponent(getShareText());
-    window.open(`https://wa.me/?text=${text}`, '_blank');
+  function shareWhatsApp(){window.open(`https://wa.me/?text=${encodeURIComponent(getShareText())}','_blank`);}
+  function shareTwitter(){
+    const val=document.getElementById('cardValue').textContent;
+    const detail=document.getElementById('cardDetail').textContent;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`My ${detail} is worth approximately ${val} today 📊\n\nCalculate yours free: myaurum.app/gold`)},'_blank`);
   }
-
-  function shareTwitter() {
-    const val   = document.getElementById('cardValue').textContent;
-    const detail = document.getElementById('cardDetail').textContent;
-    const tweet = encodeURIComponent(`My ${detail} is worth approximately ${val} today 📊\n\nCalculate yours free (no login, no KYC): myaurum.app/gold`);
-    window.open(`https://twitter.com/intent/tweet?text=${tweet}`, '_blank');
-  }
-
-  async function downloadCard() {
-    const card = document.getElementById('goldCard');
-    try {
-      const canvas = await html2canvas(card, {
-        scale: 3,
-        useCORS: true,
-        backgroundColor: null,
-        logging: false,
-      });
-      const link = document.createElement('a');
-      link.download = 'my-gold-value-myaurum.png';
-      link.href = canvas.toDataURL('image/png');
+  async function downloadCard(){
+    try{
+      const canvas=await html2canvas(document.getElementById('goldCard'),{scale:3,useCORS:true,backgroundColor:null,logging:false});
+      const link=document.createElement('a');
+      link.download='my-gold-value-myaurum.png';
+      link.href=canvas.toDataURL('image/png');
       link.click();
-    } catch(e) {
-      // Fallback: just show share text
-      alert('Image download failed. Copy this text to share:\n\n' + getShareText());
-    }
+    }catch(e){alert('Image download failed.\n\n'+getShareText());}
   }
 
-  // ── Init ──
+  // Auto-calculate as user types weight
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('buyWeight').addEventListener('input',calculateBuy);
+  });
+
   fetchPrices();
 </script>
 </body>
