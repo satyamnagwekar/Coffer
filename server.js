@@ -2959,6 +2959,8 @@ app.get(`/${ADMIN_SLUG}/blog`, requireAdmin, (req, res) => {
   if (fs.existsSync(p)) {
     let html = fs.readFileSync(p, 'utf8');
     html = html.replace('</head>', `<script>window._adminToken="${adminToken()}";window._adminSlug="${ADMIN_SLUG}";</script></head>`);
+    const nav = ``.replace(/SLUG/g, ADMIN_SLUG);
+    html = html.replace('<body>', '<body>' + nav);
     res.setHeader('Cache-Control', 'no-store');
     res.type('html').send(html);
   } else res.status(404).send('Not found');
@@ -2979,6 +2981,8 @@ app.get(`/${ADMIN_SLUG}`, requireAdmin, (req, res) => {
   if (fs.existsSync(adminPath)) {
     let html = fs.readFileSync(adminPath, 'utf8');
     html = html.replace('</head>', `<script>window._adminToken="${adminToken()}";window._adminSlug="${ADMIN_SLUG}";</script></head>`);
+    const adminNav = `<div style="background:#1A1508;padding:12px 24px;display:flex;align-items:center;gap:6px;font-family:monospace"><span style="font-size:11px;letter-spacing:.2em;color:rgba(212,160,23,.6);text-transform:uppercase;margin-right:16px">MyAurum</span><a href="/${ADMIN_SLUG}" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border-radius:6px;text-decoration:none;background:rgba(184,134,11,.2);color:rgba(212,160,23,.9)">Dashboard</a><a href="/${ADMIN_SLUG}/blog" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border-radius:6px;text-decoration:none;color:rgba(245,240,232,.5)">Blog</a><a href="/${ADMIN_SLUG}/impressions" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border-radius:6px;text-decoration:none;color:rgba(245,240,232,.5)">Analytics</a><a href="/${ADMIN_SLUG}/logout" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border-radius:6px;text-decoration:none;color:rgba(245,240,232,.3);margin-left:auto">Sign Out</a></div>`;
+    html = html.replace('<body>', '<body>' + adminNav);
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '-1');
