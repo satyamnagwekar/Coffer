@@ -2024,8 +2024,77 @@ app.get('/px', async (req, res) => {
 
 app.get('/blog', (req, res) => {
   const p = path.join(__dirname, 'blog', 'index.html');
-  if (fs.existsSync(p)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(p); }
-  else res.status(404).send('Not found');
+  if (fs.existsSync(p)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(p); return; }
+  // Generate index from _index.json when index.html not deployed
+  const idxFile = path.join(__dirname, 'blog', '_index.json');
+  const articles = fs.existsSync(idxFile) ? JSON.parse(fs.readFileSync(idxFile,'utf8')) : [];
+  const GEO_LABEL = { india:'🇮🇳 India', uae:'🇦🇪 UAE', ny:'🗽 New York', intl:'🌐 Global' };
+  const GEO_COLOR = { india:'#8B6914', uae:'#2E6B8A', ny:'#5A3B7A', intl:'#3A6B4A' };
+  const GEO_BG    = { india:'rgba(139,105,20,.10)', uae:'rgba(46,107,138,.10)', ny:'rgba(90,59,122,.10)', intl:'rgba(58,107,74,.10)' };
+  const cards = articles.map(a => `
+    <a class="card" href="/blog/${a.slug}" data-geo="${a.geo}">
+      <div class="card-meta">
+        <span class="geo-tag" style="background:${GEO_BG[a.geo]||GEO_BG.india};color:${GEO_COLOR[a.geo]||GEO_COLOR.india}">${GEO_LABEL[a.geo]||a.geo}</span>
+        ${a.category ? `<span class="cat-tag">${a.category}</span>` : ''}
+        <span class="card-date">${a.date||''}</span>
+      </div>
+      <h2 class="card-title">${a.headline}</h2>
+      <p class="card-excerpt">${a.excerpt||''}</p>
+      <span class="card-read">Read article \u2192</span>
+    </a>`).join('');
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MyAurum Journal \u2014 Gold Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--gold-dim:#8B6914;--parchment:#F5F0E8;--ink:#2C2410;--ink-dim:#8B7A5A;--border:rgba(139,105,20,.18)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--parchment);font-family:'Jost',sans-serif;color:var(--ink)}
+  .wrap{max-width:900px;margin:0 auto;padding:0 24px 80px}
+  .topnav{display:flex;align-items:center;justify-content:space-between;padding:20px 0;margin-bottom:40px;border-bottom:1px solid var(--border)}
+  .nav-brand{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold-dim);text-decoration:none}
+  .nav-home{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim);text-decoration:none;padding:8px 16px;border:1px solid var(--border);border-radius:20px}
+  .nav-home:hover{border-color:var(--gold-dim);color:var(--gold-dim)}
+  .header{margin-bottom:36px}
+  .header-title{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,6vw,48px);font-weight:300;line-height:1.1;letter-spacing:-.02em;margin-bottom:10px}
+  .header-sub{font-size:14px;color:var(--ink-dim);line-height:1.7;max-width:560px}
+  .articles{display:grid;gap:20px}
+  @media(min-width:640px){.articles{grid-template-columns:1fr 1fr}.card:first-child{grid-column:span 2}}
+  .card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:26px;text-decoration:none;display:block;color:inherit;transition:box-shadow .2s,transform .18s}
+  .card:hover{box-shadow:0 8px 28px rgba(139,105,20,.12);transform:translateY(-2px)}
+  .card-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .geo-tag{font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;border-radius:10px;font-weight:500}
+  .cat-tag{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);opacity:.7}
+  .card-date{font-size:10px;color:var(--ink-dim);opacity:.6;margin-left:auto}
+  .card-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;line-height:1.25;margin-bottom:10px;letter-spacing:-.01em}
+  .card:first-child .card-title{font-size:28px}
+  .card-excerpt{font-size:13px;color:var(--ink-dim);line-height:1.75;margin-bottom:14px}
+  .card-read{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dim);font-weight:500}
+  .empty{text-align:center;padding:60px 0;color:var(--ink-dim);font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="topnav">
+    <a class="nav-brand" href="https://myaurum.app">MyAurum</a>
+    <a class="nav-home" href="https://myaurum.app">Track your gold \u2192</a>
+  </nav>
+  <div class="header">
+    <div style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:10px;opacity:.7">MyAurum Journal</div>
+    <h1 class="header-title">Gold intelligence,<br>sourced and verified</h1>
+    <p class="header-sub">Current reporting on gold buying, retail practices, scams, and market conditions across India, UAE, and New York.</p>
+  </div>
+  <div class="articles">
+    ${cards || '<div class="empty">No articles published yet.</div>'}
+  </div>
+</div>
+</body>
+</html>`;
+  res.setHeader('Cache-Control','no-cache,no-store,must-revalidate');
+  res.type('html').send(html);
 });
 
 app.get('/blog/:slug', (req, res) => {
