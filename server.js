@@ -2672,6 +2672,7 @@ function getAdminCookie(req) {
 
 function requireAdmin(req, res, next) {
   const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '';
+  console.log('[admin]', req.method, req.path, 'ip:', ip, 'adminIp:', ADMIN_IP, 'match:', ip===ADMIN_IP);
   if (ip !== ADMIN_IP) return res.status(404).send('Not found');
   const cookie = getAdminCookie(req);
   if (cookie && cookie === adminToken()) return next();
