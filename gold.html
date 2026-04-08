@@ -315,6 +315,17 @@
     <div class="calc-card">
       <div class="calc-title">What is your<br><em>gold worth today?</em></div>
 
+      <div class="field">
+        <label>Currency</label>
+        <select id="ownCurr" onchange="onOwnCurrChange()">
+          <option value="INR">₹ Indian Rupee (INR)</option>
+          <option value="USD">$ US Dollar (USD)</option>
+          <option value="AED">د.إ UAE Dirham (AED)</option>
+          <option value="GBP">£ British Pound (GBP)</option>
+          <option value="EUR">€ Euro (EUR)</option>
+        </select>
+      </div>
+
       <div class="field-row">
         <div class="field" style="margin-bottom:0">
           <label>Weight</label>
@@ -339,17 +350,6 @@
           <button class="karat-btn" data-k="18" data-p="0.750" onclick="setOwnKarat(this)">18K</button>
           <button class="karat-btn" data-k="14" data-p="0.585" onclick="setOwnKarat(this)">14K</button>
         </div>
-      </div>
-
-      <div class="field">
-        <label>Display currency</label>
-        <select id="ownCurr">
-          <option value="INR">₹ Indian Rupee (INR)</option>
-          <option value="USD">$ US Dollar (USD)</option>
-          <option value="AED">د.إ UAE Dirham (AED)</option>
-          <option value="GBP">£ British Pound (GBP)</option>
-          <option value="EUR">€ Euro (EUR)</option>
-        </select>
       </div>
 
       <button class="btn-calc" onclick="calculateOwn()">Calculate live value →</button>
@@ -565,6 +565,11 @@
   }
 
   // ── What You Own ──
+  function onOwnCurrChange(){
+    const curr=document.getElementById('ownCurr').value;
+    updateStripLabels(curr);
+  }
+
   function setOwnUnit(unit,btn){
     ownUnit=unit;
     document.querySelectorAll('#panelOwn .unit-btn').forEach(b=>b.classList.remove('active'));
