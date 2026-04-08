@@ -118,20 +118,7 @@
   .loading { text-align: center; padding: 40px; color: var(--dim); font-family: monospace; font-size: 12px; letter-spacing: .1em; }
   .empty-row { font-family: monospace; font-size: 11px; color: var(--dim); padding: 16px 0; text-align: center; }
 
-  /* ── Ghost embed snippet ── */
-  .snippet-block {
-    background: #1A1508; border-radius: var(--radius); padding: 20px 24px; margin-top: 24px;
-  }
-  .snippet-label { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: rgba(212,160,23,.6); font-family: monospace; margin-bottom: 12px; }
-  .snippet-code { font-family: monospace; font-size: 12px; color: #F5E6C0; line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
-  .snippet-note { font-family: monospace; font-size: 10px; color: rgba(245,240,232,.35); margin-top: 10px; line-height: 1.6; }
-  .copy-btn {
-    margin-top: 12px; padding: 7px 16px; background: rgba(184,134,11,.15);
-    border: 1px solid rgba(184,134,11,.3); border-radius: 6px;
-    color: rgba(212,160,23,.8); font-family: monospace; font-size: 10px;
-    letter-spacing: .1em; text-transform: uppercase; cursor: pointer; transition: all .15s;
-  }
-  .copy-btn:hover { background: rgba(184,134,11,.25); }
+
 
   @media(max-width:700px) {
     .kpi-row { grid-template-columns: 1fr 1fr; }
@@ -201,26 +188,7 @@
     </div>
   </div>
 
-  <!-- Ghost embed instructions -->
-  <div class="snippet-block">
-    <div class="snippet-label">Ghost embed snippet — add to your article footer template</div>
-    <div class="snippet-code" id="snippetCode">{{! MyAurum impression pixel }}
-&lt;img src="https://myaurum.app/px?s={{slug}}&amp;r={{encode @page.url}}"
-     width="1" height="1" alt="" style="display:none;position:absolute" /&gt;</div>
-    <div class="snippet-note">
-      In Ghost: go to Settings → Code Injection → Site Footer, or add to your theme's post.hbs template.<br>
-      {{slug}} is Ghost's built-in variable for the article slug. The pixel fires on every page load.<br>
-      For the blog index page, use s=blog. For individual articles, s=blog/article-slug.
-    </div>
-    <button class="copy-btn" onclick="copySnippet()">Copy snippet</button>
-  </div>
 
-  <!-- Manual pixel URL -->
-  <div class="snippet-block" style="margin-top:12px">
-    <div class="snippet-label">Manual pixel URL — for any page</div>
-    <div class="snippet-code">&lt;img src="https://myaurum.app/px?s=YOUR-SLUG&amp;r=SOURCE" width="1" height="1" alt="" style="display:none" /&gt;</div>
-    <div class="snippet-note">Replace YOUR-SLUG with the page identifier (e.g. blog/india-gold-hallmark-scams-2026) and SOURCE with the referrer if known.</div>
-  </div>
 
 </div>
 
@@ -407,14 +375,7 @@
       </div>`).join('')}</div>`;
   }
 
-  function copySnippet() {
-    const code = document.getElementById('snippetCode').textContent;
-    navigator.clipboard.writeText(code).then(() => {
-      const btn = document.querySelector('.copy-btn');
-      btn.textContent = 'Copied ✓';
-      setTimeout(() => btn.textContent = 'Copy snippet', 2000);
-    });
-  }
+
 
   // Load on init
   load();
