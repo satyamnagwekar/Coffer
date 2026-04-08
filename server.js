@@ -3274,6 +3274,10 @@ app.get('/og-image.png', (req, res) => {
 });
 
 app.get('*', (req, res) => {
+  // Never serve index.html for admin or blog paths — let them 404 cleanly
+  if (req.path.startsWith('/' + ADMIN_SLUG) || req.path.startsWith('/blog')) {
+    return res.status(404).send('Not found');
+  }
   const indexPath = path.join(__dirname, 'index.html');
   if (fs.existsSync(indexPath)) { res.setHeader('Cache-Control','no-cache,no-store,must-revalidate'); res.sendFile(indexPath); }
   else res.status(200).send('<h2>MyAurum backend running ✓</h2>');
