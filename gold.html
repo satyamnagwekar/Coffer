@@ -176,17 +176,17 @@
     <div class="price-chip">
       <div class="chip-label">🥇 Gold</div>
       <div class="chip-val" id="stripGold"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div>
-      <div class="chip-unit">per 10g · Indian Bullion</div>
+      <div class="chip-unit" id="stripGoldUnit">per 10g · Indian Bullion</div>
     </div>
     <div class="price-chip">
       <div class="chip-label">🥈 Silver</div>
       <div class="chip-val" id="stripSilver">—</div>
-      <div class="chip-unit">per kg · Indian Bullion</div>
+      <div class="chip-unit" id="stripSilverUnit">per kg · Indian Bullion</div>
     </div>
     <div class="price-chip">
       <div class="chip-label">Updated</div>
       <div class="chip-val" id="stripTime" style="font-size:14px">—</div>
-      <div class="chip-unit">Indian Bullion estimate</div>
+      <div class="chip-unit" id="stripTimeUnit">Indian Bullion estimate</div>
     </div>
   </div>
 
@@ -194,6 +194,17 @@
   <div id="panelBuy">
     <div class="calc-card">
       <div class="calc-title">Know the fair price<br><em>before you make the purchase</em></div>
+
+      <div class="field">
+        <label>Currency</label>
+        <select id="buyCurr" onchange="onCurrChange()">
+          <option value="INR">₹ Indian Rupee (INR)</option>
+          <option value="USD">$ US Dollar (USD)</option>
+          <option value="AED">د.إ UAE Dirham (AED)</option>
+          <option value="GBP">£ British Pound (GBP)</option>
+          <option value="EUR">€ Euro (EUR)</option>
+        </select>
+      </div>
 
       <div class="field">
         <label>Item name <span style="opacity:.5;font-size:9px">(optional)</span></label>
@@ -224,17 +235,6 @@
           <button class="karat-btn" data-k="18" data-p="0.750" onclick="setBuyKarat(this)">18K</button>
           <button class="karat-btn" data-k="14" data-p="0.585" onclick="setBuyKarat(this)">14K</button>
         </div>
-      </div>
-
-      <div class="field">
-        <label>Currency</label>
-        <select id="buyCurr" onchange="onCurrChange()">
-          <option value="INR">₹ Indian Rupee (INR)</option>
-          <option value="USD">$ US Dollar (USD)</option>
-          <option value="AED">د.إ UAE Dirham (AED)</option>
-          <option value="GBP">£ British Pound (GBP)</option>
-          <option value="EUR">€ Euro (EUR)</option>
-        </select>
       </div>
 
       <div class="field">
@@ -429,7 +429,34 @@
   function onCurrChange(){
     const curr=document.getElementById('buyCurr').value;
     document.getElementById('gstCheck').checked=(curr==='INR');
+    updateStripLabels(curr);
     calculateBuy();
+  }
+
+  function updateStripLabels(curr){
+    const isINR = curr==='INR';
+    const goldUnit  = isINR ? 'per 10g · Indian Bullion' : 'per oz · COMEX spot';
+    const silverUnit= isINR ? 'per kg · Indian Bullion'  : 'per oz · COMEX spot';
+    const timeUnit  = isINR ? 'Indian Bullion estimate'        : 'COMEX spot price';
+    document.getElementById('stripGoldUnit').textContent   = goldUnit;
+    document.getElementById('stripSilverUnit').textContent = silverUnit;
+    document.getElementById('stripTimeUnit').textContent   = timeUnit;
+    // Update strip values if prices loaded
+    if(!prices) return;
+    const F=(10/31.1035)*1.054;
+    if(isINR){
+      const g=prices.ibja?.goldInr?Math.round(prices.ibja.goldInr):Math.round(prices.gold*prices.rates.INR*F);
+      const s=prices.ibja?.silverInr?Math.round(prices.ibja.silverInr*100):Math.round(prices.silver*prices.rates.INR*(1000/31.1035)*1.054);
+      document.getElementById('stripGold').textContent='₹'+g.toLocaleString('en-IN');
+      document.getElementById('stripSilver').textContent='₹'+s.toLocaleString('en-IN');
+    } else {
+      const rate=prices.rates[curr]||1;
+      const sym={USD:'$',AED:'AED ',GBP:'£',EUR:'€'}[curr]||'';
+      const gOz=prices.gold*rate;
+      const sOz=prices.silver*rate;
+      document.getElementById('stripGold').textContent=sym+gOz.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+      document.getElementById('stripSilver').textContent=sym+sOz.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    }
   }
 
   async function fetchPrices(){
@@ -517,7 +544,7 @@
 
     document.getElementById('buyResultTitle').textContent=title;
     document.getElementById('buyMetalVal').textContent=FMT[currency](metal);
-    document.getElementById('buyMetalDetail').textContent=`${wStr}${unitLabel} · ${buyKarat} · ${(grams*buyPurity).toFixed(2)}g pure gold · live Indian Bullion rate`;
+    document.getElementById('buyMetalDetail').textContent=`${wStr}${unitLabel} · ${buyKarat} · ${(grams*buyPurity).toFixed(2)}g pure gold · ${currency==='INR'?'Indian Bullion rate':'COMEX spot rate'}`;
     document.getElementById('buyMakingVal').textContent=FMT[currency](making);
     document.getElementById('buyMakingDetail').textContent=`${mc}% of gold value`;
     document.getElementById('buyGstVal').textContent=gstOn?FMT[currency](gst):'—';
