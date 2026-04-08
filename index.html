@@ -89,13 +89,11 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .auth-box{background:#fff;border:1px solid #DDD5C0;border-radius:14px;padding:24px 22px;width:300px;flex-shrink:0;box-shadow:0 4px 24px rgba(0,0,0,.07)}
 .auth-wordmark{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;letter-spacing:.2em;color:var(--brand);margin-bottom:2px}
 .auth-tagline{font-size:11px;color:var(--text-dim);letter-spacing:.2em;text-transform:uppercase;margin-bottom:18px}
-.auth-marquee-wrap{margin:0 0 10px;overflow:hidden;width:100%}
-.auth-marquee{display:inline-flex;gap:18px;white-space:nowrap;animation:marqueeScroll 28s linear infinite;font-size:11px;color:#C8A060;letter-spacing:.10em;text-transform:uppercase;font-family:'Jost',sans-serif}
-.auth-marquee-dot{color:rgba(200,160,80,.55);font-size:7px;align-self:center}
-@keyframes marqueeScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-.auth-marquee-static{display:none;font-size:10px;color:#C8A060;letter-spacing:.04em;text-transform:uppercase;font-family:'Jost',sans-serif;text-align:center;line-height:1.9}
-@media(max-width:639px){.auth-marquee{display:none}.auth-marquee-static{display:block}}
-@media(prefers-reduced-motion:reduce){.auth-marquee{display:none}.auth-marquee-static{display:block}}
+.auth-marquee-wrap{margin:0 0 14px;overflow:hidden;width:100%}
+.auth-marquee-track{display:flex;gap:20px;white-space:nowrap;will-change:transform;font-size:11px;color:#A0804A;letter-spacing:.09em;text-transform:uppercase;font-family:'Jost',sans-serif}
+.auth-marquee-dot{color:rgba(160,128,74,.5);font-size:7px;display:inline-flex;align-items:center;vertical-align:middle}
+.auth-marquee-static{display:none;font-size:11px;color:#A0804A;letter-spacing:.06em;text-transform:uppercase;font-family:'Jost',sans-serif;text-align:center;line-height:2}
+@media(max-width:639px){.auth-marquee-track{display:none}.auth-marquee-static{display:block}}
 
 /* Tab switcher inside box */
 .auth-tabs{display:flex;background:#F5F0E8;border-radius:9px;padding:3px;border:1px solid #DDD5C0;margin-bottom:16px}
@@ -1072,7 +1070,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 
 /* ── Reduced motion ── */
 @media(prefers-reduced-motion:reduce){
-  *:not(.auth-marquee):not(.auth-marquee *),*:not(.auth-marquee)::before,*:not(.auth-marquee)::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
   .modal{animation:none}
   .app-screen.active{animation:none}
 }
@@ -1388,21 +1386,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         <div class="auth-rule-icon">✦</div>
         <div class="auth-rule-line"></div>
       </div>
-      <!-- Marquee: animates on desktop, static two-line on mobile -->
-      <div class="auth-marquee-wrap">
-        <div class="auth-marquee">
-          <span>Know what your gold is worth</span>
-          <span class="auth-marquee-dot">◆</span>
-          <span>Right now, in your currency</span>
-          <span class="auth-marquee-dot">◆</span>
-          <span>Document your holdings today</span>
-          <span class="auth-marquee-dot">◆</span>
-          <span>Your family will thank you tomorrow</span>
-          <span class="auth-marquee-dot">◆</span>
-          <span>Private by design</span>
-          <span class="auth-marquee-dot">◆</span>
-          <span>Your records, visible only to you</span>
-          <span class="auth-marquee-dot">◆</span>
+      <!-- Marquee: JS-driven on desktop, static two-line on mobile -->
+      <div class="auth-marquee-wrap" id="marqueeWrap">
+        <div class="auth-marquee-track" id="marqueeTrack">
           <span>Know what your gold is worth</span>
           <span class="auth-marquee-dot">◆</span>
           <span>Right now, in your currency</span>
@@ -1416,10 +1402,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           <span>Your records, visible only to you</span>
           <span class="auth-marquee-dot">◆</span>
         </div>
-        <!-- Static fallback shown on mobile / reduced-motion -->
         <div class="auth-marquee-static">
-          <div>Know what your gold is worth · Right now, in your currency</div>
-          <div>Document today · Family will thank you · Private by design</div>
+          <div>Know what your gold is worth · In your currency</div>
+          <div>Document today · Private by design</div>
         </div>
       </div>
       <div class="auth-headline">Your family's gold, <em>recorded for posterity.</em></div>
@@ -7109,6 +7094,27 @@ window.addEventListener('DOMContentLoaded',()=>{
   checkVerifyToken();
   initGoogleSignIn();
 
+
+  // ── Marquee JS scroll (bypasses prefers-reduced-motion CSS) ──
+  (function(){
+    const wrap = document.getElementById('marqueeWrap');
+    const track = document.getElementById('marqueeTrack');
+    if (!wrap || !track) return;
+    // Only run on desktop
+    if (window.innerWidth < 640) return;
+    // Duplicate content for seamless loop
+    track.innerHTML += track.innerHTML;
+    const fullW = track.scrollWidth / 2;
+    let x = 0;
+    const speed = 0.5; // px per frame
+    function step() {
+      x -= speed;
+      if (Math.abs(x) >= fullW) x = 0;
+      track.style.transform = 'translateX(' + x + 'px)';
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  })();
   // ── SPA ROUTING ──
   const initTab = sessionStorage.getItem('myaurum_tab') || 'vault';
   // Replace current entry, then push a duplicate so there's always something to pop back to
