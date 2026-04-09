@@ -78,6 +78,10 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* ═══════════════════════════════════════
    AUTH SCREENS
 ═══════════════════════════════════════ */
+.auth-gold-link{display:none}
+@media(max-width:600px){.auth-gold-link{display:block}}
+.footer-blog-link{display:none}
+@media(max-width:600px){.footer-blog-link{display:inline}}
 .auth-screen{position:fixed;inset:0;background:#F5F0E8;z-index:800;overflow-y:auto;display:flex;flex-direction:column;transition:opacity .3s ease}
 .auth-screen.hidden{display:none}
 .auth-screen.fading{opacity:0;pointer-events:none}
@@ -1474,6 +1478,20 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
         </div>
       </div>
 
+      <!-- Gold calculator link — mobile only -->
+      <a href="/gold" style="display:none;text-decoration:none;margin-bottom:16px" class="auth-gold-link">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:#fff;border:1.5px solid rgba(184,134,11,.28);border-radius:12px;gap:12px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:18px;line-height:1">⚖️</span>
+            <div>
+              <div style="font-size:13px;color:#2C2410;font-family:'Jost',sans-serif;font-weight:500">Check the fair price before you buy</div>
+              <div style="font-size:11px;color:#8A7A5A;margin-top:2px;font-family:'Jost',sans-serif">Gold calculator · No login required</div>
+            </div>
+          </div>
+          <span style="color:#B8860B;font-size:18px;flex-shrink:0;line-height:1">→</span>
+        </div>
+      </a>
+
       <!-- Feature pills -->
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center">
         <div style="background:#F5F0E8;border:1px solid #DDD5C0;border-radius:20px;padding:7px 15px;font-size:11px;color:#5A4A2A;font-family:'Jost',sans-serif;display:flex;align-items:center;gap:6px;white-space:nowrap">
@@ -1651,6 +1669,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
           <div style="display:flex;gap:16px;flex-wrap:wrap">
             <a href="/privacy" target="_blank" style="font-size:11px;color:#B8860B;text-decoration:none;white-space:nowrap">Privacy Policy</a>
             <a href="/terms" target="_blank" style="font-size:11px;color:#B8860B;text-decoration:none;white-space:nowrap">Terms of Use</a>
+            <a href="/blog" class="footer-blog-link" style="font-size:11px;color:#B8860B;text-decoration:none;white-space:nowrap">Journal</a>
           </div>
         </div>
         <div style="font-size:10px;color:#BBB;line-height:1.7">Values shown are indicative only — not financial advice, and do not constitute a valuation for insurance, legal, or tax purposes.</div>
