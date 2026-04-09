@@ -80,8 +80,7 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 ═══════════════════════════════════════ */
 .auth-gold-link{display:none}
 @media(max-width:600px){.auth-gold-link{display:block}}
-.footer-blog-link{display:none}
-@media(max-width:600px){.footer-blog-link{display:inline}}
+.footer-blog-link{display:inline}
 .auth-screen{position:fixed;inset:0;background:#F5F0E8;z-index:800;overflow-y:auto;display:flex;flex-direction:column;transition:opacity .3s ease}
 .auth-screen.hidden{display:none}
 .auth-screen.fading{opacity:0;pointer-events:none}
@@ -1479,7 +1478,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       </div>
 
       <!-- Gold calculator link — mobile only -->
-      <a href="/gold" style="display:none;text-decoration:none;margin-bottom:16px" class="auth-gold-link">
+      <a href="/gold" style="text-decoration:none;margin-bottom:16px" class="auth-gold-link">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:#fff;border:1.5px solid rgba(184,134,11,.28);border-radius:12px;gap:12px">
           <div style="display:flex;align-items:center;gap:10px">
             <span style="font-size:18px;line-height:1">⚖️</span>
