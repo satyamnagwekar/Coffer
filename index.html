@@ -81,8 +81,8 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .auth-gold-link{display:block}
 @media(max-width:600px){.auth-gold-link{display:block}}
 .footer-blog-link{display:inline}
-.gold-link-mobile{display:none}
-.gold-link-desktop{display:block}
+.gold-link-scale-icon{font-size:42px;line-height:1;flex-shrink:0;opacity:.85}
+@media(max-width:600px){.gold-link-scale-icon{font-size:28px}}
 @media(max-width:600px){.gold-link-mobile{display:block}.gold-link-desktop{display:none}}
 .auth-screen{position:fixed;inset:0;background:#F5F0E8;z-index:800;overflow-y:auto;display:flex;flex-direction:column;transition:opacity .3s ease}
 .auth-screen.hidden{display:none}
@@ -1502,18 +1502,15 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
       <!-- Gold calculator link — mobile only -->
       <a href="/gold" style="text-decoration:none;margin-bottom:16px" class="auth-gold-link">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:#FFFDF7;border:2.5px solid #B8860B;border-radius:999px;gap:12px">
-          <div style="display:flex;align-items:center;gap:11px">
-            <span style="font-size:17px;line-height:1;flex-shrink:0">⚖️</span>
-            <div>
-              <!-- Desktop: fuller copy -->
-              <div class="gold-link-desktop" style="font-size:13px;color:#2C2410;font-family:'Jost',sans-serif;font-weight:500;letter-spacing:.01em">About to buy gold jewellery? Avoid overpaying and calculate the fair price first — weight, karat, making charges.</div>
-              <div class="gold-link-desktop" style="font-size:15px;color:#8B6914;margin-top:4px;font-family:'Jost',sans-serif;letter-spacing:.05em;font-weight:400">Free · No login required</div>
-              <!-- Mobile: compact copy -->
-              <div class="gold-link-mobile" style="font-size:13px;color:#2C2410;font-family:'Jost',sans-serif;font-weight:500;letter-spacing:.01em">Check the fair price before you buy</div>
-              <div class="gold-link-mobile" style="font-size:11px;color:#8A7A5A;margin-top:2px;font-family:'Jost',sans-serif;letter-spacing:.02em">Gold calculator · No login required</div>
-            </div>
+          <div>
+            <!-- Desktop: fuller copy -->
+            <div class="gold-link-desktop" style="font-size:13px;color:#2C2410;font-family:'Jost',sans-serif;font-weight:500;letter-spacing:.01em">About to buy gold jewellery? Avoid overpaying and calculate the fair price first — weight, karat, making charges.</div>
+            <div class="gold-link-desktop" style="font-size:15px;color:#8B6914;margin-top:4px;font-family:'Jost',sans-serif;letter-spacing:.05em;font-weight:400">Free · No login required</div>
+            <!-- Mobile: compact copy -->
+            <div class="gold-link-mobile" style="font-size:13px;color:#2C2410;font-family:'Jost',sans-serif;font-weight:500;letter-spacing:.01em">Check the fair price before you buy</div>
+            <div class="gold-link-mobile" style="font-size:11px;color:#8A7A5A;margin-top:2px;font-family:'Jost',sans-serif;letter-spacing:.02em">Gold calculator · No login required</div>
           </div>
-          <span style="color:#B8860B;font-size:16px;flex-shrink:0;line-height:1;font-weight:600">→</span>
+          <span class="gold-link-scale-icon" style="font-size:42px;line-height:1;flex-shrink:0;opacity:.85">⚖️</span>
         </div>
       </a>
 
