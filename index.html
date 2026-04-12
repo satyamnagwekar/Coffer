@@ -222,8 +222,6 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 /* Estate Notes */
 /* Dead man's switch */
 .dms-wrap{margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
-.dms-header{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--text);margin-bottom:6px}
-.dms-desc{font-size:12px;color:var(--text-dim);line-height:1.7;font-family:'Jost',sans-serif;margin-bottom:16px}
 .dms-toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .dms-toggle-label{font-size:13px;color:var(--text);font-family:'Jost',sans-serif;font-weight:500}
 .dms-toggle{position:relative;width:44px;height:24px;flex-shrink:0}
@@ -246,11 +244,21 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .dms-save-btn{width:100%;padding:12px;background:var(--brand);color:#FDF8F0;border:none;border-radius:8px;font-size:12px;font-family:'Jost',sans-serif;font-weight:500;letter-spacing:.06em;cursor:pointer;margin-top:6px}
 .dms-status{font-size:11px;color:var(--text-dim);font-family:'Jost',sans-serif;line-height:1.7;background:rgba(139,105,20,.05);border:1px solid rgba(139,105,20,.15);border-radius:8px;padding:10px 12px;margin-top:12px}
 
-/* Estate Notes — header */
+/* Estate Notes — section header band (Option B+C) */
+.vn-section-header{background:linear-gradient(135deg,rgba(139,105,20,.07) 0%,rgba(184,134,11,.03) 60%,transparent 100%);border:1.5px solid rgba(139,105,20,.18);border-radius:14px;padding:20px 20px 18px;margin:-0px 0px 20px;position:relative;overflow:hidden}
+.vn-section-header::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(184,134,11,.1) 0%,transparent 70%);border-radius:50%;pointer-events:none}
+.vn-section-icon{font-size:32px;line-height:1;margin-bottom:12px}
 .vn-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.vn-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;color:var(--text);letter-spacing:.02em}
+.vn-title{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;color:var(--text);letter-spacing:.02em}
 .vn-count{font-size:10px;color:var(--brand);font-family:'Jost',sans-serif;font-weight:600;letter-spacing:.06em;background:rgba(139,105,20,.08);border:1px solid rgba(139,105,20,.2);border-radius:999px;padding:3px 10px;white-space:nowrap;align-self:center}
-.vn-desc{font-size:13px;color:var(--text-mid);line-height:1.75;margin-bottom:20px;font-family:'Jost',sans-serif}
+.vn-desc{font-size:13px;color:var(--text-mid);line-height:1.75;margin-bottom:0;font-family:'Jost',sans-serif}
+
+/* Emergency Access — section header band */
+.dms-section-header{background:linear-gradient(135deg,rgba(100,60,140,.06) 0%,rgba(139,105,20,.04) 60%,transparent 100%);border:1.5px solid rgba(100,60,140,.15);border-radius:14px;padding:20px 20px 18px;margin-bottom:20px;position:relative;overflow:hidden}
+.dms-section-header::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(100,60,140,.08) 0%,transparent 70%);border-radius:50%;pointer-events:none}
+.dms-section-icon{font-size:32px;line-height:1;margin-bottom:12px}
+.dms-header{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;color:var(--text);margin-bottom:6px}
+.dms-desc{font-size:12px;color:var(--text-dim);line-height:1.7;font-family:'Jost',sans-serif;margin-bottom:0}
 
 /* Estate Notes — category grid */
 .vn-category-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
@@ -3514,11 +3522,14 @@ function renderVaultNotes(){
 
   sec.innerHTML = `
     <div style="padding:0 20px 20px">
-      <div class="vn-header">
-        <span class="vn-title">Estate Notes</span>
-        <span class="vn-count">${vaultNotes.length}/${FREE_LIMIT} · free plan · encrypted</span>
+      <div class="vn-section-header">
+        <div class="vn-section-icon">📜</div>
+        <div class="vn-header">
+          <span class="vn-title">Estate Notes</span>
+          <span class="vn-count">${vaultNotes.length}/${FREE_LIMIT} · free plan · encrypted</span>
+        </div>
+        <div class="vn-desc">The document your estate executor will need. Bank lockers, lawyer contacts, insurance policies, safe combinations — recorded here, encrypted on your device, readable only by you.</div>
       </div>
-      <div class="vn-desc">The document your estate executor will need. Bank lockers, lawyer contacts, insurance policies, safe combinations — recorded here, encrypted on your device, readable only by you.</div>
       ${atLimit?`<div style="font-size:11px;color:var(--brand);background:rgba(139,105,20,.06);border:1px solid rgba(139,105,20,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-family:'Jost',sans-serif">Free plan includes 4 notes. Premium unlocks unlimited.</div>`:''}
       ${!atLimit&&vaultNotes.length===0?`<div style="background:rgba(139,105,20,.06);border:1px solid rgba(139,105,20,.2);border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:11px;color:var(--text-mid);line-height:1.7;font-family:'Jost',sans-serif"><strong style="display:block;margin-bottom:5px;color:var(--brand);font-size:12px">🔐 Encrypted on your device — unreadable even to us</strong>Vault notes are encrypted in your browser using your password before anything reaches our servers. MyAurum cannot read them. If you forget your password, these notes cannot be recovered by anyone. Keep your password safe.</div>`:''}
       ${!atLimit?`<div class="vn-category-grid">${catGrid}</div>`:''}
@@ -3651,8 +3662,11 @@ function renderDMS() {
 
   wrap.innerHTML = `
     <div class="dms-wrap">
-      <div class="dms-header">Emergency Access</div>
-      <div class="dms-desc">If you don't log in for a set period, your nominees automatically receive your Estate Notes by email. Just logging in resets the clock.</div>
+      <div class="dms-section-header">
+        <div class="dms-section-icon">🚨</div>
+        <div class="dms-header">Emergency Access</div>
+        <div class="dms-desc">If you don't log in for a set period, your nominees automatically receive your Estate Notes by email. Just logging in resets the clock.</div>
+      </div>
       <div class="dms-toggle-row">
         <span class="dms-toggle-label">Activate emergency access</span>
         <label class="dms-toggle">
